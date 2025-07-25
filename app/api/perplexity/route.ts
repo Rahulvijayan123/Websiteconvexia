@@ -58,14 +58,14 @@ For each field below, you must:
 
 - For directCompetitors:
   - You must prioritize drugs or assets that match BOTH the exact same target (e.g., HER2, SOD1, PD-L1) AND the exact same indication (e.g., Triple-Negative Breast Cancer, ALS, NSCLC) as the user input.
-  - If you cannot find any assets with both an exact target and indication match after exhaustive web search, list the closest available assets, clearly explain the difference, and cite your sources.
+  - If you cannot find any assets with both an exact target and indication match after exhaustive web search, list the closest available assets, clearly explain the difference, and cite your sources. Always return the closest available competitors, and explain any differences or gaps in your research log.
   - Do NOT include assets with unrelated targets or indications, but do include near-matches if no exact matches exist, and explain why.
   - Use extensive, up-to-date web searching to verify the target and indication for each asset. Do not rely on static knowledge. Cite URLs for each competitor.
   - List only the names of specific drugs or assets (not company names), and include their generic/brand names if available. Do not list only big pharma or company names, and do not hallucinate assets.
 
 - For dealActivity:
   - You MUST find and list 2-3 recent deals (acquisitions, licensing, partnerships, investments) involving assets that match BOTH the exact same target and indication as the user input, or the closest available if no exact matches exist (explain the difference). This is non-negotiable.
-  - For each deal, you MUST use at least 50 unique, up-to-date web searches to find and include ALL of the following fields in the output JSON for every deal object: asset name, buyer/acquirer, development stage at deal time, deal price (value), deal date, and a clear, concise rationale for the deal. These are all public and must be found if possible. These fields are required and must be present in the output for every deal; if any field cannot be found after exhaustive searching, you must output 'Unknown' for that field, and explain in the research log exactly what you searched and why the field could not be found. The output JSON for each deal must always include all these fields, even if some are 'Unknown'. This is non-negotiable.
+  - For each deal, do your best to find and include: asset name, buyer/acquirer, development stage at deal time, deal price (value), deal date, and a clear, concise rationale. If you cannot find a field after thorough searching, output 'Unknown' for that field, but still include the deal in the output. Always return at least 1-3 deals if any are available, even if some fields are 'Unknown'. In your research log, explain what you searched and why any field could not be found.
   - Always provide a clear, concise rationale for each deal, based on your research and sources, and cite URLs for each deal.
   - Deal Activity must be a subset or add-on to Direct Competitors (i.e., only deals involving the listed direct competitors or near-matches, with explanation).
   - Always provide a clear, concise rationale for each deal, based on your research and sources.
