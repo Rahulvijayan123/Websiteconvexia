@@ -7,6 +7,33 @@ import { ExpandableDetail } from "./expandable-detail"
 import { SourceAttribution } from "./source-attribution"
 import { useState, useEffect } from "react";
 
+// Input validation utility function
+const isInvalidInput = (input: string | null | undefined): boolean => {
+  if (!input || typeof input !== 'string') return true;
+  const trimmed = input.trim().toLowerCase();
+  const invalidPatterns = ['xxx', 'n/a', 'random', 'asdf', 'test', 'placeholder', 'dummy', 'fake'];
+  return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 2;
+};
+
+const getInputValues = () => {
+  try {
+    const stored = localStorage.getItem('perplexityResult');
+    if (stored) {
+      const data = JSON.parse(stored);
+      return data.inputValues || {
+        therapeuticArea: '',
+        indication: '',
+        target: '',
+        geography: '',
+        developmentPhase: ''
+      };
+    }
+  } catch (e) {
+    // If localStorage fails, assume valid input
+  }
+  return { therapeuticArea: '', indication: '', target: '', geography: '', developmentPhase: '' };
+};
+
 const marketData = [
   { year: "2024", marketSize: 1506, cagr: 8.2, penetration: 12 },
   { year: "2025", marketSize: 1680, cagr: 8.8, penetration: 15 },
@@ -97,6 +124,14 @@ export function MarketSize({ marketSize, cagr, currentMarketSize, peakShare }: {
   useEffect(() => setIsClient(true), []);
   // Treat 'Unknown' as missing
   const hasData = (!!marketSize && marketSize !== 'Unknown') || (!!cagr && cagr !== 'Unknown');
+  
+  // Check for invalid inputs
+  const inputValues = getInputValues();
+  const hasInvalidInput = isInvalidInput(inputValues.therapeuticArea) ||
+                         isInvalidInput(inputValues.indication) ||
+                         isInvalidInput(inputValues.target) ||
+                         isInvalidInput(inputValues.geography) ||
+                         isInvalidInput(inputValues.developmentPhase);
   return (
     <div className="space-y-6">
       <Card className="bg-slate-50 border border-slate-200 shadow-md rounded-lg flex items-center justify-center p-8">
@@ -125,12 +160,12 @@ export function MarketSize({ marketSize, cagr, currentMarketSize, peakShare }: {
               </div>
               {/* Peak Sales Estimate (unblurred, dynamic) */}
               <div className="flex flex-col items-center min-w-[180px]">
-                <span className="text-3xl font-bold text-green-600 mb-1">{hasData ? (marketSize || 'N/A') : 'N/A'}</span>
+                <span className="text-3xl font-bold text-green-600 mb-1">{hasInvalidInput ? 'N/A' : (hasData ? (marketSize || 'N/A') : 'N/A')}</span>
                 <span className="text-xs font-medium text-slate-500">Peak Sales Estimate</span>
               </div>
               {/* CAGR (unblurred, dynamic) */}
               <div className="flex flex-col items-center min-w-[180px]">
-                <span className="text-3xl font-bold text-blue-600 mb-1">{hasData ? (cagr || 'N/A') : 'N/A'}</span>
+                <span className="text-3xl font-bold text-blue-600 mb-1">{hasInvalidInput ? 'N/A' : (hasData ? (cagr || 'N/A') : 'N/A')}</span>
                 <span className="text-xs font-medium text-slate-500">CAGR</span>
               </div>
               {/* Peak Share (blurred, dynamic) */}

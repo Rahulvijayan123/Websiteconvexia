@@ -432,7 +432,7 @@ export function CompetitiveLandscape({
               </Card>
             </>
           ) : (
-            <div className="text-center text-slate-500">No deal activity data available.</div>
+            <div className="text-center text-slate-500">{hasInvalidInput ? 'No deal activity found' : 'No deal activity data available.'}</div>
           )}
         </div>
       </TabsContent>
@@ -458,9 +458,9 @@ export function CompetitiveLandscape({
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">Strategic Fit Rank</span>
-                    <span className="text-sm font-bold text-green-600">{pipeline.strategicFitRank ?? '75%'}</span>
+                    <span className="text-sm font-bold text-green-600">{hasInvalidInput ? 'N/A' : (pipeline.strategicFitRank ?? '75%')}</span>
                   </div>
-                  <Progress value={parseFloat(pipeline.strategicFitRank) || 75} className="h-2" />
+                  <Progress value={hasInvalidInput ? 0 : (parseFloat(pipeline.strategicFitRank) || 75)} className="h-2" />
                   <p className="text-xs text-slate-600 mt-1">{pipeline.strategicFitRank ? 'High alignment with buyer portfolios' : 'No strategic fit data available.'}</p>
                 </div>
               </CardContent>

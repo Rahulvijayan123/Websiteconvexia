@@ -3,6 +3,33 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { ExpandableDetail } from "./expandable-detail"
 
+// Input validation utility function
+const isInvalidInput = (input: string | null | undefined): boolean => {
+  if (!input || typeof input !== 'string') return true;
+  const trimmed = input.trim().toLowerCase();
+  const invalidPatterns = ['xxx', 'n/a', 'random', 'asdf', 'test', 'placeholder', 'dummy', 'fake'];
+  return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 2;
+};
+
+const getInputValues = () => {
+  try {
+    const stored = localStorage.getItem('perplexityResult');
+    if (stored) {
+      const data = JSON.parse(stored);
+      return data.inputValues || {
+        therapeuticArea: '',
+        indication: '',
+        target: '',
+        geography: '',
+        developmentPhase: ''
+      };
+    }
+  } catch (e) {
+    // If localStorage fails, assume valid input
+  }
+  return { therapeuticArea: '', indication: '', target: '', geography: '', developmentPhase: '' };
+};
+
 const incentives = [
   {
     name: "Orphan Drug Designation",
@@ -86,6 +113,13 @@ export function IncentivesRegulation({
   nationalPriority?: string,
   reviewTimelineMonths?: string | number
 }) {
+  // Check for invalid inputs
+  const inputValues = getInputValues();
+  const hasInvalidInput = isInvalidInput(inputValues.therapeuticArea) ||
+                         isInvalidInput(inputValues.indication) ||
+                         isInvalidInput(inputValues.target) ||
+                         isInvalidInput(inputValues.geography) ||
+                         isInvalidInput(inputValues.developmentPhase);
   return (
     <div className="space-y-6">
       {/* Header Score */}
@@ -109,15 +143,15 @@ export function IncentivesRegulation({
               <p className="text-sm text-slate-600">Rare Disease Eligibility</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-blue-600">{prvEligibility ?? '45%'}</p>
+              <p className="text-lg font-bold text-blue-600">{hasInvalidInput ? 'N/A' : (prvEligibility ?? '45%')}</p>
               <p className="text-sm text-slate-600">PRV Eligibility</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-purple-600">{nationalPriority ?? 'High'}</p>
+              <p className="text-lg font-bold text-purple-600">{hasInvalidInput ? 'N/A' : (nationalPriority ?? 'High')}</p>
               <p className="text-sm text-slate-600">National Priority</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-orange-600">{reviewTimelineMonths ?? '10-12 mo'}</p>
+              <p className="text-lg font-bold text-orange-600">{hasInvalidInput ? 'N/A' : (reviewTimelineMonths ?? '10-12 mo')}</p>
               <p className="text-sm text-slate-600">Review Timeline</p>
             </div>
           </div>
