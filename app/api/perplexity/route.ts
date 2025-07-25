@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+console.log('ENV KEYS:', Object.keys(process.env));
+
 export async function POST(req: NextRequest) {
   const logs: any[] = [];
   const apiKey = process.env.PPLX_API_KEY;
