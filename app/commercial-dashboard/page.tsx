@@ -163,20 +163,7 @@ export default function MarketAnalysisAgent() {
                 </div>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => exportData("csv")}>
-                <Download className="w-4 h-4 mr-2" />
-                CSV
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => exportData("excel")}>
-                <Download className="w-4 h-4 mr-2" />
-                Excel
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => exportData("pdf")}>
-                <Download className="w-4 h-4 mr-2" />
-                PDF
-              </Button>
-            </div>
+            {/* Remove the export buttons and their labels */}
           </div>
         </div>
       </div>
