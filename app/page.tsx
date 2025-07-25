@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,6 +13,9 @@ type TabType = "scientific" | "commercial" | "clinical" | "bd-agent"
 
 export default function BiotechPlayground() {
   const [activeTab, setActiveTab] = useState<TabType>("scientific")
+  const [loading, setLoading] = useState(false)
+  const commercialFormRef = useRef<HTMLFormElement>(null)
+  const [error, setError] = useState<string | null>(null);
 
   const tabs = [
     { id: "scientific" as TabType, label: "Scientific" },
@@ -25,6 +28,49 @@ export default function BiotechPlayground() {
     e.preventDefault()
     // Form submission logic will be added later
     console.log(`${activeTab} form submitted`)
+  }
+
+  const handleCommercialSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    const form = commercialFormRef.current
+    if (!form) return
+    const formData = new FormData(form)
+    const data = {
+      therapeuticArea: formData.get("therapeuticArea"),
+      indication: formData.get("indication"),
+      target: formData.get("target"),
+      geography: formData.get("geography"),
+      developmentPhase: formData.get("developmentPhase"),
+    }
+    try {
+      // Clear any previous result before setting new one
+      localStorage.removeItem('perplexityResult');
+      console.log('[DEBUG] Removed previous perplexityResult from localStorage');
+      const res = await fetch("/api/perplexity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        setError(errJson.error || errJson.details || "Unknown error from Perplexity API");
+        console.error('[DEBUG] Perplexity API error:', errJson);
+        return;
+      }
+      const result = await res.json()
+      localStorage.setItem('perplexityResult', JSON.stringify(result));
+      console.log('[DEBUG] Saved perplexityResult to localStorage:', result);
+      // Use relative path for redirect to avoid port issues
+      console.log('[DEBUG] Redirecting to /commercial-dashboard');
+      window.location.href = '/commercial-dashboard';
+    } catch (err: any) {
+      setError(err?.message || "Network error");
+      console.error('[DEBUG] Submission error:', err);
+    } finally {
+      setLoading(false)
+    }
   }
 
   const renderScientificForm = () => (
@@ -133,7 +179,7 @@ export default function BiotechPlayground() {
   )
 
   const renderCommercialForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form ref={commercialFormRef} onSubmit={handleCommercialSubmit} className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="therapeutic-area-comm" className="text-white">
@@ -141,6 +187,7 @@ export default function BiotechPlayground() {
           </Label>
           <Input
             id="therapeutic-area-comm"
+            name="therapeuticArea"
             placeholder="e.g., Oncology"
             className="bg-[#002A1A] border-[#00C277]/30 text-white placeholder:text-white/50 focus:border-[#00C277] focus:ring-[#00C277]/30"
             required
@@ -152,6 +199,7 @@ export default function BiotechPlayground() {
           </Label>
           <Input
             id="indication-comm"
+            name="indication"
             placeholder="e.g., Breast Cancer"
             className="bg-[#002A1A] border-[#00C277]/30 text-white placeholder:text-white/50 focus:border-[#00C277] focus:ring-[#00C277]/30"
             required
@@ -165,6 +213,7 @@ export default function BiotechPlayground() {
           </Label>
           <Input
             id="target-comm"
+            name="target"
             placeholder="e.g., HER2"
             className="bg-[#002A1A] border-[#00C277]/30 text-white placeholder:text-white/50 focus:border-[#00C277] focus:ring-[#00C277]/30"
             required
@@ -176,6 +225,7 @@ export default function BiotechPlayground() {
           </Label>
           <Input
             id="geography"
+            name="geography"
             placeholder="e.g., US, EU, Global"
             className="bg-[#002A1A] border-[#00C277]/30 text-white placeholder:text-white/50 focus:border-[#00C277] focus:ring-[#00C277]/30"
             required
@@ -184,20 +234,40 @@ export default function BiotechPlayground() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="competitors" className="text-white">
-          Competitor Drug Names <span className="text-white/50">(optional)</span>
+          Development Phase
         </Label>
         <Input
           id="competitors"
-          placeholder="e.g., Drug A, Drug B, Drug C"
+          name="developmentPhase"
+          placeholder="e.g., Preclinical, Phase 1, Phase 2"
           className="bg-[#002A1A] border-[#00C277]/30 text-white placeholder:text-white/50 focus:border-[#00C277] focus:ring-[#00C277]/30"
         />
       </div>
       <Button
         type="submit"
         className="w-full bg-[#00C277] hover:bg-[#008C5B] text-white border-0 shadow-lg shadow-[#00C277]/20"
+        disabled={loading}
       >
-        Submit Commercial Analysis
+        {loading ? "Submitting..." : "Submit Commercial Analysis"}
       </Button>
+      {loading && activeTab === "commercial" && (
+        <div className="flex flex-col items-center mt-4">
+          <div className="relative">
+            {/* Outer spinning ring */}
+            <div className="w-12 h-12 rounded-full border-4 border-[#008C5B]/20 animate-spin border-t-[#00C277] border-r-[#00C277]"></div>
+            {/* Inner pulsing circle */}
+            <div className="absolute inset-1 rounded-full bg-gradient-to-br from-[#00C277]/20 to-[#008C5B]/20 animate-pulse"></div>
+            {/* Center icon */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="w-5 h-5 text-[#00C277]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+          </div>
+          <div className="text-sm text-[#00C277] font-semibold text-center mt-3">Analyzing competitive landscape.</div>
+          <div className="text-xs text-[#008C5B]/70 text-center">This may take up to 30 minutes...</div>
+        </div>
+      )}
     </form>
   )
 
@@ -438,6 +508,9 @@ export default function BiotechPlayground() {
     }
   }
 
+  // Remove any full-page spinner/overlay for commercial analysis loading
+  // Only show the small spinner and message under the submit button (already implemented below)
+
   return (
     <div className="min-h-screen bg-[#00160E] p-4">
       <div className="max-w-4xl mx-auto">
@@ -472,7 +545,14 @@ export default function BiotechPlayground() {
           <CardHeader className="pb-6 border-b border-white/10">
             <CardTitle className="text-xl font-semibold text-center text-white">{getTabTitle()}</CardTitle>
           </CardHeader>
-          <CardContent className="px-8 pb-8">{renderActiveForm()}</CardContent>
+          <CardContent className="px-8 pb-8">
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 text-red-800 rounded border border-red-300 text-center">
+                <strong>Perplexity API Error:</strong> {error}
+              </div>
+            )}
+            {renderActiveForm()}
+          </CardContent>
         </Card>
 
         {/* Tab Strip */}

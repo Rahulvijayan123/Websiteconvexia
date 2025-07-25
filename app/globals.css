@@ -1,5 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 @custom-variant dark (&:is(.dark *));
 
@@ -119,6 +120,18 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .blurred-section {
+    filter: blur(10px) !important;
+    opacity: 0.5 !important;
+    pointer-events: none;
+    user-select: none;
+    background: rgba(255,255,255,0.1);
+    border: 2px dashed #e11d48;
+    transition: filter 0.2s;
   }
 }
 

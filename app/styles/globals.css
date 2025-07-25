@@ -1,0 +1,11 @@
+.blurred-section {
+  filter: blur(2.5px) !important;
+  opacity: 0.82 !important;
+  pointer-events: none;
+  user-select: none;
+  background: rgba(255,255,255,0.09);
+  transition: filter 0.2s;
+}
+
+/* Tailwind utility fallback for blur */
+/* Usage: className="blur-[10px] opacity-50 pointer-events-none select-none" */ 
