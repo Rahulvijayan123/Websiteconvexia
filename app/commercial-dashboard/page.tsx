@@ -160,15 +160,7 @@ export default function MarketAnalysisAgent() {
               <div className="flex items-center gap-4">
                 <div>
                   <h1 className="text-3xl font-bold text-slate-900">Market Analysis Agent</h1>
-                  <p className="text-slate-600 mt-1">Simulating Commercial Viability for Drug Asset Evaluation</p>
                 </div>
-                {true && (
-                  <div className="text-sm text-slate-600 border-l pl-4">
-                    <p className="font-semibold">Example Molecule</p>
-                    <p>Internal Code 123</p>
-                    <p>Phase: Phase 2</p>
-                  </div>
-                )}
               </div>
             </div>
             <div className="flex gap-2">
