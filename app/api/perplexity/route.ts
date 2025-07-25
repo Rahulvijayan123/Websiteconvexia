@@ -40,7 +40,7 @@ An indication is a specific disease or condition (e.g., Triple-Negative Breast C
 
 If either the target or indication is missing or unclear, explain what is missing and request clarification, but still attempt to provide the most relevant information possible based on the available input.
 
-You must conduct a deep, thorough web and literature review using at least 25 high-quality, up-to-date, and diverse sources. You are required to use live web search and cite URLs, not just static knowledge. Your research must include industry reports, regulatory databases, analyst forecasts, recent news, and primary sources. Do not fabricate information—always use real, verifiable data from the web and literature. Prioritize primary sources, recent publications, and authoritative industry data.
+You must conduct a deep, thorough web and literature review using at least 100 unique, high-quality, up-to-date, and diverse sources. You are required to use live web search and cite URLs, not just static knowledge. Your research must include industry reports, regulatory databases, analyst forecasts, recent news, and primary sources. Do not fabricate information—always use real, verifiable data from the web and literature. Prioritize primary sources, recent publications, and authoritative industry data. You must use at least 100 unique, high-quality web searches for every request, and your websearches should be as exhaustive and creative as possible to find all relevant public information.
 
 For each field below, you must:
 - Use the best available data from your research.
@@ -58,18 +58,20 @@ For each field below, you must:
 
 - For directCompetitors:
   - You must prioritize drugs or assets that match BOTH the exact same target (e.g., HER2, SOD1, PD-L1) AND the exact same indication (e.g., Triple-Negative Breast Cancer, ALS, NSCLC) as the user input.
-  - If you cannot find any assets with both an exact target and indication match after exhaustive web search, list the closest available assets, clearly explain the difference, and cite your sources. Always return the closest available competitors, and explain any differences or gaps in your research log.
+  - Look for at least 3 direct competitors, but display up to 10 if possible. If fewer than 3 exist, explain why (e.g., novel target/indication). For each competitor, provide a short rationale for why it is a competitor, and cite your sources. Always return the closest available competitors, and explain any differences or gaps in your research log.
   - Do NOT include assets with unrelated targets or indications, but do include near-matches if no exact matches exist, and explain why.
-  - Use extensive, up-to-date web searching to verify the target and indication for each asset. Do not rely on static knowledge. Cite URLs for each competitor.
+  - Use exhaustive, up-to-date web searching to verify the target and indication for each asset. Do not rely on static knowledge. Cite URLs for each competitor.
   - List only the names of specific drugs or assets (not company names), and include their generic/brand names if available. Do not list only big pharma or company names, and do not hallucinate assets.
 
 - For dealActivity:
-  - You MUST find and list 2-3 recent deals (acquisitions, licensing, partnerships, investments) involving assets that match BOTH the exact same target and indication as the user input, or the closest available if no exact matches exist (explain the difference). This is non-negotiable.
-  - For each deal, do your best to find and include: asset name, buyer/acquirer, development stage at deal time, deal price (value), deal date, and a clear, concise rationale. If you cannot find a field after thorough searching, output 'Unknown' for that field, but still include the deal in the output. Always return at least 1-3 deals if any are available, even if some fields are 'Unknown'. In your research log, explain what you searched and why any field could not be found.
+  - You MUST find and list at least 3 recent deals (acquisitions, licensing, partnerships, investments) involving assets that match BOTH the exact same target and indication as the user input, or the closest available if no exact matches exist (explain the difference). Display up to 10 deals if possible. For each deal, include: asset name, buyer/acquirer, development stage at deal time, deal price (value), deal date, and a clear, concise rationale. All of this information is public and online, and you must use at least 100 unique, high-quality web searches to find it. If you cannot find a field after exhaustive searching, output 'Unknown' for that field, but still include the deal in the output. In your research log, explain what you searched and why any field could not be found.
   - Always provide a clear, concise rationale for each deal, based on your research and sources, and cite URLs for each deal.
   - Deal Activity must be a subset or add-on to Direct Competitors (i.e., only deals involving the listed direct competitors or near-matches, with explanation).
   - Always provide a clear, concise rationale for each deal, based on your research and sources.
   - Use extensive, up-to-date web searching to verify each deal and cite URLs for each.
+
+- For pipelineAnalysis.competitiveThreats:
+  - Always output multiple (at least 3 if possible) distinct competitive threats, each with a short rationale. Use your websearches to identify as many relevant threats as possible, and provide a brief explanation for each.
 
 - For all fields, cite the most relevant sources in your research log. You must use at least 25 unique, high-quality, and up-to-date sources, and you must use live web search for all research. Do not fabricate sources or data.
 
