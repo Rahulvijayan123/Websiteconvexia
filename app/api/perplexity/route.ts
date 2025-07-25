@@ -49,7 +49,8 @@ For each field below, you must:
 - For marketSize (peak sales estimate), return only the number or range in billions, e.g., "1.2B" or "1.2-1.5B". Do not include any text or explanation.
 - For cagr, return only the percentage or range, e.g., "12.3%" or "12.3-13.6%". Do not include any text or explanation.
 - For peakRevenue2030, return only the number or range in billions, e.g., "1.2B" or "1.2-1.5B". Do not include any text or explanation.
-- For total10YearRevenue, you must calculate a reasonable estimate for total revenue over 10 years, based on the provided or estimated peak revenue. The total 10 year revenue should be a logical multiple of peak revenue, reflecting typical industry revenue curves (e.g., total 10 year revenue should be several times the peak year, not less or only slightly more). If your calculation is not consistent with the peak revenue, explain your reasoning. Always explain how you calculated this value in your research log.
+- For total10YearRevenue:
+  - You must calculate a realistic estimate for total revenue over 10 years, based on the provided or estimated peak revenue. Use a plausible industry revenue curve (e.g., total 10 year revenue should typically be 5-8x the peak year, or the sum of a realistic 10-year ramp-up, plateau, and decline). Do NOT return a value that is less than or only slightly more than peak revenue. If you cannot calculate a logical value, explain step-by-step in the research log how you arrived at your number, and why it is consistent with the peak revenue. This explanation is required in the research log.
 
 - For peakMarketShare2030, return only the percentage or range, e.g., "12.3%" or "12.3-13.6%". Do not include any text or explanation.
 - For peakPatients2030, return only the number or range, e.g., "500K", "1.2M", or "1.2M-1.5M". Do not include any text or explanation.
@@ -63,8 +64,8 @@ For each field below, you must:
   - List only the names of specific drugs or assets (not company names), and include their generic/brand names if available. Do not list only big pharma or company names, and do not hallucinate assets.
 
 - For dealActivity:
-  - You must find and list 2-3 recent deals (acquisitions, licensing, partnerships, investments) involving assets that match BOTH the exact same target and indication as the user input, or the closest available if no exact matches exist (explain the difference).
-  - For each deal, you MUST use at least 50 unique, up-to-date web searches to find and include: asset name, development stage at deal time, deal price (value), deal date, and buyer/acquirer. These fields are required and must be found if possible; only use 'Unknown' as a last resort after exhaustive searching.
+  - You MUST find and list 2-3 recent deals (acquisitions, licensing, partnerships, investments) involving assets that match BOTH the exact same target and indication as the user input, or the closest available if no exact matches exist (explain the difference). This is non-negotiable.
+  - For each deal, you MUST use at least 50 unique, up-to-date web searches to find and include ALL of the following: asset name, development stage at deal time, deal price (value), deal date, and buyer/acquirer. These fields are required and must be found if possible; only use 'Unknown' as a last resort after exhaustive searching, and explain in the research log exactly what you searched and why the field could not be found.
   - Always provide a clear, concise rationale for each deal, based on your research and sources, and cite URLs for each deal.
   - Deal Activity must be a subset or add-on to Direct Competitors (i.e., only deals involving the listed direct competitors or near-matches, with explanation).
   - Always provide a clear, concise rationale for each deal, based on your research and sources.
