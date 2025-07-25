@@ -49,6 +49,8 @@ For each field below, you must:
 - For marketSize (peak sales estimate), return only the number or range in billions, e.g., "1.2B" or "1.2-1.5B". Do not include any text or explanation.
 - For cagr, return only the percentage or range, e.g., "12.3%" or "12.3-13.6%". Do not include any text or explanation.
 - For peakRevenue2030, return only the number or range in billions, e.g., "1.2B" or "1.2-1.5B". Do not include any text or explanation.
+- For total10YearRevenue, you must calculate a reasonable estimate for total revenue over 10 years, based on the provided or estimated peak revenue. The total 10 year revenue should be a logical multiple of peak revenue, reflecting typical industry revenue curves (e.g., total 10 year revenue should be several times the peak year, not less or only slightly more). If your calculation is not consistent with the peak revenue, explain your reasoning. Always explain how you calculated this value in your research log.
+
 - For peakMarketShare2030, return only the percentage or range, e.g., "12.3%" or "12.3-13.6%". Do not include any text or explanation.
 - For peakPatients2030, return only the number or range, e.g., "500K", "1.2M", or "1.2M-1.5M". Do not include any text or explanation.
 - For pipelineAnalysis.crowdingPercent (pipeline density), return only the percentage or range, e.g., "12%" or "10-15%". Do not include any text or explanation.
@@ -61,10 +63,9 @@ For each field below, you must:
   - List only the names of specific drugs or assets (not company names), and include their generic/brand names if available. Do not list only big pharma or company names, and do not hallucinate assets.
 
 - For dealActivity:
-  - Only include deals (acquisitions, licensing, partnerships, investments) involving assets that match BOTH the exact same target and indication as the user input, or the closest available if no exact matches exist (explain the difference).
-  - Do NOT include deals for unrelated targets or indications.
-  - For each deal, you MUST try extremely hard to find and include: acquirer, asset name, development stage at deal time, date or status, deal value (price) if public, and a strategic rationale for the deal. You must use extensive, up-to-date web searching and cite URLs for each deal.
-  - If you cannot find the stage, date, or deal price after exhaustive searching, you must explicitly list that field as 'Unknown' for that deal, but only as a last resort.
+  - You must find and list 2-3 recent deals (acquisitions, licensing, partnerships, investments) involving assets that match BOTH the exact same target and indication as the user input, or the closest available if no exact matches exist (explain the difference).
+  - For each deal, you MUST use at least 50 unique, up-to-date web searches to find and include: asset name, development stage at deal time, deal price (value), deal date, and buyer/acquirer. These fields are required and must be found if possible; only use 'Unknown' as a last resort after exhaustive searching.
+  - Always provide a clear, concise rationale for each deal, based on your research and sources, and cite URLs for each deal.
   - Deal Activity must be a subset or add-on to Direct Competitors (i.e., only deals involving the listed direct competitors or near-matches, with explanation).
   - Always provide a clear, concise rationale for each deal, based on your research and sources.
   - Use extensive, up-to-date web searching to verify each deal and cite URLs for each.
@@ -79,6 +80,7 @@ Return ONLY a valid JSON object with the following keys:
 - nationalPriority: string (public health priority tier)
 - reviewTimelineMonths: string or number (expected FDA review timeline)
 - peakRevenue2030: string (forecasted peak revenue by 2030)
+- total10YearRevenue: string (estimated total revenue over 10 years)
 - peakMarketShare2030: string (projected market share by 2030)
 - peakPatients2030: string (estimated treated patient population by 2030)
 - dealActivity: array of objects (recent M&A/licensing deals)
