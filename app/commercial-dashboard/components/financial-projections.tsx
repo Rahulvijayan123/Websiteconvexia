@@ -98,16 +98,51 @@ export function FinancialProjections({
   peakMarketShare2030?: string,
   peakPatients2030?: string
 } = {}) {
+  // Input validation function to detect invalid inputs
+  const isInvalidInput = (input: string | null | undefined): boolean => {
+    if (!input || typeof input !== 'string') return true;
+    const trimmed = input.trim().toLowerCase();
+    const invalidPatterns = ['xx', 'n/a', 'random', 'asdf', 'test', 'placeholder', 'dummy', 'fake'];
+    return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 2;
+  };
+
+  // Get input values from localStorage to validate
+  const getInputValues = () => {
+    try {
+      const stored = localStorage.getItem('perplexityResult');
+      if (stored) {
+        const data = JSON.parse(stored);
+        return data.inputValues || {
+          therapeuticArea: '',
+          indication: '',
+          target: '',
+          geography: '',
+          developmentPhase: ''
+        };
+      }
+    } catch (e) {
+      // If localStorage fails, assume valid input
+    }
+    return { therapeuticArea: '', indication: '', target: '', geography: '', developmentPhase: '' };
+  };
+
+  const inputValues = getInputValues();
+  const hasInvalidInput = isInvalidInput(inputValues.therapeuticArea) || 
+                         isInvalidInput(inputValues.indication) || 
+                         isInvalidInput(inputValues.target) || 
+                         isInvalidInput(inputValues.geography) || 
+                         isInvalidInput(inputValues.developmentPhase);
+
   // Treat 'Unknown' as missing
   const hasPeakRevenue = !!peakRevenue2030 && peakRevenue2030 !== 'Unknown';
   const hasPeakMarketShare = !!peakMarketShare2030 && peakMarketShare2030 !== 'Unknown';
   const hasPeakPatients = !!peakPatients2030 && peakPatients2030 !== 'Unknown';
   const hasData = hasPeakRevenue || hasPeakMarketShare || hasPeakPatients;
   const keyMetrics = [
-    { metric: "Peak Revenue", value: hasPeakRevenue ? peakRevenue2030 : "$3.826B", year: "2030" },
-    { metric: "Total 10-Year Revenue", value: "$25.654B", period: "2024-2033" },
-    { metric: "Peak Market Share", value: hasPeakMarketShare ? peakMarketShare2030 : "17.1%", year: "2030" },
-    { metric: "Peak Patients", value: hasPeakPatients ? peakPatients2030 : "26K", year: "2030" },
+    { metric: "Peak Revenue", value: hasInvalidInput ? "N/A" : (hasPeakRevenue ? peakRevenue2030 : "$3.826B"), year: "2030" },
+    { metric: "Total 10-Year Revenue", value: hasInvalidInput ? "N/A" : "$25.654B", period: "2024-2033" },
+    { metric: "Peak Market Share", value: hasInvalidInput ? "N/A" : (hasPeakMarketShare ? peakMarketShare2030 : "17.1%"), year: "2030" },
+    { metric: "Peak Patients", value: hasInvalidInput ? "N/A" : (hasPeakPatients ? peakPatients2030 : "26K"), year: "2030" },
     { metric: "Avg Selling Price", value: hasData ? "N/A" : "$156K", note: "Blended global" },
     { metric: "Persistence Rate", value: hasData ? "N/A" : "85%", note: "12-month" },
     { metric: "Treatment Duration", value: hasData ? "N/A" : "18 mo", note: "Median" },

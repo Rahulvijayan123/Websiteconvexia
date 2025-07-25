@@ -258,6 +258,42 @@ export function CompetitiveLandscape({
   const [showSources, setShowSources] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDeal, setModalDeal] = useState<any | null>(null);
+  
+  // Input validation function to detect invalid inputs
+  const isInvalidInput = (input: string | null | undefined): boolean => {
+    if (!input || typeof input !== 'string') return true;
+    const trimmed = input.trim().toLowerCase();
+    const invalidPatterns = ['xx', 'n/a', 'random', 'asdf', 'test', 'placeholder', 'dummy', 'fake'];
+    return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 2;
+  };
+
+  // Get input values from localStorage to validate
+  const getInputValues = () => {
+    try {
+      const stored = localStorage.getItem('perplexityResult');
+      if (stored) {
+        const data = JSON.parse(stored);
+        return data.inputValues || {
+          therapeuticArea: '',
+          indication: '',
+          target: '',
+          geography: '',
+          developmentPhase: ''
+        };
+      }
+    } catch (e) {
+      // If localStorage fails, assume valid input
+    }
+    return { therapeuticArea: '', indication: '', target: '', geography: '', developmentPhase: '' };
+  };
+
+  const inputValues = getInputValues();
+  const hasInvalidInput = isInvalidInput(inputValues.therapeuticArea) || 
+                         isInvalidInput(inputValues.indication) || 
+                         isInvalidInput(inputValues.target) || 
+                         isInvalidInput(inputValues.geography) || 
+                         isInvalidInput(inputValues.developmentPhase);
+
   const hasCompetitors = directCompetitors && directCompetitors.length > 0;
   const hasDeals = dealActivity && dealActivity.length > 0;
   // If strategicFitRank is missing but crowdingPercent exists, set a default
@@ -413,11 +449,11 @@ export function CompetitiveLandscape({
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">Pipeline Density</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-orange-600">{pipeline.crowdingPercent ?? 'N/A'}</span>
+                      <span className="text-sm font-bold text-orange-600">{hasInvalidInput ? 'N/A' : (pipeline.crowdingPercent ?? 'N/A')}</span>
                     </div>
                   </div>
-                  <Progress value={parseFloat(pipeline.crowdingPercent) || 0} className="h-2" />
-                  <p className="text-xs text-slate-600 mt-1">{pipeline.crowdingPercent ? 'Moderate crowding - manageable competition' : 'No crowding data available.'}</p>
+                  <Progress value={hasInvalidInput ? 0 : (parseFloat(pipeline.crowdingPercent) || 0)} className="h-2" />
+                  <p className="text-xs text-slate-600 mt-1">{hasInvalidInput ? 'Invalid input detected' : (pipeline.crowdingPercent ? 'Moderate crowding - manageable competition' : 'No crowding data available.')}</p>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -435,7 +471,9 @@ export function CompetitiveLandscape({
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {threats.length > 0 ? threats.map((threat: string, idx: number) => (
+                  {hasInvalidInput ? (
+                    <div className="col-span-3 text-center text-slate-500">N/A</div>
+                  ) : threats.length > 0 ? threats.map((threat: string, idx: number) => (
                     <div key={idx}>
                       <h4 className="font-semibold text-sm text-slate-600 mb-2">{threat}</h4>
                     </div>

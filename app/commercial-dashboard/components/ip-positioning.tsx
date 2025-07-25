@@ -138,6 +138,41 @@ function ExpandableDetail({ title, value, unit, assumptions, formula, sources, a
 }
 
 export function IPPositioning() {
+  // Input validation function to detect invalid inputs
+  const isInvalidInput = (input: string | null | undefined): boolean => {
+    if (!input || typeof input !== 'string') return true;
+    const trimmed = input.trim().toLowerCase();
+    const invalidPatterns = ['xx', 'n/a', 'random', 'asdf', 'test', 'placeholder', 'dummy', 'fake'];
+    return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 2;
+  };
+
+  // Get input values from localStorage to validate
+  const getInputValues = () => {
+    try {
+      const stored = localStorage.getItem('perplexityResult');
+      if (stored) {
+        const data = JSON.parse(stored);
+        return data.inputValues || {
+          therapeuticArea: '',
+          indication: '',
+          target: '',
+          geography: '',
+          developmentPhase: ''
+        };
+      }
+    } catch (e) {
+      // If localStorage fails, assume valid input
+    }
+    return { therapeuticArea: '', indication: '', target: '', geography: '', developmentPhase: '' };
+  };
+
+  const inputValues = getInputValues();
+  const hasInvalidInput = isInvalidInput(inputValues.therapeuticArea) || 
+                         isInvalidInput(inputValues.indication) || 
+                         isInvalidInput(inputValues.target) || 
+                         isInvalidInput(inputValues.geography) || 
+                         isInvalidInput(inputValues.developmentPhase);
+
   return (
     <div className="space-y-6">
       {/* Summary Box */}
@@ -161,11 +196,11 @@ export function IPPositioning() {
               <p className="text-sm text-slate-600">Years to Expiration</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">45%</p>
+              <p className="text-2xl font-bold text-red-600">{hasInvalidInput ? 'N/A' : '45%'}</p>
               <p className="text-sm text-slate-600">Generic Entry Risk</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">Strong</p>
+              <p className="text-2xl font-bold text-green-600">{hasInvalidInput ? 'N/A' : 'Strong'}</p>
               <p className="text-sm text-slate-600">Core IP Position</p>
             </div>
           </div>

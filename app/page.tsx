@@ -45,7 +45,12 @@ export default function BiotechPlayground() {
         return;
       }
       const result = await res.json()
-      localStorage.setItem('perplexityResult', JSON.stringify(result));
+      // Store both the API result and the input values for validation
+      const dataToStore = {
+        ...result,
+        inputValues: data
+      };
+      localStorage.setItem('perplexityResult', JSON.stringify(dataToStore));
       window.location.href = '/commercial-dashboard';
     } catch (err: any) {
       setError(err?.message || "Network error");
