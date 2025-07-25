@@ -63,8 +63,10 @@ For each field below, you must:
 - For dealActivity:
   - Only include deals (acquisitions, licensing, partnerships, investments) involving assets that match BOTH the exact same target and indication as the user input, or the closest available if no exact matches exist (explain the difference).
   - Do NOT include deals for unrelated targets or indications.
-  - For each deal, provide: acquirer, asset name, development stage at deal time, date or status, deal value if public, and strategic rationale.
+  - For each deal, you MUST try extremely hard to find and include: acquirer, asset name, development stage at deal time, date or status, deal value (price) if public, and a strategic rationale for the deal. You must use extensive, up-to-date web searching and cite URLs for each deal.
+  - If you cannot find the stage, date, or deal price after exhaustive searching, you must explicitly list that field as 'Unknown' for that deal, but only as a last resort.
   - Deal Activity must be a subset or add-on to Direct Competitors (i.e., only deals involving the listed direct competitors or near-matches, with explanation).
+  - Always provide a clear, concise rationale for each deal, based on your research and sources.
   - Use extensive, up-to-date web searching to verify each deal and cite URLs for each.
 
 - For all fields, cite the most relevant sources in your research log. You must use at least 25 unique, high-quality, and up-to-date sources, and you must use live web search for all research. Do not fabricate sources or data.
