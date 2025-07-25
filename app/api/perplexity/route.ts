@@ -39,14 +39,22 @@ For each field below, you must:
 - For peakMarketShare2030, return only the percentage or range, e.g., "12.3%" or "12.3-13.6%". Do not include any text or explanation.
 - For peakPatients2030, return only the number or range, e.g., "500K", "1.2M", or "1.2M-1.5M". Do not include any text or explanation.
 - For pipelineAnalysis.crowdingPercent (pipeline density), return only the percentage or range, e.g., "12%" or "10-15%". Do not include any text or explanation.
+
 - For directCompetitors:
-  - Actively research real, up-to-date competitors based on the user's input (target, indication, modality, geography, and phase).
-  - Use recent trials, approvals, pipelines, and market intelligence to ensure competitor selection is grounded in reality.
-  - Add stricter logic or source weighting to prioritize programs in the same therapeutic area, same target or MoA, and at similar clinical stage.
+  - You must ONLY include drugs or assets that match BOTH the exact same target (e.g., HER2, SOD1, PD-L1) AND the exact same indication (e.g., Triple-Negative Breast Cancer, ALS, NSCLC) as the user input.
+  - Do NOT include assets with adjacent or related targets (e.g., HER3 or EGFR when HER2 is the input) or assets in similar but different indications (e.g., general breast cancer when TNBC is the input).
+  - Use extensive, up-to-date web searching to verify the target and indication for each asset. Do not rely on static knowledge. Cite URLs for each competitor.
+  - List only the names of specific drugs or assets (not company names), and include their generic/brand names if available. Do not list only big pharma or company names, and do not hallucinate assets.
   - If no close competitor exists, explicitly state that and explain why (e.g., "No other assets targeting SOD1 in ALS with Phase 2+ data").
-  - List only the names of specific drugs or assets (not company names), and include their generic/brand names if available. Use web search to verify these are real, currently relevant competitors in the same indication. Do not list only big pharma or company names, and do not hallucinate assets.
-- For dealActivity, include at least 3-5 recent, relevant M&A or licensing deals in the same indication or modality. For each deal, provide as much detail as possible: acquirer, asset (drug name), stage, price, date/status, and rationale. Do not leave this section blank.
-- For all fields, cite the most relevant sources in your research log.
+
+- For dealActivity:
+  - Only include deals (acquisitions, licensing, partnerships, investments) involving assets that match BOTH the exact same target and indication as the user input.
+  - Do NOT include deals for adjacent targets or different indications.
+  - For each deal, provide: acquirer, asset name, development stage at deal time, date or status, deal value if public, and strategic rationale.
+  - Deal Activity must be a subset or add-on to Direct Competitors (i.e., only deals involving the listed direct competitors).
+  - Use extensive, up-to-date web searching to verify each deal and cite URLs for each.
+
+- For all fields, cite the most relevant sources in your research log. You must use at least 25 unique, high-quality, and up-to-date sources, and you must use live web search for all research. Do not fabricate sources or data.
 
 Return ONLY a valid JSON object with the following keys:
 - cagr: string (Compound Annual Growth Rate)
