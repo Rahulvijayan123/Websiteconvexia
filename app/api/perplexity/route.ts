@@ -24,12 +24,21 @@ export async function POST(req: NextRequest) {
   const model = 'sonar-pro';
   logs.push({ step: 'Using Perplexity model', model });
 
+  // Extract target and indication from the request body
+  const target = body.target || '';
+  const indication = body.indication || '';
+
   // Compose a highly detailed prompt for Perplexity to output ONLY the required JSON fields
   const prompt = `You are a biotech commercial intelligence assistant.
 
 You will be provided with the following user input:
-Target: <TARGET>
-Indication: <INDICATION>
+Target: ${target}
+Indication: ${indication}
+
+A target is a specific biological molecule or gene (e.g., HER2, SOD1, PD-L1, EGFR, BRAF, ALK, VEGF, KRAS, CD19, PCSK9, etc.).
+An indication is a specific disease or condition (e.g., Triple-Negative Breast Cancer, ALS, Non-Small Cell Lung Cancer, Type 2 Diabetes, Crohn's Disease, etc.).
+
+If either the target or indication is missing or unclear, explain what is missing and request clarification, but still attempt to provide the most relevant information possible based on the available input.
 
 You must conduct a deep, thorough web and literature review using at least 25 high-quality, up-to-date, and diverse sources. You are required to use live web search and cite URLs, not just static knowledge. Your research must include industry reports, regulatory databases, analyst forecasts, recent news, and primary sources. Do not fabricate information—always use real, verifiable data from the web and literature. Prioritize primary sources, recent publications, and authoritative industry data.
 
