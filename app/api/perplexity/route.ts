@@ -211,6 +211,27 @@ For each field below, you must:
 
 - For peakMarketShare2030, return only the percentage or range, e.g., "12.3%" or "12.3-13.6%". Do not include any text or explanation.
 - For peakPatients2030, calculate using the formula: (Peak Revenue ÷ Avg Selling Price) × Persistence Rate. Return only the number or range, e.g., "500K", "1.2M", or "1.2M-1.5M". Do not include any text or explanation.
+
+- For avgSellingPrice:
+  - Research and provide the average selling price per patient in dollars. This should be based on similar drugs in the same therapeutic area, pricing analysis, and regional variations.
+  - Return only the value, e.g., "$15,000", "$25K", or "$50,000-75,000". Do not include any text or explanation.
+  - Use pricing data from similar approved drugs, payer negotiations, and regional pricing analysis.
+
+- For persistenceRate:
+  - Research and provide the 12-month treatment persistence rate as a percentage. This should be based on clinical trial data, real-world evidence, and similar drug performance.
+  - Return only the percentage, e.g., "75%", "85%", or "70-80%". Do not include any text or explanation.
+  - Use clinical trial data, real-world evidence studies, and similar drug persistence rates.
+
+- For treatmentDuration:
+  - Research and provide the median treatment duration in months. This should be based on clinical protocols, patient outcomes, and similar drug treatment patterns.
+  - Return only the duration, e.g., "12 months", "18 mo", or "6-12 months". Do not include any text or explanation.
+  - Use clinical trial protocols, patient outcome studies, and similar drug treatment duration data.
+
+- For geographicSplit:
+  - Research and provide the revenue split between US and ex-US markets at peak. This should be based on market access, pricing, regulatory approval timelines, and regional market dynamics.
+  - Return only the split, e.g., "60% US / 40% Ex-US", "70/30", or "55% US, 45% Ex-US". Do not include any text or explanation.
+  - Use market access analysis, regulatory approval timelines, and regional pricing dynamics.
+
 - For pipelineAnalysis.crowdingPercent (pipeline density), calculate as: number of same‑target assets ÷ total assets in indication, show as percent. Return only the percentage or range, e.g., "12%" or "10-15%". Do not include any text or explanation.
 
 - For directCompetitors:
@@ -246,6 +267,10 @@ Return ONLY a valid JSON object with the following keys:
 - total10YearRevenue: string (estimated total revenue over 10 years)
 - peakMarketShare2030: string (projected market share by 2030)
 - peakPatients2030: string (estimated treated patient population by 2030)
+- avgSellingPrice: string (average selling price per patient in dollars)
+- persistenceRate: string (12-month treatment persistence rate as percentage)
+- treatmentDuration: string (median treatment duration in months)
+- geographicSplit: string (revenue split between US and ex-US markets at peak)
 - dealActivity: array of objects (recent M&A/licensing deals)
 - pipelineAnalysis: object (crowdingPercent, competitiveThreats)
 

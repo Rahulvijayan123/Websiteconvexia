@@ -51,6 +51,22 @@
       "type": "string",
       "description": "Estimated treated patient population by 2030"
     },
+    "avgSellingPrice": {
+      "type": "string",
+      "description": "Average selling price per patient in dollars"
+    },
+    "persistenceRate": {
+      "type": "string",
+      "description": "12-month treatment persistence rate as percentage"
+    },
+    "treatmentDuration": {
+      "type": "string",
+      "description": "Median treatment duration in months"
+    },
+    "geographicSplit": {
+      "type": "string",
+      "description": "Revenue split between US and ex-US markets at peak"
+    },
     "dealActivity": {
       "type": "array",
       "items": {
@@ -100,6 +116,10 @@
     "total10YearRevenue",
     "peakMarketShare2030",
     "peakPatients2030",
+    "avgSellingPrice",
+    "persistenceRate",
+    "treatmentDuration",
+    "geographicSplit",
     "dealActivity",
     "pipelineAnalysis"
   ],
