@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { RawFactsSchema, DerivedFactsSchema } from '@/schemas/commercialSchemas';
 import { fetchPplx } from '@/lib/pplxClient';
+import * as calc from '@/lib/crossFieldCalculator';
+import { UserInputSchema } from '@/schemas/userInputs';
+import { sanityCheck } from '@/lib/numericSanity';
 
 // Helper function to parse JSON response
 function parseJson(res: any) {
@@ -37,35 +40,19 @@ Echo a sourceMap: {field: [urls...]}. One primary source per field minimum.` }
   ];
 }
 
-// Build computation prompt for derived facts
-function buildComputePrompt(raw: any) {
-  return [
-    { role: 'system', content: 'You are a calculator. Return only JSON.' },
-    { role: 'user', content: `
-Using the RawFacts object provided, compute the DerivedFactsSchema. 
-Apply the exact formulas below and do not change raw fields.
 
-Formulas:
-CAGR = (peakRevenue2030 / currentMarket) ** (1 / yearsToPeak) - 1
-peakPatients2030 = (peakRevenue2030 / avgPrice) * persistenceRate
-pipelineDensity = (sameTargetAssets / totalAssets) * 100
-strategicFit = cosineSimilarity(vectorA, vectorB)
-
-RawFacts:
-${JSON.stringify(raw)} `}
-  ];
-}
 
 export async function POST(req: Request) {
   try {
-    // Parse user input
-    const userInputs = await req.json(); // e.g., target, indication, geography
+    // Parse and validate user input
+    const rawBody = await req.json();
+    const safeInputs = UserInputSchema.parse(rawBody); // Throws 400 on failure
 
     // ---------- PASS 1: Retrieval ----------
-    const retrievalPrompt = buildRetrievalPrompt(userInputs);
+    const retrievalPrompt = buildRetrievalPrompt(safeInputs);
 
     const rawFacts = await fetchPplx({
-      model: selectModel(userInputs), // use existing model selection logic
+      model: selectModel(safeInputs), // use existing model selection logic
       messages: retrievalPrompt,
       response_format: {
         type: 'json_schema',
@@ -73,29 +60,36 @@ export async function POST(req: Request) {
       }
     }).then(parseJson);
 
-    // Optional: Zod validation (if using Zod)
-    // RawFactsSchema.parse(rawFacts);
+    // Apply numeric sanity checks after raw model output
+    const issues = sanityCheck(rawFacts);
+    if (issues.length > 0) {
+      console.warn('Sanity check failed', { issues, rawFacts });
+      return NextResponse.json({ error: 'Sanity check failed', issues }, { status: 422 });
+    }
 
-    // ---------- PASS 2: Computation ----------
-    const computePrompt = buildComputePrompt(rawFacts);
-
-    const derived = await fetchPplx({
-      model: 'sonar-pro',
-      messages: computePrompt,
-      response_format: {
-        type: 'json_schema',
-        json_schema: { schema: DerivedFactsSchema }
-      }
-    }).then(parseJson);
-
-    // Optional: Schema validation
-    // DerivedFactsSchema.parse(derived);
+    // ---------- PASS 2: Deterministic Computation ----------
+    // Calculate derived fields using pure functions instead of model calls
+    const derived = {
+      cagr: calc.calcCAGR(rawFacts.peakRevenue2030, rawFacts.currentMarket, rawFacts.yearsToPeak),
+      peakPatients2030: calc.calcPeakPatients(rawFacts.peakRevenue2030, rawFacts.avgPrice, rawFacts.persistenceRate),
+      pipelineDensity: calc.calcPipelineDensity(rawFacts.sameTargetAssets, rawFacts.totalAssets),
+      strategicFit: calc.calcStrategicFit(rawFacts.vectorA, rawFacts.vectorB)
+    };
 
     // Return both merged
     return NextResponse.json({ ...rawFacts, ...derived });
 
   } catch (error) {
     console.error('Commercial analysis error:', error);
+    
+    // Handle Zod validation errors specifically
+    if (error instanceof Error && error.message.includes('ZodError')) {
+      return NextResponse.json(
+        { error: 'Invalid input data', details: error.message },
+        { status: 400 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Commercial analysis failed', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

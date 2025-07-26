@@ -4,6 +4,33 @@ import { Progress } from "@/components/ui/progress"
 import { ExpandableDetail } from "./expandable-detail"
 import { SourceAttribution } from "./source-attribution"
 
+// Input validation utility function
+const isInvalidInput = (input: string | null | undefined): boolean => {
+  if (!input || typeof input !== 'string') return true;
+  const trimmed = input.trim().toLowerCase();
+  const invalidPatterns = ['xxx', 'n/a', 'random', 'asdf', 'test', 'placeholder', 'dummy', 'fake'];
+  return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 2;
+};
+
+const getInputValues = () => {
+  try {
+    const stored = localStorage.getItem('perplexityResult');
+    if (stored) {
+      const data = JSON.parse(stored);
+      return data.inputValues || {
+        therapeuticArea: '',
+        indication: '',
+        target: '',
+        geography: '',
+        developmentPhase: ''
+      };
+    }
+  } catch (e) {
+    // If localStorage fails, assume valid input
+  }
+  return { therapeuticArea: '', indication: '', target: '', geography: '', developmentPhase: '' };
+};
+
 const tailwindComponents = [
   {
     category: "FDA Designations",
@@ -143,6 +170,14 @@ export function StrategicFit() {
   const totalScore = tailwindComponents.reduce((sum, component) => sum + component.score, 0)
   const maxTotalScore = tailwindComponents.reduce((sum, component) => sum + component.maxScore, 0)
   const overallScore = Math.round((totalScore / maxTotalScore) * 100)
+  
+  // Check for invalid inputs
+  const inputValues = getInputValues();
+  const hasInvalidInput = isInvalidInput(inputValues.therapeuticArea) ||
+                         isInvalidInput(inputValues.indication) ||
+                         isInvalidInput(inputValues.target) ||
+                         isInvalidInput(inputValues.geography) ||
+                         isInvalidInput(inputValues.developmentPhase);
 
   return (
     <div className="space-y-6">
