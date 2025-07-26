@@ -378,63 +378,60 @@ export function CompetitiveLandscape({
         <div className="space-y-6">
           {hasDeals ? (
             <>
-              {dealActivity!.map((deal, index) => (
-                <Card key={index} className="p-4 border shadow-sm shadow-md bg-white rounded-lg border border-slate-200">
-                  <CardHeader className="pb-2 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                    <div>
-                      <CardTitle className="text-lg text-blue-700">{deal.acquirer}</CardTitle>
-                      <CardDescription className="text-xs text-slate-500">{deal.region || ''} {deal.dealType ? `• ${deal.dealType}` : ''}</CardDescription>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-green-600 text-lg">{deal.value ?? deal.price}</p>
-                      <p className="text-sm text-slate-600">{deal.date ?? deal.date_or_status ?? deal.status}</p>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="mb-2 text-sm">
-                      <span className="font-semibold">Asset:</span> {deal.asset} {deal.indication ? `• ${deal.indication}` : ''}
-                    </div>
-                    <div className="mb-2 text-sm">
-                      <span className="font-semibold">Stage:</span> {deal.stage}
-                    </div>
-                    <div className="mb-2 text-sm">
-                      <span className="font-semibold">Rationale:</span> {deal.rationale}
-                    </div>
-                    {deal.publicCommentary && (
-                      <div className="mb-2 text-sm text-blue-800 bg-blue-50 rounded p-2">
-                        <span className="font-semibold">Commentary:</span> {deal.publicCommentary}
+              {dealActivity!.map((deal, index) => {
+                // Map the exact schema fields to display fields
+                const normalizedDeal = {
+                  acquirer: deal.buyer || deal.acquirer || 'N/A',
+                  asset: deal.assetName || deal.asset || deal.molecule || deal.drug || deal.product || 'N/A',
+                  stage: deal.developmentStage || deal.stage || deal.phase || 'N/A',
+                  rationale: deal.rationale || deal.reason || deal.strategy || 'N/A',
+                  value: deal.dealPrice || deal.value || deal.price || deal.dealValue || deal.amount || 'N/A',
+                  date: deal.dealDate || deal.date || deal.date_or_status || deal.status || 'N/A',
+                  indication: deal.indication || deal.target || deal.disease || '',
+                  region: deal.region || deal.geography || deal.market || 'N/A',
+                  dealType: deal.dealType || deal.type || deal.structure || 'N/A',
+                  publicCommentary: deal.publicCommentary || deal.commentary || deal.notes || ''
+                };
+
+                return (
+                  <Card key={index} className="p-4 border shadow-sm shadow-md bg-white rounded-lg border border-slate-200">
+                    <CardHeader className="pb-2 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                      <div>
+                        <CardTitle className="text-lg text-blue-700">{normalizedDeal.acquirer}</CardTitle>
+                        <CardDescription className="text-xs text-slate-500">{normalizedDeal.region} • {normalizedDeal.dealType}</CardDescription>
                       </div>
-                    )}
-                    {/* More Details button opens modal */}
-                    <button
-                      className="mt-2 px-3 py-1 rounded bg-slate-100 text-blue-700 text-xs font-semibold hover:bg-blue-200 transition"
-                      onClick={() => { setModalDeal(deal); setModalOpen(true); }}
-                      type="button"
-                    >
-                      More Details
-                    </button>
-                  </CardContent>
-                </Card>
-              ))}
-              {/* Additional blurred deal entries */}
-              <Card className="p-4 shadow-md bg-white rounded-lg border border-slate-200">
-                <div className="blurred-section">
-                  <span className="text-lg font-semibold text-blue-700">Example Deal A</span>
-                  <p className="text-xs mt-2">$2.5B acquisition of early-stage immunotherapy platform. Multiple pipeline assets, global rights.</p>
-                </div>
-              </Card>
-              <Card className="p-4 shadow-md bg-white rounded-lg border border-slate-200">
-                <div className="blurred-section">
-                  <span className="text-lg font-semibold text-blue-700">Example Deal B</span>
-                  <p className="text-xs mt-2">$1.1B licensing deal for next-gen ADC. Includes milestones, royalties, and co-development.</p>
-                </div>
-              </Card>
-              <Card className="p-4 shadow-md bg-white rounded-lg border border-slate-200">
-                <div className="blurred-section">
-                  <span className="text-lg font-semibold text-blue-700">Example Deal C</span>
-                  <p className="text-xs mt-2">$900M option-to-acquire for bispecific antibody. Preclinical, strong investor syndicate.</p>
-                </div>
-              </Card>
+                      <div className="text-right">
+                        <p className="font-bold text-green-600 text-lg">{normalizedDeal.value}</p>
+                        <p className="text-sm text-slate-600">{normalizedDeal.date}</p>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="mb-2 text-sm">
+                        <span className="font-semibold">Asset:</span> {normalizedDeal.asset} {normalizedDeal.indication ? `• ${normalizedDeal.indication}` : ''}
+                      </div>
+                      <div className="mb-2 text-sm">
+                        <span className="font-semibold">Stage:</span> {normalizedDeal.stage}
+                      </div>
+                      <div className="mb-2 text-sm">
+                        <span className="font-semibold">Rationale:</span> {normalizedDeal.rationale}
+                      </div>
+                      {normalizedDeal.publicCommentary && (
+                        <div className="mb-2 text-sm text-blue-800 bg-blue-50 rounded p-2">
+                          <span className="font-semibold">Commentary:</span> {normalizedDeal.publicCommentary}
+                        </div>
+                      )}
+                      {/* More Details button opens modal */}
+                      <button
+                        className="mt-2 px-3 py-1 rounded bg-slate-100 text-blue-700 text-xs font-semibold hover:bg-blue-200 transition"
+                        onClick={() => { setModalDeal(normalizedDeal); setModalOpen(true); }}
+                        type="button"
+                      >
+                        More Details
+                      </button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </>
           ) : (
             <div className="text-center text-slate-500">{hasInvalidInput ? 'No deal activity found' : 'No deal activity data available.'}</div>
