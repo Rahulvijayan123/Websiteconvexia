@@ -7,8 +7,9 @@ import { ExpandableDetail } from "./expandable-detail"
 const isInvalidInput = (input: string | null | undefined): boolean => {
   if (!input || typeof input !== 'string') return true;
   const trimmed = input.trim().toLowerCase();
-  const invalidPatterns = ['xxx', 'n/a', 'random', 'asdf', 'test', 'placeholder', 'dummy', 'fake'];
-  return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 2;
+  // Only detect obviously invalid inputs - be more permissive for real drug/target names
+  const invalidPatterns = ['xxx', 'n/a', 'random', 'asdf', 'test', 'placeholder', 'dummy', 'fake', 'qwerty', '123456'];
+  return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 1;
 };
 
 const getInputValues = () => {
@@ -115,11 +116,15 @@ export function IncentivesRegulation({
 }) {
   // Check for invalid inputs
   const inputValues = getInputValues();
-  const hasInvalidInput = isInvalidInput(inputValues.therapeuticArea) ||
-                         isInvalidInput(inputValues.indication) ||
-                         isInvalidInput(inputValues.target) ||
-                         isInvalidInput(inputValues.geography) ||
-                         isInvalidInput(inputValues.developmentPhase);
+  // Only trigger fallback if MOST fields are invalid (at least 3 out of 5)
+  const invalidFields = [
+    isInvalidInput(inputValues.therapeuticArea),
+    isInvalidInput(inputValues.indication),
+    isInvalidInput(inputValues.target),
+    isInvalidInput(inputValues.geography),
+    isInvalidInput(inputValues.developmentPhase)
+  ].filter(Boolean);
+  const hasInvalidInput = invalidFields.length >= 3;
   return (
     <div className="space-y-6">
       {/* Header Score */}
