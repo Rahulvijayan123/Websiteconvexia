@@ -70,7 +70,11 @@ export default function MarketAnalysisAgent() {
     peakPatients2030?: string,
     dealActivity?: any[],
     pipelineAnalysis?: any,
-    dealCommentary?: string
+    dealCommentary?: string,
+    yearsToExpiration?: string | number,
+    genericEntryRisk?: string | number,
+    coreIPPosition?: string,
+    exclusivityPeriod?: string | number
   }>({})
   const [decodeError, setDecodeError] = useState<string | null>(null)
   const [hasMounted, setHasMounted] = useState(false);
@@ -285,7 +289,12 @@ export default function MarketAnalysisAgent() {
                 {collapsedModules.has("ip") ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
               </Button>
             </div>
-            {!collapsedModules.has("ip") && <IPPositioning />}
+            {!collapsedModules.has("ip") && <IPPositioning
+              yearsToExpiration={perplexityData.yearsToExpiration}
+              genericEntryRisk={perplexityData.genericEntryRisk}
+              coreIPPosition={perplexityData.coreIPPosition}
+              exclusivityPeriod={perplexityData.exclusivityPeriod}
+            />}
           </div>
 
           {/* Financial Projections */}

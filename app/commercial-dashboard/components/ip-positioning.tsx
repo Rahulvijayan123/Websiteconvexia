@@ -137,7 +137,19 @@ function ExpandableDetail({ title, value, unit, assumptions, formula, sources, a
   )
 }
 
-export function IPPositioning() {
+export function IPPositioning({
+  yearsToExpiration,
+  genericEntryRisk,
+  coreIPPosition,
+  patentPortfolioData,
+  exclusivityPeriod
+}: {
+  yearsToExpiration?: string | number,
+  genericEntryRisk?: string | number,
+  coreIPPosition?: string,
+  patentPortfolioData?: any[],
+  exclusivityPeriod?: string | number
+} = {}) {
   // Input validation function to detect invalid inputs
   const isInvalidInput = (input: string | null | undefined): boolean => {
     if (!input || typeof input !== 'string') return true;
@@ -167,7 +179,7 @@ export function IPPositioning() {
     return { therapeuticArea: '', indication: '', target: '', geography: '', developmentPhase: '' };
   };
 
-    const inputValues = getInputValues();
+  const inputValues = getInputValues();
   // Only trigger fallback if MOST fields are invalid (at least 3 out of 5)
   const invalidFields = [
     isInvalidInput(inputValues.therapeuticArea),
@@ -177,6 +189,75 @@ export function IPPositioning() {
     isInvalidInput(inputValues.developmentPhase)
   ].filter(Boolean);
   const hasInvalidInput = invalidFields.length >= 3;
+
+  // Generate detailed rationales for each metric
+  const getYearsToExpirationRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (yearsToExpiration) {
+      const years = typeof yearsToExpiration === 'number' ? yearsToExpiration : parseInt(yearsToExpiration.toString());
+      if (years <= 2) {
+        return `${years} years remaining - critical timeline requiring immediate patent extension strategies and lifecycle management planning`;
+      } else if (years <= 5) {
+        return `${years} years remaining - moderate protection period allowing for formulation improvements and combination therapy patents`;
+      } else if (years <= 10) {
+        return `${years} years remaining - substantial protection period with opportunity for next-generation compound development`;
+      } else {
+        return `${years} years remaining - extended protection period providing strong market exclusivity and development runway`;
+      }
+    }
+    return 'Patent expiration timeline requires assessment based on filing dates and regulatory exclusivity periods';
+  };
+
+  const getGenericEntryRiskRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (genericEntryRisk) {
+      const risk = typeof genericEntryRisk === 'number' ? genericEntryRisk : parseInt(genericEntryRisk.toString().replace('%', ''));
+      if (risk <= 20) {
+        return `${risk}% risk - low generic threat due to strong patent protection and complex manufacturing requirements`;
+      } else if (risk <= 40) {
+        return `${risk}% risk - moderate generic threat with some patent vulnerabilities but strong regulatory barriers`;
+      } else if (risk <= 60) {
+        return `${risk}% risk - significant generic threat requiring aggressive patent litigation and lifecycle management`;
+      } else {
+        return `${risk}% risk - high generic threat with limited patent protection and potential for early generic entry`;
+      }
+    }
+    return 'Generic entry risk assessment requires analysis of patent strength, regulatory exclusivity, and manufacturing complexity';
+  };
+
+  const getCoreIPPositionRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (coreIPPosition) {
+      const position = coreIPPosition.toLowerCase();
+      if (position.includes('strong') || position.includes('excellent')) {
+        return `${coreIPPosition} IP position - comprehensive patent portfolio with broad claims, strong regulatory exclusivity, and limited invalidation risk`;
+      } else if (position.includes('moderate') || position.includes('good')) {
+        return `${coreIPPosition} IP position - solid patent protection with some vulnerabilities but manageable risk profile`;
+      } else if (position.includes('weak') || position.includes('limited')) {
+        return `${coreIPPosition} IP position - limited patent protection requiring aggressive filing strategy and potential licensing partnerships`;
+      } else {
+        return `${coreIPPosition} IP position - requires detailed patent landscape analysis and strategic IP development`;
+      }
+    }
+    return 'Core IP position assessment requires comprehensive patent portfolio analysis and competitive landscape review';
+  };
+
+  const getExclusivityPeriodRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (exclusivityPeriod) {
+      const period = typeof exclusivityPeriod === 'number' ? exclusivityPeriod : parseInt(exclusivityPeriod.toString());
+      if (period >= 7) {
+        return `${period} years exclusivity - extended protection period including orphan drug designation and regulatory exclusivity`;
+      } else if (period >= 5) {
+        return `${period} years exclusivity - standard regulatory exclusivity with potential for patent term extension`;
+      } else if (period >= 3) {
+        return `${period} years exclusivity - limited regulatory protection requiring strong patent portfolio`;
+      } else {
+        return `${period} years exclusivity - minimal regulatory protection with heavy reliance on patent strength`;
+      }
+    }
+    return 'Exclusivity period requires assessment of regulatory designations and patent term calculations';
+  };
 
   return (
     <div className="space-y-6">
@@ -189,24 +270,34 @@ export function IPPositioning() {
               <CardDescription>Intellectual property protection landscape</CardDescription>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-orange-600"><span className="blurred-section">4</span></div>
+              <div className="text-3xl font-bold text-orange-600">
+                {hasInvalidInput ? 'N/A' : (yearsToExpiration || 'N/A')}
+              </div>
               <p className="text-sm text-slate-600">Years to Expiration</p>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600"><span className="blurred-section">4</span></p>
-              <p className="text-sm text-slate-600">Years to Expiration</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-600 mb-1">Years to Expiration</p>
+                <p className="text-sm text-slate-800 leading-relaxed">{getYearsToExpirationRationale()}</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-600 mb-1">Generic Entry Risk</p>
+                <p className="text-sm text-slate-800 leading-relaxed">{getGenericEntryRiskRationale()}</p>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">{hasInvalidInput ? 'N/A' : '45%'}</p>
-              <p className="text-sm text-slate-600">Generic Entry Risk</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">{hasInvalidInput ? 'N/A' : 'Strong'}</p>
-              <p className="text-sm text-slate-600">Core IP Position</p>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-600 mb-1">Core IP Position</p>
+                <p className="text-sm text-slate-800 leading-relaxed">{getCoreIPPositionRationale()}</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-600 mb-1">Exclusivity Period</p>
+                <p className="text-sm text-slate-800 leading-relaxed">{getExclusivityPeriodRationale()}</p>
+              </div>
             </div>
           </div>
         </CardContent>
