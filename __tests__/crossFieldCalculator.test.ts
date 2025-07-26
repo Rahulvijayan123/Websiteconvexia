@@ -3,7 +3,7 @@ import { calcCAGR, calcPeakPatients, calcPipelineDensity, calcStrategicFit } fro
 describe('crossFieldCalculator', () => {
   describe('calcCAGR', () => {
     test('calculates CAGR correctly for known values', () => {
-      expect(calcCAGR(4500, 830, 6)).toBeCloseTo(0.40, 2);
+      expect(calcCAGR(4500, 830, 6)).toBeCloseTo(0.33, 2);
     });
 
     test('handles edge case where peak equals current market', () => {
@@ -68,7 +68,7 @@ describe('crossFieldCalculator', () => {
     });
 
     test('throws error for mismatched vector lengths', () => {
-      expect(() => calcStrategicFit([1, 2], [1, 2, 3])).toThrow('Vector lengths must match');
+      expect(() => calcStrategicFit([1, 2], [1, 2, 3])).toThrow('Vectors must have the same length for similarity calculation');
     });
 
     test('throws error for empty vectors', () => {
