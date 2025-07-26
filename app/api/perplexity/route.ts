@@ -214,8 +214,31 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
     return new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms));
   }
 
-  async function fetchWithFallback(payload: any, originalModel: string): Promise<Response> {
+  async function fetchWithFallback(payload: any, originalModel: string, passNumber: number = 1): Promise<Response> {
+    // Smart timeout based on model and pass number
+    const getTimeout = () => {
+      if (originalModel === 'sonar-deep-research') {
+        switch (passNumber) {
+          case 1: return 180_000; // 3 minutes for initial deep research
+          case 2: return 240_000; // 4 minutes for expanded search
+          case 3: return 300_000; // 5 minutes for academic mode
+          default: return 180_000;
+        }
+      }
+      return 60_000; // 1 minute for sonar-pro
+    };
+
+    const timeoutMs = getTimeout();
+    
     try {
+      logs.push({ 
+        step: 'Starting API call', 
+        model: payload.model, 
+        passNumber, 
+        timeoutMs,
+        searchMode: payload.search_mode || 'standard'
+      });
+      
       return await Promise.race([
         fetch('https://api.perplexity.ai/chat/completions', {
           method: 'POST',
@@ -225,17 +248,25 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
           },
           body: JSON.stringify(payload),
         }),
-        timeout(45_000),
+        timeout(timeoutMs),
       ]) as Response;
     } catch (error) {
-      if (originalModel === 'sonar-deep-research') {
-        // Fallback to sonar-pro on timeout
+      if (originalModel === 'sonar-deep-research' && passNumber < 3) {
+        // Only fallback to sonar-pro if we're not in the final pass
         const fallbackPayload = {
           ...payload,
           model: 'sonar-pro',
-          reasoning_effort: undefined, // Remove reasoning_effort for sonar-pro
+          reasoning_effort: undefined,
+          web_search_options: { search_context_size: "medium" },
+          max_tokens: 4000,
+          search_queries_per_search: 5
         };
-        logs.push({ step: 'Fallback to sonar-pro due to timeout', originalModel });
+        logs.push({ 
+          step: 'Fallback to sonar-pro due to timeout', 
+          originalModel, 
+          passNumber, 
+          timeoutMs 
+        });
         return fetch('https://api.perplexity.ai/chat/completions', {
           method: 'POST',
           headers: {
@@ -272,7 +303,7 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
       ...(body?.academic === true && { search_mode: "academic" })
     };
 
-    let perplexityRes = await fetchWithFallback(payload, model);
+    let perplexityRes = await fetchWithFallback(payload, model, 1);
     
     // Multi-pass instrumentation-based retry with escalating search scope
     const MIN_QUERIES_PASS1 = 25;
@@ -315,7 +346,7 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
       // Remove domain filter to widen search scope
       const { search_domain_filter, ...retryPayloadWithoutDomain } = retryPayload;
       
-      perplexityRes = await fetchWithFallback(retryPayloadWithoutDomain, model);
+      perplexityRes = await fetchWithFallback(retryPayloadWithoutDomain, model, 2);
       perplexityText = await perplexityRes.text();
       
       try {
@@ -356,7 +387,7 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
           search_queries_per_search: 20
         };
         
-        perplexityRes = await fetchWithFallback(academicPayload, model);
+        perplexityRes = await fetchWithFallback(academicPayload, model, 3);
         perplexityText = await perplexityRes.text();
         
         try {
