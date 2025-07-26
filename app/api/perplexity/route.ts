@@ -45,74 +45,84 @@ export async function POST(req: NextRequest) {
 
   const isDeep = model === 'sonar-deep-research';
 
-  // First pass: High-confidence, structured sources
-  const domainAllowlist = [
-    "evaluatepharma.com",
-    "clinicaltrials.gov",
-    "fda.gov",
-    "ema.europa.eu",
-    "biocentury.com",
-    "pitchbook.com",
-    "clarivate.com",
-    "pubmed.ncbi.nlm.nih.gov",
-    "citeline.com",
-    "iqvia.com",
-    "globaldata.com",
-    "spglobal.com",
-    "who.int",
-    "uspto.gov",
-    "wipo.int",
-    "nature.com",
-    "science.org",
-    "thelancet.com",
-    "nejm.org",
-    "jamanetwork.com",
-    "bmj.com",
-    "scholar.google.com",
-    "ieee.org",
-    "acm.org",
-    "arxiv.org",
-    "biorxiv.org",
-    "medrxiv.org",
-    "biospace.com",
-    "fiercebiotech.com",
-    "biopharmadive.com",
-    "pharmatimes.com",
-    "pharmaceutical-journal.com",
-    "statista.com",
-    "frost.com",
-    "seekingalpha.com",
-    "morningstar.com",
-    "reuters.com",
-    "bloomberg.com",
-    "wsj.com",
-    "ft.com",
-    "biopharminsight.com",
-    "firstwordpharma.com",
-    "patsnap.com",
-    "drugbank.ca",
-    "chembl.org",
-    "reaxys.com",
-    "lens.org",
-    "patents.google.com",
-    "roche.com",
-    "crunchbase.com",
-    "informa.com",
-    "biorender.com",
-    "litcovid.org",
-    "pmc.ncbi.nlm.nih.gov",
-    "orpha.net",
-    "cdc.gov",
-    "healthdata.org",
-    "eurostat.europa.eu",
-    "seer.cancer.gov",
-    "pmda.go.jp",
-    "hc-sc.gc.ca",
-    "espacenet.com",
-    "jpo.go.jp",
-    "inpadoc.epo.org",
-    "markush.org"
-  ];
+  // Comprehensive source categories for different search phases
+  const sourceCategories = {
+    // Pass 1: High-confidence, structured sources (max 10 for API)
+    primarySources: [
+      "evaluatepharma.com",
+      "clinicaltrials.gov", 
+      "fda.gov",
+      "pubmed.ncbi.nlm.nih.gov",
+      "pitchbook.com",
+      "clarivate.com",
+      "nature.com",
+      "science.org",
+      "biocentury.com",
+      "citeline.com"
+    ],
+    
+    // Additional sources for broader search (used in pass 2+)
+    secondarySources: [
+      "ema.europa.eu",
+      "iqvia.com",
+      "globaldata.com",
+      "spglobal.com",
+      "who.int",
+      "uspto.gov",
+      "wipo.int",
+      "thelancet.com",
+      "nejm.org",
+      "jamanetwork.com",
+      "bmj.com",
+      "scholar.google.com",
+      "ieee.org",
+      "acm.org",
+      "arxiv.org",
+      "biorxiv.org",
+      "medrxiv.org",
+      "biospace.com",
+      "fiercebiotech.com",
+      "biopharmadive.com",
+      "pharmatimes.com",
+      "pharmaceutical-journal.com",
+      "statista.com",
+      "frost.com",
+      "seekingalpha.com",
+      "morningstar.com",
+      "reuters.com",
+      "bloomberg.com",
+      "wsj.com",
+      "ft.com",
+      "biopharminsight.com",
+      "firstwordpharma.com",
+      "patsnap.com",
+      "drugbank.ca",
+      "chembl.org",
+      "reaxys.com",
+      "lens.org",
+      "patents.google.com",
+      "roche.com",
+      "crunchbase.com",
+      "informa.com",
+      "biorender.com",
+      "litcovid.org",
+      "pmc.ncbi.nlm.nih.gov",
+      "orpha.net",
+      "cdc.gov",
+      "healthdata.org",
+      "eurostat.europa.eu",
+      "seer.cancer.gov",
+      "pmda.go.jp",
+      "hc-sc.gc.ca",
+      "espacenet.com",
+      "jpo.go.jp",
+      "inpadoc.epo.org",
+      "markush.org"
+    ]
+  };
+
+  // Use primary sources for initial search (respects 10-domain limit)
+  const domainAllowlist = sourceCategories.primarySources;
 
   // Extract target and indication from the request body
   const target = body.target || '';
@@ -333,6 +343,20 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
         minQueries: MIN_QUERIES_PASS1
       });
       
+      // Pass 2: Use a different set of high-value sources (still max 10)
+      const pass2Sources = [
+        "ema.europa.eu",
+        "iqvia.com", 
+        "globaldata.com",
+        "who.int",
+        "uspto.gov",
+        "thelancet.com",
+        "nejm.org",
+        "biospace.com",
+        "reuters.com",
+        "bloomberg.com"
+      ];
+      
       const retryPayload = {
         ...payload,
         web_search_options: { 
@@ -341,12 +365,11 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
         },
         reasoning_effort: "high",
         max_tokens: 8000,
-        search_queries_per_search: 15
+        search_queries_per_search: 15,
+        search_domain_filter: pass2Sources
       };
-      // Remove domain filter to widen search scope
-      const { search_domain_filter, ...retryPayloadWithoutDomain } = retryPayload;
       
-      perplexityRes = await fetchWithFallback(retryPayloadWithoutDomain, model, 2);
+              perplexityRes = await fetchWithFallback(retryPayload, model, 2);
       perplexityText = await perplexityRes.text();
       
       try {
@@ -376,7 +399,7 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
         });
         
         const academicPayload = {
-          ...retryPayloadWithoutDomain,
+          ...retryPayload,
           search_mode: "academic",
           web_search_options: { 
             search_context_size: "high",
