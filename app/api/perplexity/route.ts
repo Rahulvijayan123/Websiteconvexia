@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+function estimateTokens(str: string): number {
+  // More accurate token estimation: ~4 characters per token for English text
+  // This is a reasonable approximation for most text content
+  return Math.ceil(str.length / 4);
+}
+
 console.log('ENV KEYS:', Object.keys(process.env));
 
 export async function POST(req: NextRequest) {
@@ -20,9 +26,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON', logs }, { status: 400 });
   }
 
-  // Use the 'sonar-pro' model as per Perplexity's latest documentation (June 2024)
-  const model = 'sonar-pro';
-  logs.push({ step: 'Using Perplexity model', model });
+  // Determine model
+  const inputText = JSON.stringify(body);
+  const inputTokens = estimateTokens(inputText);
+  const userRequestedFullResearch = body?.fullResearch === true;
+
+  let model = 'sonar-pro';
+  if (inputTokens > 350 || userRequestedFullResearch) {
+    model = 'sonar-deep-research';
+  }
+  logs.push({ 
+    step: 'Using Perplexity model', 
+    model, 
+    inputTokens, 
+    userRequestedFullResearch,
+    modelSelectionReason: inputTokens > 350 ? 'high_token_count' : userRequestedFullResearch ? 'explicit_request' : 'default'
+  });
 
   // Extract target and indication from the request body
   const target = body.target || '';
@@ -119,23 +138,60 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
   await new Promise(r => setTimeout(r, 180000));
   logs.push({ step: 'Composed prompt', prompt });
 
+  // Timeout helper function
+  function timeout(ms: number) {
+    return new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), ms));
+  }
+
+  async function fetchWithFallback(payload: any, originalModel: string): Promise<Response> {
+    try {
+      return await Promise.race([
+        fetch('https://api.perplexity.ai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.PPLX_API_KEY}`,
+          },
+          body: JSON.stringify(payload),
+        }),
+        timeout(45_000),
+      ]) as Response;
+    } catch (error) {
+      if (originalModel === 'sonar-deep-research') {
+        // Fallback to sonar-pro on timeout
+        const fallbackPayload = {
+          ...payload,
+          model: 'sonar-pro',
+          reasoning_effort: undefined, // Remove reasoning_effort for sonar-pro
+        };
+        logs.push({ step: 'Fallback to sonar-pro due to timeout', originalModel });
+        return fetch('https://api.perplexity.ai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.PPLX_API_KEY}`,
+          },
+          body: JSON.stringify(fallbackPayload),
+        });
+      }
+      throw error;
+    }
+  }
+
   // Call Perplexity API
   try {
-    const perplexityRes = await fetch('https://api.perplexity.ai/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: 'You are a biotech commercial intelligence assistant.' },
-          { role: 'user', content: prompt },
-        ],
-        stream: false,
-      }),
-    });
+    const payload = {
+      model,
+      messages: [
+        { role: 'system', content: 'You are a biotech commercial intelligence assistant.' },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: 4000,
+      temperature: 0.1,
+      reasoning_effort: model === 'sonar-deep-research' ? 'medium' : undefined,
+    };
+
+    const perplexityRes = await fetchWithFallback(payload, model);
     logs.push({ step: 'Perplexity API response status', status: perplexityRes.status });
     const perplexityText = await perplexityRes.text();
     logs.push({ step: 'Perplexity API raw response', perplexityText });
