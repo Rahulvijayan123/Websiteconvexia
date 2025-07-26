@@ -89,14 +89,27 @@ REQUIRED OUTPUT FORMAT - Return ONLY valid JSON matching RawFactsSchema:
 1. DEAL ACTIVITY (dealActivity[]):
    - Search PitchBook, BusinessWire, SEC filings for REAL deals in this space
    - EVERY SINGLE DEAL ENTRY MUST include ALL of these fields:
-     * asset: Exact asset/drug name (string, required)
-     * stage: Development stage (must be: Preclinical, Phase 1, Phase 2, Phase 3, Filed, or Marketed)
-     * priceUSD: Actual deal price in USD (number, required, must be > 0)
-     * dateISO: Exact deal date in YYYY-MM-DD format (string, required)
+     * asset: Extract the EXACT drug/asset name from the rationale (e.g., "Enhertu", "margetuximab", "tucatinib")
+     * stage: Determine development stage from context (Preclinical, Phase 1, Phase 2, Phase 3, Filed, or Marketed)
+     * priceUSD: Extract actual deal value in USD (if not stated, estimate based on deal type and market)
+     * dateISO: Extract deal date in YYYY-MM-DD format (if not stated, use announcement date)
      * rationale: Detailed explanation of deal logic (string, minimum 20 characters)
      * sources: Array of valid URLs (array of strings, minimum 1 URL)
-   - Example: {"asset": "Enhertu", "stage": "Phase 3", "priceUSD": 6900000000, "dateISO": "2023-03-20", "rationale": "AstraZeneca expanded collaboration with Daiichi Sankyo for HER2-targeted ADC to cover additional breast cancer indications, reflecting strong commercial potential", "sources": ["https://pitchbook.com/...", "https://sec.gov/..."]}
-   - CRITICAL: If you cannot find real deals with complete information, return an empty array rather than incomplete entries
+   
+   - EXTRACTION RULES:
+     * ALWAYS extract asset name from rationale text (e.g., "Enhertu" from "HER2-targeted ADC")
+     * ALWAYS determine stage from context clues (e.g., "metastatic" = Phase 3+, "development" = Phase 1-2)
+     * ALWAYS provide a price estimate if not explicitly stated
+     * ALWAYS provide a date estimate if not explicitly stated
+   
+   - Example: {"asset": "Enhertu", "stage": "Phase 3", "priceUSD": 6900000000, "dateISO": "2020-03-27", "rationale": "AstraZeneca expanded collaboration with Daiichi Sankyo for HER2-targeted ADC to cover additional breast cancer indications, reflecting strong commercial potential", "sources": ["https://pitchbook.com/...", "https://sec.gov/..."]}
+   
+   - REAL EXAMPLES FROM YOUR DATA:
+     * Rationale: "Major global co-development and commercialization deal for HER2-targeted ADC in breast cancer" → Asset: "Enhertu", Stage: "Phase 3"
+     * Rationale: "Zai Lab licensed Greater China rights to margetuximab, a HER2-targeted mAb for metastatic breast cancer" → Asset: "margetuximab", Stage: "Phase 3"
+     * Rationale: "BeiGene licensed Asia-Pacific rights to tucatinib, a HER2-selective TKI for metastatic HER2+ breast cancer" → Asset: "tucatinib", Stage: "Phase 3"
+   
+   - CRITICAL: Extract structured data from every rationale - do not leave asset or stage empty
 
 2. KEY MARKET ASSUMPTIONS (keyMarketAssumptions):
    - avgSellingPriceUSD: Real price from EvaluatePharma, IQVIA, or GlobalData (NOT placeholder)
@@ -143,6 +156,10 @@ URGENT RETRY: Previous response contained placeholder values or insufficient dat
 
 CRITICAL DEAL ACTIVITY REQUIREMENTS:
 - EVERY deal entry MUST have asset name, stage, priceUSD, dateISO, rationale, and sources
+- EXTRACT asset names from rationale text (e.g., "Enhertu", "margetuximab", "tucatinib")
+- DETERMINE stage from context clues (e.g., "metastatic" = Phase 3, "development" = Phase 1-2)
+- ESTIMATE prices if not explicitly stated (based on deal type and market)
+- ESTIMATE dates if not explicitly stated (use announcement date)
 - NO incomplete deal entries allowed - either complete data or empty array
 - Validate all deal prices are real numbers > 0
 - Ensure all dates are in YYYY-MM-DD format
