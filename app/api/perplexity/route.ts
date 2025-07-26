@@ -44,19 +44,34 @@ You must conduct a deep, thorough web and literature review using at least 100 u
 
 CRITICAL SEARCH LOGIC: You must search extensively using ALL the provided input fields (therapeutic area, indication, target, geography, development phase). Use creative search combinations and variations. Only after conducting at least 100 web searches and finding NO relevant data should you return "N/A" or "Unknown" for any field. If you find ANY relevant information, even if partial, you must use it and provide estimates based on similar assets or industry benchmarks.
 
+DATA SOURCES TO QUERY, IN THIS ORDER:
+1. Direct competitors and deal activity: EvaluatePharma asset search, Clarivate Cortellis Deals, Citeline TrialTrove, company 8-K filings, PitchBook, S&P Capital IQ
+2. Pipeline density and threats: Citeline PharmaProjects, Cortellis Clinical Trials Intelligence, ClinicalTrials.gov, EU‑CTR, WHO ICTRP
+3. Market size and growth: EvaluatePharma forecasts, IQVIA MIDAS current sales, GlobalData EpiCast prevalence, Datamonitor Healthcare
+4. Regulatory incentives: FDA Orphan Drug DB, FDA Tropical Disease PRV list, EMA PRIME list, US National Priority guidance, FDA approval stats by program type
+5. Patent and exclusivity: FDA Orange Book, USPTO PAIR latest grants, WIPO PatentScope, INPADOC
+6. Financial forecasting: EvaluatePharma forecast table, company investor decks, equity research models
+
+CROSS‑FIELD LOGIC:
+- Peak Sales Estimate must equal Peak Revenue in Financial Forecasting. If one source missing, compute from the other.
+- CAGR = (Peak Sales Estimate ÷ Current Market Size)^(1 ÷ years_to_peak) − 1, years_to_peak ends at 2030.
+- Peak Patients = (Peak Revenue ÷ Avg Selling Price) × Persistence Rate.
+- Pipeline Density = number of same‑target assets ÷ total assets in indication, show as percent.
+- Strategic Fit Rank = cosine similarity between asset features and buyer portfolio features, express 0‑100.
+
 For each field below, you must:
 - Use the best available data from your research.
 - If no exact value is available, provide your best estimate based on similar assets, industry averages, or logical inference.
 - Never return 'Unknown' or leave a field blank—always provide a value, even if it is an estimate or a range.
-- For marketSize (peak sales estimate), return only the number or range in billions, e.g., "1.2B" or "1.2-1.5B". Do not include any text or explanation.
-- For cagr, return only the percentage or range, e.g., "12.3%" or "12.3-13.6%". Do not include any text or explanation.
-- For peakRevenue2030, return only the number or range in billions, e.g., "1.2B" or "1.2-1.5B". Do not include any text or explanation.
+- For marketSize (peak sales estimate), return only the number or range in billions, e.g., "1.2B" or "1.2-1.5B". This must equal peakRevenue2030. If one is missing, calculate from the other using the cross-field logic. Do not include any text or explanation.
+- For cagr, calculate using the formula: (Peak Sales Estimate ÷ Current Market Size)^(1 ÷ years_to_peak) − 1, where years_to_peak ends at 2030. Return only the percentage or range, e.g., "12.3%" or "12.3-13.6%". Do not include any text or explanation.
+- For peakRevenue2030, return only the number or range in billions, e.g., "1.2B" or "1.2-1.5B". This must equal marketSize. If one is missing, calculate from the other. Do not include any text or explanation.
 - For total10YearRevenue:
   - You must calculate a realistic estimate for total revenue over 10 years, based on the provided or estimated peak revenue. Use a plausible industry revenue curve (e.g., total 10 year revenue should typically be 5-8x the peak year, or the sum of a realistic 10-year ramp-up, plateau, and decline). Do NOT return a value that is less than or only slightly more than peak revenue. If you cannot calculate a logical value, explain step-by-step in the research log how you arrived at your number, and why it is consistent with the peak revenue. This explanation is required in the research log.
 
 - For peakMarketShare2030, return only the percentage or range, e.g., "12.3%" or "12.3-13.6%". Do not include any text or explanation.
-- For peakPatients2030, return only the number or range, e.g., "500K", "1.2M", or "1.2M-1.5M". Do not include any text or explanation.
-- For pipelineAnalysis.crowdingPercent (pipeline density), return only the percentage or range, e.g., "12%" or "10-15%". Do not include any text or explanation.
+- For peakPatients2030, calculate using the formula: (Peak Revenue ÷ Avg Selling Price) × Persistence Rate. Return only the number or range, e.g., "500K", "1.2M", or "1.2M-1.5M". Do not include any text or explanation.
+- For pipelineAnalysis.crowdingPercent (pipeline density), calculate as: number of same‑target assets ÷ total assets in indication, show as percent. Return only the percentage or range, e.g., "12%" or "10-15%". Do not include any text or explanation.
 
 - For directCompetitors:
   - You must prioritize drugs or assets that match BOTH the exact same target (e.g., HER2, SOD1, PD-L1) AND the exact same indication (e.g., Triple-Negative Breast Cancer, ALS, NSCLC) as the user input.
@@ -74,6 +89,9 @@ For each field below, you must:
 
 - For pipelineAnalysis.competitiveThreats:
   - Always output multiple (at least 3 if possible) distinct competitive threats, each with a short rationale. Use your websearches to identify as many relevant threats as possible, and provide a brief explanation for each.
+
+- For pipelineAnalysis.strategicFitRank:
+  - Calculate using cosine similarity between asset features and buyer portfolio features, express as 0-100. Use the formula to determine strategic alignment with major pharma buyer portfolios.
 
 - For all fields, cite the most relevant sources in your research log. You must use at least 25 unique, high-quality, and up-to-date sources, and you must use live web search for all research. Do not fabricate sources or data.
 
