@@ -43,6 +43,42 @@ export async function POST(req: NextRequest) {
     modelSelectionReason: inputTokens > 350 ? 'high_token_count' : userRequestedFullResearch ? 'explicit_request' : 'default'
   });
 
+  const isDeep = model === 'sonar-deep-research';
+
+  const domainAllowlist = [
+    "evaluatepharma.com",
+    "clinicaltrials.gov",
+    "fda.gov",
+    "ema.europa.eu",
+    "who.int",
+    "uspto.gov",
+    "wipo.int",
+    "citeline.com",
+    "clarivate.com",
+    "iqvia.com",
+    "globaldata.com",
+    "pitchbook.com",
+    "spglobal.com",
+    "biospace.com",
+    "fiercebiotech.com",
+    "biopharmadive.com",
+    "pharmatimes.com",
+    "pharmaceutical-journal.com",
+    "nature.com",
+    "science.org",
+    "thelancet.com",
+    "nejm.org",
+    "jamanetwork.com",
+    "bmj.com",
+    "pubmed.ncbi.nlm.nih.gov",
+    "scholar.google.com",
+    "ieee.org",
+    "acm.org",
+    "arxiv.org",
+    "biorxiv.org",
+    "medrxiv.org"
+  ];
+
   // Extract target and indication from the request body
   const target = body.target || '';
   const indication = body.indication || '';
@@ -59,9 +95,9 @@ An indication is a specific disease or condition (e.g., Triple-Negative Breast C
 
 If either the target or indication is missing or unclear, explain what is missing and request clarification, but still attempt to provide the most relevant information possible based on the available input.
 
-You must conduct a deep, thorough web and literature review using at least 100 unique, high-quality, up-to-date, and diverse sources. You are required to use live web search and cite URLs, not just static knowledge. Your research must include industry reports, regulatory databases, analyst forecasts, recent news, and primary sources. Do not fabricate information—always use real, verifiable data from the web and literature. Prioritize primary sources, recent publications, and authoritative industry data. You must use at least 100 unique, high-quality web searches for every request, and your websearches should be as exhaustive and creative as possible to find all relevant public information.
+You must conduct a deep, thorough web and literature review using high-quality, up-to-date, and diverse sources. You are required to use live web search and cite URLs, not just static knowledge. Your research must include industry reports, regulatory databases, analyst forecasts, recent news, and primary sources. Do not fabricate information—always use real, verifiable data from the web and literature. Prioritize primary sources, recent publications, and authoritative industry data. Your websearches should be exhaustive and creative to find all relevant public information.
 
-CRITICAL SEARCH LOGIC: You must search extensively using ALL the provided input fields (therapeutic area, indication, target, geography, development phase). Use creative search combinations and variations. Only after conducting at least 100 web searches and finding NO relevant data should you return "N/A" or "Unknown" for any field. If you find ANY relevant information, even if partial, you must use it and provide estimates based on similar assets or industry benchmarks.
+CRITICAL SEARCH LOGIC: You must search extensively using ALL the provided input fields (therapeutic area, indication, target, geography, development phase). Use creative search combinations and variations. Only after conducting exhaustive web searches and finding NO relevant data should you return "N/A" or "Unknown" for any field. If you find ANY relevant information, even if partial, you must use it and provide estimates based on similar assets or industry benchmarks.
 
 DATA SOURCES TO QUERY, IN THIS ORDER:
 1. Direct competitors and deal activity: EvaluatePharma asset search, Clarivate Cortellis Deals, Citeline TrialTrove, company 8-K filings, PitchBook, S&P Capital IQ
@@ -100,7 +136,7 @@ For each field below, you must:
   - List only the names of specific drugs or assets (not company names), and include their generic/brand names if available. Do not list only big pharma or company names, and do not hallucinate assets.
 
 - For dealActivity:
-  - You MUST find and list at least 3 recent deals (acquisitions, licensing, partnerships, investments) involving assets that match BOTH the exact same target and indication as the user input, or the closest available if no exact matches exist (explain the difference). Display up to 10 deals if possible. For each deal, include: asset name, buyer/acquirer, development stage at deal time, deal price (value), deal date, and a clear, concise rationale. All of this information is public and online, and you must use at least 100 unique, high-quality web searches to find it. If you cannot find a field after exhaustive searching, output 'Unknown' for that field, but still include the deal in the output. In your research log, explain what you searched and why any field could not be found.
+  - You MUST find and list at least 3 recent deals (acquisitions, licensing, partnerships, investments) involving assets that match BOTH the exact same target and indication as the user input, or the closest available if no exact matches exist (explain the difference). Display up to 10 deals if possible. For each deal, include: asset name, buyer/acquirer, development stage at deal time, deal price (value), deal date, and a clear, concise rationale. All of this information is public and online, and you must use extensive, high-quality web searches to find it. If you cannot find a field after exhaustive searching, output 'Unknown' for that field, but still include the deal in the output. In your research log, explain what you searched and why any field could not be found.
   - Always provide a clear, concise rationale for each deal, based on your research and sources, and cite URLs for each deal.
   - Deal Activity must be a subset or add-on to Direct Competitors (i.e., only deals involving the listed direct competitors or near-matches, with explanation).
   - Always provide a clear, concise rationale for each deal, based on your research and sources.
@@ -180,6 +216,10 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
 
   // Call Perplexity API
   try {
+    const webSearchOptions = {
+      search_context_size: isDeep ? "high" : "medium"
+    };
+
     const payload = {
       model,
       messages: [
@@ -188,12 +228,57 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
       ],
       max_tokens: 4000,
       temperature: 0.1,
-      reasoning_effort: model === 'sonar-deep-research' ? 'medium' : undefined,
+      reasoning_effort: isDeep ? "high" : "medium",
+      web_search_options: webSearchOptions,
+      search_recency_filter: "year",
+      search_domain_filter: domainAllowlist,
+      ...(body?.academic === true && { search_mode: "academic" })
     };
 
-    const perplexityRes = await fetchWithFallback(payload, model);
-    logs.push({ step: 'Perplexity API response status', status: perplexityRes.status });
-    const perplexityText = await perplexityRes.text();
+    let perplexityRes = await fetchWithFallback(payload, model);
+    
+    // Post-call instrumentation-based retry
+    const MIN_QUERIES = 25;
+    let perplexityText = await perplexityRes.text();
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(perplexityText);
+    } catch (e) {
+      parsedResponse = null;
+    }
+    
+    logs.push({ 
+      step: 'Perplexity API response status', 
+      status: perplexityRes.status,
+      numSearchQueries: parsedResponse?.usage?.num_search_queries,
+      searchContextSize: payload.web_search_options?.search_context_size,
+      reasoningEffort: payload.reasoning_effort
+    });
+    
+    if (parsedResponse?.usage?.num_search_queries < MIN_QUERIES && isDeep) {
+      logs.push({ 
+        step: 'Retrying with enhanced search parameters', 
+        numSearchQueries: parsedResponse?.usage?.num_search_queries,
+        minQueries: MIN_QUERIES
+      });
+      
+      const retryPayload = {
+        ...payload,
+        web_search_options: { search_context_size: "high" },
+        reasoning_effort: "high"
+      };
+      // Remove domain filter to widen search scope
+      const { search_domain_filter, ...retryPayloadWithoutDomain } = retryPayload;
+      
+      perplexityRes = await fetchWithFallback(retryPayloadWithoutDomain, model);
+      perplexityText = await perplexityRes.text();
+      logs.push({ step: 'Retry response status', status: perplexityRes.status });
+      
+      if (!perplexityRes.ok) {
+        logs.push({ error: 'Perplexity API retry error', details: perplexityText });
+        return NextResponse.json({ error: `Perplexity API retry error: ${perplexityText}`, status: perplexityRes.status, logs }, { status: 500 });
+      }
+    }
     logs.push({ step: 'Perplexity API raw response', perplexityText });
     if (!perplexityRes.ok) {
       logs.push({ error: 'Perplexity API error', details: perplexityText });
