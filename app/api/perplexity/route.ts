@@ -45,38 +45,73 @@ export async function POST(req: NextRequest) {
 
   const isDeep = model === 'sonar-deep-research';
 
+  // First pass: High-confidence, structured sources
   const domainAllowlist = [
     "evaluatepharma.com",
     "clinicaltrials.gov",
     "fda.gov",
     "ema.europa.eu",
+    "biocentury.com",
+    "pitchbook.com",
+    "clarivate.com",
+    "pubmed.ncbi.nlm.nih.gov",
+    "citeline.com",
+    "iqvia.com",
+    "globaldata.com",
+    "spglobal.com",
     "who.int",
     "uspto.gov",
     "wipo.int",
-    "citeline.com",
-    "clarivate.com",
-    "iqvia.com",
-    "globaldata.com",
-    "pitchbook.com",
-    "spglobal.com",
-    "biospace.com",
-    "fiercebiotech.com",
-    "biopharmadive.com",
-    "pharmatimes.com",
-    "pharmaceutical-journal.com",
     "nature.com",
     "science.org",
     "thelancet.com",
     "nejm.org",
     "jamanetwork.com",
     "bmj.com",
-    "pubmed.ncbi.nlm.nih.gov",
     "scholar.google.com",
     "ieee.org",
     "acm.org",
     "arxiv.org",
     "biorxiv.org",
-    "medrxiv.org"
+    "medrxiv.org",
+    "biospace.com",
+    "fiercebiotech.com",
+    "biopharmadive.com",
+    "pharmatimes.com",
+    "pharmaceutical-journal.com",
+    "statista.com",
+    "frost.com",
+    "seekingalpha.com",
+    "morningstar.com",
+    "reuters.com",
+    "bloomberg.com",
+    "wsj.com",
+    "ft.com",
+    "biopharminsight.com",
+    "firstwordpharma.com",
+    "patsnap.com",
+    "drugbank.ca",
+    "chembl.org",
+    "reaxys.com",
+    "lens.org",
+    "patents.google.com",
+    "roche.com",
+    "crunchbase.com",
+    "informa.com",
+    "biorender.com",
+    "litcovid.org",
+    "pmc.ncbi.nlm.nih.gov",
+    "orpha.net",
+    "cdc.gov",
+    "healthdata.org",
+    "eurostat.europa.eu",
+    "seer.cancer.gov",
+    "pmda.go.jp",
+    "hc-sc.gc.ca",
+    "espacenet.com",
+    "jpo.go.jp",
+    "inpadoc.epo.org",
+    "markush.org"
   ];
 
   // Extract target and indication from the request body
@@ -217,7 +252,8 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
   // Call Perplexity API
   try {
     const webSearchOptions = {
-      search_context_size: isDeep ? "high" : "medium"
+      search_context_size: isDeep ? "high" : "medium",
+      search_depth: isDeep ? "deep" : "standard"
     };
 
     const payload = {
@@ -226,19 +262,21 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
         { role: 'system', content: 'You are a biotech commercial intelligence assistant.' },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 4000,
+      max_tokens: isDeep ? 8000 : 4000,
       temperature: 0.1,
       reasoning_effort: isDeep ? "high" : "medium",
       web_search_options: webSearchOptions,
       search_recency_filter: "year",
       search_domain_filter: domainAllowlist,
+      search_queries_per_search: isDeep ? 10 : 5,
       ...(body?.academic === true && { search_mode: "academic" })
     };
 
     let perplexityRes = await fetchWithFallback(payload, model);
     
-    // Post-call instrumentation-based retry
-    const MIN_QUERIES = 25;
+    // Multi-pass instrumentation-based retry with escalating search scope
+    const MIN_QUERIES_PASS1 = 25;
+    const MIN_QUERIES_PASS2 = 15;
     let perplexityText = await perplexityRes.text();
     let parsedResponse;
     try {
@@ -252,31 +290,92 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
       status: perplexityRes.status,
       numSearchQueries: parsedResponse?.usage?.num_search_queries,
       searchContextSize: payload.web_search_options?.search_context_size,
-      reasoningEffort: payload.reasoning_effort
+      reasoningEffort: payload.reasoning_effort,
+      pass: 1
     });
     
-    if (parsedResponse?.usage?.num_search_queries < MIN_QUERIES && isDeep) {
+    // Pass 2: Remove domain filter and increase search depth
+    if (parsedResponse?.usage?.num_search_queries < MIN_QUERIES_PASS1 && isDeep) {
       logs.push({ 
-        step: 'Retrying with enhanced search parameters', 
+        step: 'Pass 2: Retrying with expanded search scope', 
         numSearchQueries: parsedResponse?.usage?.num_search_queries,
-        minQueries: MIN_QUERIES
+        minQueries: MIN_QUERIES_PASS1
       });
       
       const retryPayload = {
         ...payload,
-        web_search_options: { search_context_size: "high" },
-        reasoning_effort: "high"
+        web_search_options: { 
+          search_context_size: "high",
+          search_depth: "deep"
+        },
+        reasoning_effort: "high",
+        max_tokens: 8000,
+        search_queries_per_search: 15
       };
       // Remove domain filter to widen search scope
       const { search_domain_filter, ...retryPayloadWithoutDomain } = retryPayload;
       
       perplexityRes = await fetchWithFallback(retryPayloadWithoutDomain, model);
       perplexityText = await perplexityRes.text();
-      logs.push({ step: 'Retry response status', status: perplexityRes.status });
+      
+      try {
+        parsedResponse = JSON.parse(perplexityText);
+      } catch (e) {
+        parsedResponse = null;
+      }
+      
+      logs.push({ 
+        step: 'Pass 2 response status', 
+        status: perplexityRes.status,
+        numSearchQueries: parsedResponse?.usage?.num_search_queries,
+        pass: 2
+      });
       
       if (!perplexityRes.ok) {
-        logs.push({ error: 'Perplexity API retry error', details: perplexityText });
-        return NextResponse.json({ error: `Perplexity API retry error: ${perplexityText}`, status: perplexityRes.status, logs }, { status: 500 });
+        logs.push({ error: 'Perplexity API pass 2 error', details: perplexityText });
+        return NextResponse.json({ error: `Perplexity API pass 2 error: ${perplexityText}`, status: perplexityRes.status, logs }, { status: 500 });
+      }
+      
+      // Pass 3: Academic search mode for very shallow results
+      if (parsedResponse?.usage?.num_search_queries < MIN_QUERIES_PASS2 && isDeep) {
+        logs.push({ 
+          step: 'Pass 3: Retrying with academic search mode', 
+          numSearchQueries: parsedResponse?.usage?.num_search_queries,
+          minQueries: MIN_QUERIES_PASS2
+        });
+        
+        const academicPayload = {
+          ...retryPayloadWithoutDomain,
+          search_mode: "academic",
+          web_search_options: { 
+            search_context_size: "high",
+            search_depth: "deep"
+          },
+          reasoning_effort: "high",
+          max_tokens: 10000,
+          search_queries_per_search: 20
+        };
+        
+        perplexityRes = await fetchWithFallback(academicPayload, model);
+        perplexityText = await perplexityRes.text();
+        
+        try {
+          parsedResponse = JSON.parse(perplexityText);
+        } catch (e) {
+          parsedResponse = null;
+        }
+        
+        logs.push({ 
+          step: 'Pass 3 response status', 
+          status: perplexityRes.status,
+          numSearchQueries: parsedResponse?.usage?.num_search_queries,
+          pass: 3
+        });
+        
+        if (!perplexityRes.ok) {
+          logs.push({ error: 'Perplexity API pass 3 error', details: perplexityText });
+          return NextResponse.json({ error: `Perplexity API pass 3 error: ${perplexityText}`, status: perplexityRes.status, logs }, { status: 500 });
+        }
       }
     }
     logs.push({ step: 'Perplexity API raw response', perplexityText });
