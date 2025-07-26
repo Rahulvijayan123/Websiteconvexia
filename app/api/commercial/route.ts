@@ -81,22 +81,62 @@ function selectModel(inputs: any): string {
 }
 
 // Build retrieval prompt for raw facts
-function buildRetrievalPrompt(inputs: any) {
-  return [
-    { role: 'system', content: 'You are an analyst. Return only JSON.' },
-    { role: 'user', content: `
-Given:
-${JSON.stringify(inputs, null, 2)}
+function buildRetrievalPrompt(inputs: any, isRetry: boolean = false) {
+  const basePrompt = `CRITICAL: You are analyzing ${inputs.therapeuticArea} - ${inputs.indication} targeting ${inputs.target} in ${inputs.geography} at ${inputs.developmentPhase} stage.
 
-Instructions:
-1. Return a structured JSON object that satisfies RawFactsSchema. Do not skip fields. Use null for missing values but always include a brief rationale for each.
-2. For dealActivity[], extract from PitchBook, BusinessWire, or SEC filings. Each entry must include: asset name, stage, deal price (USD), deal date (ISO), rationale, and sources.
-3. For keyMarketAssumptions, extract: avgSellingPriceUSD, persistenceRate, treatmentDurationMonths, and geographicSplit. Cite real values and sources from EvaluatePharma, IQVIA, or GlobalData.
-4. For regIncentives (PRV eligibility, national priority, review timeline), include a short 1-2 sentence rationale explaining each value, citing relevant FDA/EMA sources.
-5. For ipStrength (exclusivity years, genericEntryRiskPercent, coreIpPosition), provide specific real-world estimates — not placeholders like "45%" or "strong" — and include a rationale and source URLs.
-6. For financialForecast.totalTenYearRevenueUSD, use a number that reflects peakRevenue2030 and back it up with a concise rationale.
-7. Return a sourceMap: {field:[urls]} for every non-null field.
-8. Return only valid JSON conforming to RawFactsSchema.` }
+REQUIRED OUTPUT FORMAT - Return ONLY valid JSON matching RawFactsSchema:
+
+1. DEAL ACTIVITY (dealActivity[]):
+   - Search PitchBook, BusinessWire, SEC filings for REAL deals in this space
+   - Each deal MUST include: asset name, development stage, actual deal price in USD, exact date (YYYY-MM-DD), detailed rationale explaining the deal logic, and source URLs
+   - Example: {"asset": "Enhertu", "stage": "Phase 3", "priceUSD": 6900000000, "dateISO": "2023-03-20", "rationale": "AstraZeneca expanded collaboration with Daiichi Sankyo for HER2-targeted ADC to cover additional breast cancer indications, reflecting strong commercial potential", "sources": ["https://pitchbook.com/...", "https://sec.gov/..."]}
+
+2. KEY MARKET ASSUMPTIONS (keyMarketAssumptions):
+   - avgSellingPriceUSD: Real price from EvaluatePharma, IQVIA, or GlobalData (NOT placeholder)
+   - persistenceRate: Actual patient persistence data (0.0-1.0)
+   - treatmentDurationMonths: Real treatment duration from clinical studies
+   - geographicSplit: Real market distribution (us + eu + row = 1.0)
+   - rationale: Detailed explanation of each assumption
+   - sources: URLs to supporting data
+
+3. REGULATORY INCENTIVES (regIncentives):
+   - prvEligibility: Boolean + 2-3 sentence explanation citing FDA guidance
+   - nationalPriority: Specific priority level + rationale from FDA/EMA documents
+   - reviewTimelineMonths: Real timeline estimate + explanation
+   - Each field MUST include rationale and source URLs
+
+4. IP STRENGTH (ipStrength):
+   - exclusivityYears: Real patent expiration analysis (NOT placeholder)
+   - genericEntryRiskPercent: Actual risk assessment (0-100)
+   - coreIpPosition: Specific strength level + detailed explanation
+   - NO default values like "45%" or "strong"
+
+5. FINANCIAL FORECAST (financialForecast):
+   - totalTenYearRevenueUSD: Calculate based on peakRevenue2030, market dynamics, competition
+   - peakMarketSharePercent: Real market share projection
+   - peakPatientsCount: Actual patient population estimate
+   - Each field MUST include detailed rationale and sources
+
+6. SOURCE MAP (sourceMap):
+   - Every non-null field must have corresponding source URLs
+   - Format: {"fieldName": ["url1", "url2"]}
+
+FAILURE CRITERIA - If you cannot provide real data for any field, return null with explanation in rationale.
+
+Return ONLY valid JSON. No explanations outside the JSON structure.`;
+
+  const retryPrompt = `${basePrompt}
+
+URGENT RETRY: Previous response contained placeholder values or insufficient data. You MUST:
+- Search more thoroughly across all specified sources
+- Provide REAL market data, not estimates or placeholders
+- Include detailed rationales for every value
+- Ensure all source URLs are valid and accessible
+- Double-check that no default values like "45%", "strong", or "25.654B" are used`;
+
+  return [
+    { role: 'system', content: 'You are a senior biotech commercial intelligence analyst with 15+ years of experience. You MUST return complete, accurate data with full rationales and sources. NEVER use placeholder values like "45%", "strong", or "25.654B". ALWAYS provide real market data with detailed explanations.' },
+    { role: 'user', content: isRetry ? retryPrompt : basePrompt }
   ];
 }
 
@@ -146,7 +186,7 @@ export async function POST(req: Request) {
 
         let rawFacts = await fetchPplx({
           model: model,
-          messages: retrievalPrompt,
+          messages: buildRetrievalPrompt(safeInputs, false),
           response_format: {
             type: 'json_schema',
             json_schema: { schema: RawFactsSchema }
@@ -159,24 +199,71 @@ export async function POST(req: Request) {
         // Validate schema
         RawFactsSchema.parse(rawFacts);
 
-        // Retry if critical fields are missing
-        const critical = ['dealActivity','keyMarketAssumptions','financialForecast'];
-        if (critical.some(k => !rawFacts[k] || (Array.isArray(rawFacts[k]) && rawFacts[k].length === 0))) {
-          console.warn('Critical fields missing, retrying with high reasoning effort', { missing: critical.filter(k => !rawFacts[k] || (Array.isArray(rawFacts[k]) && rawFacts[k].length === 0)), traceId });
+        // Enhanced validation and retry logic for incomplete data
+        const validateDataQuality = (data: any) => {
+          const issues: string[] = [];
+          
+          // Check for placeholder values
+          if (data.financialForecast?.totalTenYearRevenueUSD?.value === 25.654) {
+            issues.push('financialForecast.totalTenYearRevenueUSD is placeholder value');
+          }
+          if (data.ipStrength?.genericEntryRiskPercent?.value === 45) {
+            issues.push('ipStrength.genericEntryRiskPercent is placeholder value');
+          }
+          if (data.ipStrength?.coreIpPosition?.value === 'strong') {
+            issues.push('ipStrength.coreIpPosition is placeholder value');
+          }
+          
+          // Check for missing critical data
+          if (!data.dealActivity || data.dealActivity.length === 0) {
+            issues.push('dealActivity is missing or empty');
+          }
+          if (!data.keyMarketAssumptions?.avgSellingPriceUSD) {
+            issues.push('keyMarketAssumptions.avgSellingPriceUSD is missing');
+          }
+          if (!data.regIncentives?.prvEligibility?.rationale || data.regIncentives.prvEligibility.rationale.length < 20) {
+            issues.push('regIncentives.prvEligibility rationale is insufficient');
+          }
+          
+          return issues;
+        };
+
+        let dataQualityIssues = validateDataQuality(rawFacts);
+        let retryCount = 0;
+        const maxRetries = 2;
+
+        while (dataQualityIssues.length > 0 && retryCount < maxRetries) {
+          console.warn(`Data quality issues detected (attempt ${retryCount + 1}/${maxRetries})`, { 
+            issues: dataQualityIssues, 
+            traceId 
+          });
+          
+          retryCount++;
           
           const retryBody = {
             model: model,
-            messages: retrievalPrompt,
+            messages: buildRetrievalPrompt(safeInputs, true),
             response_format: {
-              type: 'json_schema',
+              type: 'json_schema' as const,
               json_schema: { schema: RawFactsSchema }
             },
             reasoning_effort: 'high',
+            max_tokens: 8000,
             ...extra
           };
           
           rawFacts = await fetchPplx(retryBody).then(parseJson);
-          RawFactsSchema.parse(rawFacts); // enforce schema again
+          RawFactsSchema.parse(rawFacts);
+          dataQualityIssues = validateDataQuality(rawFacts);
+        }
+
+        if (dataQualityIssues.length > 0) {
+          console.error('Data quality issues persist after retries', { issues: dataQualityIssues, traceId });
+          return NextResponse.json({ 
+            error: 'Insufficient data quality', 
+            issues: dataQualityIssues,
+            traceId 
+          }, { status: 422 });
         }
 
         // Apply numeric sanity checks after raw model output
