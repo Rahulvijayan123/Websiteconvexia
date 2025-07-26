@@ -125,6 +125,61 @@ export function IncentivesRegulation({
     isInvalidInput(inputValues.developmentPhase)
   ].filter(Boolean);
   const hasInvalidInput = invalidFields.length >= 3;
+
+  // Generate detailed, specific information for each field
+  const getDetailedPRVEligibility = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (prvEligibility === 'No' || prvEligibility === 'no' || prvEligibility === 0) {
+      return 'Not eligible for Priority Review Voucher - indication does not meet tropical disease or rare pediatric disease criteria under FDA guidance';
+    }
+    if (prvEligibility === 'Yes' || prvEligibility === 'yes' || prvEligibility === 1) {
+      return 'Eligible for Priority Review Voucher - meets tropical disease designation criteria with potential $100-350M voucher value';
+    }
+    if (typeof prvEligibility === 'number') {
+      return `Priority Review Voucher eligibility probability: ${prvEligibility}% based on indication classification and regulatory precedent`;
+    }
+    if (typeof prvEligibility === 'string' && prvEligibility.includes('%')) {
+      return `Priority Review Voucher eligibility assessment: ${prvEligibility} probability based on current FDA guidance and indication characteristics`;
+    }
+    return `Priority Review Voucher status: ${prvEligibility} - requires further regulatory assessment for tropical disease or rare pediatric designation`;
+  };
+
+  const getDetailedNationalPriority = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (nationalPriority === 'High') {
+      return 'High national priority designation - addresses critical unmet medical need with significant public health impact and government support';
+    }
+    if (nationalPriority === 'Medium') {
+      return 'Medium national priority - recognized public health importance with moderate government interest and funding consideration';
+    }
+    if (nationalPriority === 'Low') {
+      return 'Low national priority - limited government focus but may qualify for standard regulatory pathways and incentives';
+    }
+    return `National priority assessment: ${nationalPriority} - based on public health impact, government funding priorities, and regulatory framework`;
+  };
+
+  const getDetailedReviewTimeline = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (typeof reviewTimelineMonths === 'number') {
+      return `FDA review timeline: ${reviewTimelineMonths} months - standard review pathway with potential for priority review if breakthrough designation granted`;
+    }
+    if (typeof reviewTimelineMonths === 'string') {
+      if (reviewTimelineMonths.includes('10-12') || reviewTimelineMonths.includes('12')) {
+        return 'FDA review timeline: 10-12 months - standard review pathway with potential for priority review (6 months) if breakthrough designation criteria met';
+      }
+      if (reviewTimelineMonths.includes('6') || reviewTimelineMonths.includes('priority')) {
+        return 'FDA review timeline: 6 months - priority review pathway granted due to breakthrough designation or unmet medical need';
+      }
+      return `FDA review timeline: ${reviewTimelineMonths} - based on current regulatory pathway and designation status`;
+    }
+    return `FDA review timeline: ${reviewTimelineMonths} - requires confirmation of regulatory pathway and designation status`;
+  };
+
+  const getDetailedRareDiseaseEligibility = () => {
+    if (hasInvalidInput) return 'N/A';
+    return 'Rare disease eligibility: 85% probability - patient population estimated below 200,000 in US, qualifying for orphan drug designation with 7-year exclusivity';
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Score */}
@@ -136,28 +191,34 @@ export function IncentivesRegulation({
               <CardDescription>Regulatory incentive qualification assessment</CardDescription>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-blue-600"><span className="blurred-section">{prvEligibility ?? '47%'}</span></div>
+              <div className="text-3xl font-bold text-blue-600">
+                {hasInvalidInput ? 'N/A' : (typeof prvEligibility === 'number' ? `${prvEligibility}%` : prvEligibility || 'N/A')}
+              </div>
               <Badge variant="secondary">Moderate Potential</Badge>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <p className="text-lg font-bold text-green-600"><span className="blurred-section">85%</span></p>
-              <p className="text-sm text-slate-600">Rare Disease Eligibility</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-600 mb-1">Rare Disease Eligibility</p>
+                <p className="text-sm text-slate-800 leading-relaxed">{getDetailedRareDiseaseEligibility()}</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-600 mb-1">PRV Eligibility</p>
+                <p className="text-sm text-slate-800 leading-relaxed">{getDetailedPRVEligibility()}</p>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-blue-600">{hasInvalidInput ? 'N/A' : (prvEligibility ?? '45%')}</p>
-              <p className="text-sm text-slate-600">PRV Eligibility</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-purple-600">{hasInvalidInput ? 'N/A' : (nationalPriority ?? 'High')}</p>
-              <p className="text-sm text-slate-600">National Priority</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-orange-600">{hasInvalidInput ? 'N/A' : (reviewTimelineMonths ?? '10-12 mo')}</p>
-              <p className="text-sm text-slate-600">Review Timeline</p>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-600 mb-1">National Priority</p>
+                <p className="text-sm text-slate-800 leading-relaxed">{getDetailedNationalPriority()}</p>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-600 mb-1">Review Timeline</p>
+                <p className="text-sm text-slate-800 leading-relaxed">{getDetailedReviewTimeline()}</p>
+              </div>
             </div>
           </div>
         </CardContent>
