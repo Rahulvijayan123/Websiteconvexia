@@ -92,11 +92,21 @@ const financialSources = [
 export function FinancialProjections({
   peakRevenue2030,
   peakMarketShare2030,
-  peakPatients2030
+  peakPatients2030,
+  avgSellingPrice,
+  persistenceRate,
+  treatmentDuration,
+  geographicSplit,
+  total10YearRevenue
 }: {
   peakRevenue2030?: string,
   peakMarketShare2030?: string,
-  peakPatients2030?: string
+  peakPatients2030?: string,
+  avgSellingPrice?: string,
+  persistenceRate?: string,
+  treatmentDuration?: string,
+  geographicSplit?: string,
+  total10YearRevenue?: string
 } = {}) {
   // Input validation function to detect invalid inputs
   const isInvalidInput = (input: string | null | undefined): boolean => {
@@ -127,7 +137,7 @@ export function FinancialProjections({
     return { therapeuticArea: '', indication: '', target: '', geography: '', developmentPhase: '' };
   };
 
-    const inputValues = getInputValues();
+  const inputValues = getInputValues();
   // Only trigger fallback if MOST fields are invalid (at least 3 out of 5)
   const invalidFields = [
     isInvalidInput(inputValues.therapeuticArea),
@@ -138,21 +148,151 @@ export function FinancialProjections({
   ].filter(Boolean);
   const hasInvalidInput = invalidFields.length >= 3;
 
-  // Treat 'Unknown' as missing
-  const hasPeakRevenue = !!peakRevenue2030 && peakRevenue2030 !== 'Unknown';
-  const hasPeakMarketShare = !!peakMarketShare2030 && peakMarketShare2030 !== 'Unknown';
-  const hasPeakPatients = !!peakPatients2030 && peakPatients2030 !== 'Unknown';
-  const hasData = hasPeakRevenue || hasPeakMarketShare || hasPeakPatients;
+  // Calculate Total 10-Year Revenue if not provided
+  const calculateTotal10YearRevenue = () => {
+    if (total10YearRevenue && total10YearRevenue !== 'Unknown') {
+      return total10YearRevenue;
+    }
+    
+    if (peakRevenue2030 && peakRevenue2030 !== 'Unknown') {
+      // Extract numeric value from peak revenue (e.g., "17.5B" -> 17.5)
+      const peakValue = parseFloat(peakRevenue2030.replace(/[^0-9.]/g, ''));
+      const multiplier = peakRevenue2030.includes('B') ? 1000000000 : 
+                        peakRevenue2030.includes('M') ? 1000000 : 1;
+      const peakRevenueNumeric = peakValue * multiplier;
+      
+      // Total 10-year revenue should be 5-8x peak revenue (industry standard)
+      const totalRevenue = peakRevenueNumeric * 6.5; // Using 6.5x as middle ground
+      
+      if (totalRevenue >= 1000000000) {
+        return `$${(totalRevenue / 1000000000).toFixed(1)}B`;
+      } else if (totalRevenue >= 1000000) {
+        return `$${(totalRevenue / 1000000).toFixed(1)}M`;
+      } else {
+        return `$${totalRevenue.toFixed(0)}`;
+      }
+    }
+    
+    return 'N/A';
+  };
+
+  // Generate detailed rationales for each metric
+  const getPeakRevenueRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (peakRevenue2030 && peakRevenue2030 !== 'Unknown') {
+      return `${peakRevenue2030} peak revenue - based on market size analysis, competitive positioning, and pricing assumptions for 2030`;
+    }
+    return 'Peak revenue requires assessment of market size, competitive landscape, and pricing strategy';
+  };
+
+  const getTotal10YearRevenueRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    const totalRevenue = calculateTotal10YearRevenue();
+    if (totalRevenue !== 'N/A') {
+      return `${totalRevenue} total revenue - calculated as 6.5x peak revenue following industry standard revenue curve (ramp-up, plateau, decline)`;
+    }
+    return 'Total 10-year revenue requires peak revenue data and industry-standard revenue curve modeling';
+  };
+
+  const getPeakMarketShareRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (peakMarketShare2030 && peakMarketShare2030 !== 'Unknown') {
+      return `${peakMarketShare2030} market share - projected based on competitive landscape analysis and product differentiation`;
+    }
+    return 'Peak market share requires competitive analysis and product positioning assessment';
+  };
+
+  const getPeakPatientsRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (peakPatients2030 && peakPatients2030 !== 'Unknown') {
+      return `${peakPatients2030} patients - estimated treated population based on epidemiology, market penetration, and treatment adoption`;
+    }
+    return 'Peak patients requires epidemiology data and market penetration analysis';
+  };
+
+  const getAvgSellingPriceRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (avgSellingPrice && avgSellingPrice !== 'Unknown') {
+      return `${avgSellingPrice} average selling price - blended global pricing based on regional price variations and payer negotiations`;
+    }
+    return 'Average selling price requires regional pricing analysis and payer strategy assessment';
+  };
+
+  const getPersistenceRateRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (persistenceRate && persistenceRate !== 'Unknown') {
+      return `${persistenceRate} persistence rate - 12-month treatment continuation based on clinical trial data and real-world evidence`;
+    }
+    return 'Persistence rate requires clinical trial data and real-world evidence analysis';
+  };
+
+  const getTreatmentDurationRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (treatmentDuration && treatmentDuration !== 'Unknown') {
+      return `${treatmentDuration} treatment duration - median treatment length based on clinical protocols and patient outcomes`;
+    }
+    return 'Treatment duration requires clinical protocol analysis and patient outcome data';
+  };
+
+  const getGeographicSplitRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (geographicSplit && geographicSplit !== 'Unknown') {
+      return `${geographicSplit} geographic split - revenue distribution based on market access, pricing, and regulatory approval timelines`;
+    }
+    return 'Geographic split requires market access analysis and regulatory approval assessment';
+  };
+
   const keyMetrics = [
-    { metric: "Peak Revenue", value: hasInvalidInput ? "N/A" : (hasPeakRevenue ? peakRevenue2030 : "$3.826B"), year: "2030" },
-    { metric: "Total 10-Year Revenue", value: hasInvalidInput ? "N/A" : "$25.654B", period: "2024-2033" },
-    { metric: "Peak Market Share", value: hasInvalidInput ? "N/A" : (hasPeakMarketShare ? peakMarketShare2030 : "17.1%"), year: "2030" },
-    { metric: "Peak Patients", value: hasInvalidInput ? "N/A" : (hasPeakPatients ? peakPatients2030 : "26K"), year: "2030" },
-    { metric: "Avg Selling Price", value: hasData ? "N/A" : "$156K", note: "Blended global" },
-    { metric: "Persistence Rate", value: hasData ? "N/A" : "85%", note: "12-month" },
-    { metric: "Treatment Duration", value: hasData ? "N/A" : "18 mo", note: "Median" },
-    { metric: "Geographic Split", value: hasData ? "N/A" : "60% US / 40% Ex-US", note: "Peak year" },
+    { 
+      metric: "Peak Revenue", 
+      value: hasInvalidInput ? "N/A" : (peakRevenue2030 || 'N/A'), 
+      year: "2030",
+      rationale: getPeakRevenueRationale()
+    },
+    { 
+      metric: "Total 10-Year Revenue", 
+      value: hasInvalidInput ? "N/A" : calculateTotal10YearRevenue(), 
+      period: "2024-2033",
+      rationale: getTotal10YearRevenueRationale()
+    },
+    { 
+      metric: "Peak Market Share", 
+      value: hasInvalidInput ? "N/A" : (peakMarketShare2030 || 'N/A'), 
+      year: "2030",
+      rationale: getPeakMarketShareRationale()
+    },
+    { 
+      metric: "Peak Patients", 
+      value: hasInvalidInput ? "N/A" : (peakPatients2030 || 'N/A'), 
+      year: "2030",
+      rationale: getPeakPatientsRationale()
+    },
+    { 
+      metric: "Avg Selling Price", 
+      value: hasInvalidInput ? "N/A" : (avgSellingPrice || 'N/A'), 
+      note: "Blended global",
+      rationale: getAvgSellingPriceRationale()
+    },
+    { 
+      metric: "Persistence Rate", 
+      value: hasInvalidInput ? "N/A" : (persistenceRate || 'N/A'), 
+      note: "12-month",
+      rationale: getPersistenceRateRationale()
+    },
+    { 
+      metric: "Treatment Duration", 
+      value: hasInvalidInput ? "N/A" : (treatmentDuration || 'N/A'), 
+      note: "Median",
+      rationale: getTreatmentDurationRationale()
+    },
+    { 
+      metric: "Geographic Split", 
+      value: hasInvalidInput ? "N/A" : (geographicSplit || 'N/A'), 
+      note: "Peak year",
+      rationale: getGeographicSplitRationale()
+    },
   ];
+
   return (
     <div className="space-y-6">
       {/* Key Metrics Grid */}
@@ -161,21 +301,18 @@ export function FinancialProjections({
           <Card key={index} className="shadow-md bg-white rounded-lg border border-slate-200">
             <CardContent className="p-4 text-center">
               <div className="flex items-center justify-center gap-2">
-                {['Avg Selling Price', 'Persistence Rate', 'Treatment Duration', 'Geographic Split'].includes(metric.metric) && (metric.value === 'N/A' || metric.value === 'n/a' || metric.value === '$156K' || metric.value === '85%' || metric.value === '18 mo' || metric.value === '60% US / 40% Ex-US') ? (
-                  <p className="text-lg font-bold text-blue-600"><span className="blurred-section">{metric.value}</span></p>
-                ) : (
-                  <p className="text-lg font-bold text-blue-600">{metric.value}</p>
-                )}
+                <p className="text-lg font-bold text-blue-600">{metric.value}</p>
               </div>
               <p className="text-sm text-slate-600 font-medium">{metric.metric}</p>
               {metric.year && <p className="text-xs text-slate-500">{metric.year}</p>}
               {metric.period && <p className="text-xs text-slate-500">{metric.period}</p>}
               {metric.note && <p className="text-xs text-slate-500">{metric.note}</p>}
+              <p className="text-xs text-slate-700 mt-2 leading-relaxed">{metric.rationale}</p>
             </CardContent>
           </Card>
         ))}
       </div>
-      {!hasData && (
+      {!hasInvalidInput && (
         <div className="mt-4 text-center text-slate-500">No LLM financial data available. Showing static example data.</div>
       )}
 

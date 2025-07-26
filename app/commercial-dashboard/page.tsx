@@ -74,7 +74,12 @@ export default function MarketAnalysisAgent() {
     yearsToExpiration?: string | number,
     genericEntryRisk?: string | number,
     coreIPPosition?: string,
-    exclusivityPeriod?: string | number
+    exclusivityPeriod?: string | number,
+    avgSellingPrice?: string,
+    persistenceRate?: string,
+    treatmentDuration?: string,
+    geographicSplit?: string,
+    total10YearRevenue?: string
   }>({})
   const [decodeError, setDecodeError] = useState<string | null>(null)
   const [hasMounted, setHasMounted] = useState(false);
@@ -314,6 +319,11 @@ export default function MarketAnalysisAgent() {
                 peakRevenue2030={perplexityData.peakRevenue2030}
                 peakMarketShare2030={perplexityData.peakMarketShare2030}
                 peakPatients2030={perplexityData.peakPatients2030}
+                avgSellingPrice={perplexityData.avgSellingPrice}
+                persistenceRate={perplexityData.persistenceRate}
+                treatmentDuration={perplexityData.treatmentDuration}
+                geographicSplit={perplexityData.geographicSplit}
+                total10YearRevenue={perplexityData.total10YearRevenue}
               />
             )}
           </div>
