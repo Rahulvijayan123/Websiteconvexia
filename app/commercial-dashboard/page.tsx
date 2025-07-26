@@ -17,7 +17,6 @@ import {
 } from "lucide-react"
 import { MoleculeMetadata } from "./components/molecule-metadata"
 import { LoadingScreen } from "./components/loading-screen"
-import { CompoundProfile } from "./components/compound-profile"
 import { CompetitiveLandscape } from "./components/competitive-landscape"
 import { MarketSize } from "./components/market-size"
 import { PricingAccess } from "./components/pricing-access"
@@ -28,7 +27,6 @@ import { StrategicFit } from "./components/strategic-fit"
 import './globals.css';
 
 const modules = [
-  { id: "compound", label: "Compound Profile", icon: Target },
   { id: "competitive", label: "Competitive Landscape", icon: BarChart3 },
   { id: "market", label: "Market Size", icon: TrendingUp },
   { id: "pricing", label: "Pricing & Access", icon: DollarSign },
@@ -56,7 +54,7 @@ interface MoleculeData {
 export default function MarketAnalysisAgent() {
   const [currentStep, setCurrentStep] = useState<"metadata" | "loading" | "analysis">("analysis")
   const [moleculeData, setMoleculeData] = useState<MoleculeData | null>(null)
-  const [activeModule, setActiveModule] = useState("compound")
+  const [activeModule, setActiveModule] = useState("competitive")
   const [collapsedModules, setCollapsedModules] = useState<Set<string>>(new Set())
   const [perplexityData, setPerplexityData] = useState<{
     marketSize?: string,
@@ -205,21 +203,6 @@ export default function MarketAnalysisAgent() {
       {/* Content */}
       <div className="container mx-auto px-6 py-8">
         <div className="space-y-8">
-          {/* Compound Profile */}
-          <div id="compound" className={activeModule === "compound" ? "block" : "hidden"}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-slate-900">Compound Profile</h2>
-              <Button variant="ghost" size="sm" onClick={() => toggleModule("compound")}>
-                {collapsedModules.has("compound") ? (
-                  <ChevronDown className="w-4 h-4" />
-                ) : (
-                  <ChevronUp className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
-            {!collapsedModules.has("compound") && <CompoundProfile />}
-          </div>
-
           {/* Competitive Landscape */}
           <div id="competitive" className={activeModule === "competitive" ? "block" : "hidden"}>
             <div className="flex items-center justify-between mb-6">
