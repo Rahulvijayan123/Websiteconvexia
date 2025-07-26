@@ -232,6 +232,15 @@ For each field below, you must:
   - Return only the split, e.g., "60% US / 40% Ex-US", "70/30", or "55% US, 45% Ex-US". Do not include any text or explanation.
   - Use market access analysis, regulatory approval timelines, and regional pricing dynamics.
 
+- For competitorPricing:
+  - Research and provide pricing and access data for the direct competitors identified in directCompetitors. For each competitor, find: drug name, annual price, indication, access level, and rationale.
+  - Return an array of objects with: drugName (string), annualPrice (string), indication (string), accessLevel (string), rationale (string).
+  - Annual price should be in format like "$165K", "$150K", or "$180K".
+  - Access level should be "Broad", "Moderate", or "Limited" based on payer coverage and restrictions.
+  - Rationale should explain the pricing strategy and access level for each competitor.
+  - Use pricing databases, payer coverage analysis, and market intelligence sources.
+  - This must match the competitors listed in directCompetitors.
+
 - For pipelineAnalysis.crowdingPercent (pipeline density), calculate as: number of same‑target assets ÷ total assets in indication, show as percent. Return only the percentage or range, e.g., "12%" or "10-15%". Do not include any text or explanation.
 
 - For directCompetitors:
@@ -271,6 +280,7 @@ Return ONLY a valid JSON object with the following keys:
 - persistenceRate: string (12-month treatment persistence rate as percentage)
 - treatmentDuration: string (median treatment duration in months)
 - geographicSplit: string (revenue split between US and ex-US markets at peak)
+- competitorPricing: array of objects (pricing and access data for direct competitors)
 - dealActivity: array of objects (recent M&A/licensing deals)
 - pipelineAnalysis: object (crowdingPercent, competitiveThreats)
 

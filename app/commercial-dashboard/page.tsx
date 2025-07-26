@@ -77,7 +77,8 @@ export default function MarketAnalysisAgent() {
     persistenceRate?: string,
     treatmentDuration?: string,
     geographicSplit?: string,
-    total10YearRevenue?: string
+    total10YearRevenue?: string,
+    competitorPricing?: any[]
   }>({})
   const [decodeError, setDecodeError] = useState<string | null>(null)
   const [hasMounted, setHasMounted] = useState(false);
@@ -245,7 +246,7 @@ export default function MarketAnalysisAgent() {
                 )}
               </Button>
             </div>
-            {!collapsedModules.has("pricing") && <PricingAccess />}
+            {!collapsedModules.has("pricing") && <PricingAccess competitorPricing={perplexityData.competitorPricing} />}
           </div>
 
           {/* Incentives & Regulation */}

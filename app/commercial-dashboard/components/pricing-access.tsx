@@ -91,7 +91,11 @@ function ExpandableDetail({ title, value, unit, assumptions, formula, sources, a
   )
 }
 
-export function PricingAccess() {
+export function PricingAccess({
+  competitorPricing
+}: {
+  competitorPricing?: any[]
+} = {}) {
   return (
     <Tabs defaultValue="sentiment" className="w-full">
       <TabsList className="grid w-full grid-cols-2">
@@ -164,38 +168,46 @@ export function PricingAccess() {
             <CardDescription>Pricing and access patterns for similar oncology assets</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="blurred-section">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2">Drug</th>
-                      <th className="text-left py-2">Annual Price</th>
-                      <th className="text-left py-2">Indication</th>
-                      <th className="text-left py-2">Access Level</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {comparators.map((comp, index) => (
-                      <tr key={index} className="border-b">
-                        <td className="py-2 font-medium">{comp.drug}</td>
-                        <td className="py-2 text-green-600 font-semibold">{comp.price}</td>
-                        <td className="py-2">{comp.indication}</td>
-                        <td className="py-2">
-                          <Badge
-                            variant={
-                              comp.access === "Broad" ? "default" : comp.access === "Moderate" ? "secondary" : "outline"
-                            }
-                          >
-                            {comp.access}
-                          </Badge>
-                        </td>
+            {competitorPricing && competitorPricing.length > 0 ? (
+              <div className="space-y-4">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2">Drug</th>
+                        <th className="text-left py-2">Annual Price</th>
+                        <th className="text-left py-2">Indication</th>
+                        <th className="text-left py-2">Access Level</th>
+                        <th className="text-left py-2">Rationale</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {competitorPricing.map((comp, index) => (
+                        <tr key={index} className="border-b">
+                          <td className="py-2 font-medium">{comp.drugName}</td>
+                          <td className="py-2 text-green-600 font-semibold">{comp.annualPrice}</td>
+                          <td className="py-2">{comp.indication}</td>
+                          <td className="py-2">
+                            <Badge
+                              variant={
+                                comp.accessLevel === "Broad" ? "default" : comp.accessLevel === "Moderate" ? "secondary" : "outline"
+                              }
+                            >
+                              {comp.accessLevel}
+                            </Badge>
+                          </td>
+                          <td className="py-2 text-xs text-slate-600 max-w-xs">{comp.rationale}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="text-center text-slate-500 py-8">
+                No competitor pricing data available. This will be populated with real data from the competitive analysis.
+              </div>
+            )}
           </CardContent>
         </Card>
       </TabsContent>
