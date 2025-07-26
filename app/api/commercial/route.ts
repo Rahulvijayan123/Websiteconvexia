@@ -88,8 +88,15 @@ REQUIRED OUTPUT FORMAT - Return ONLY valid JSON matching RawFactsSchema:
 
 1. DEAL ACTIVITY (dealActivity[]):
    - Search PitchBook, BusinessWire, SEC filings for REAL deals in this space
-   - Each deal MUST include: asset name, development stage, actual deal price in USD, exact date (YYYY-MM-DD), detailed rationale explaining the deal logic, and source URLs
+   - EVERY SINGLE DEAL ENTRY MUST include ALL of these fields:
+     * asset: Exact asset/drug name (string, required)
+     * stage: Development stage (must be: Preclinical, Phase 1, Phase 2, Phase 3, Filed, or Marketed)
+     * priceUSD: Actual deal price in USD (number, required, must be > 0)
+     * dateISO: Exact deal date in YYYY-MM-DD format (string, required)
+     * rationale: Detailed explanation of deal logic (string, minimum 20 characters)
+     * sources: Array of valid URLs (array of strings, minimum 1 URL)
    - Example: {"asset": "Enhertu", "stage": "Phase 3", "priceUSD": 6900000000, "dateISO": "2023-03-20", "rationale": "AstraZeneca expanded collaboration with Daiichi Sankyo for HER2-targeted ADC to cover additional breast cancer indications, reflecting strong commercial potential", "sources": ["https://pitchbook.com/...", "https://sec.gov/..."]}
+   - CRITICAL: If you cannot find real deals with complete information, return an empty array rather than incomplete entries
 
 2. KEY MARKET ASSUMPTIONS (keyMarketAssumptions):
    - avgSellingPriceUSD: Real price from EvaluatePharma, IQVIA, or GlobalData (NOT placeholder)
@@ -132,7 +139,14 @@ URGENT RETRY: Previous response contained placeholder values or insufficient dat
 - Provide REAL market data, not estimates or placeholders
 - Include detailed rationales for every value
 - Ensure all source URLs are valid and accessible
-- Double-check that no default values like "45%", "strong", or "25.654B" are used`;
+- Double-check that no default values like "45%", "strong", or "25.654B" are used
+
+CRITICAL DEAL ACTIVITY REQUIREMENTS:
+- EVERY deal entry MUST have asset name, stage, priceUSD, dateISO, rationale, and sources
+- NO incomplete deal entries allowed - either complete data or empty array
+- Validate all deal prices are real numbers > 0
+- Ensure all dates are in YYYY-MM-DD format
+- Check all source URLs start with "http"`;
 
   return [
     { role: 'system', content: 'You are a senior biotech commercial intelligence analyst with 15+ years of experience. You MUST return complete, accurate data with full rationales and sources. NEVER use placeholder values like "45%", "strong", or "25.654B". ALWAYS provide real market data with detailed explanations.' },
@@ -214,10 +228,39 @@ export async function POST(req: Request) {
             issues.push('ipStrength.coreIpPosition is placeholder value');
           }
           
-          // Check for missing critical data
+          // CRITICAL: Validate every single deal activity entry has all required fields
           if (!data.dealActivity || data.dealActivity.length === 0) {
             issues.push('dealActivity is missing or empty');
+          } else {
+            data.dealActivity.forEach((deal: any, index: number) => {
+              if (!deal.asset || deal.asset.trim() === '') {
+                issues.push(`dealActivity[${index}]: asset name is missing or empty`);
+              }
+              if (!deal.stage || !['Preclinical','Phase 1','Phase 2','Phase 3','Filed','Marketed'].includes(deal.stage)) {
+                issues.push(`dealActivity[${index}]: stage is missing or invalid (must be one of: Preclinical, Phase 1, Phase 2, Phase 3, Filed, Marketed)`);
+              }
+              if (!deal.rationale || deal.rationale.trim().length < 20) {
+                issues.push(`dealActivity[${index}]: rationale is missing or too short (minimum 20 characters)`);
+              }
+              if (!deal.priceUSD || typeof deal.priceUSD !== 'number' || deal.priceUSD <= 0) {
+                issues.push(`dealActivity[${index}]: deal price (priceUSD) is missing, not a number, or invalid`);
+              }
+              if (!deal.dateISO || !deal.dateISO.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                issues.push(`dealActivity[${index}]: deal date (dateISO) is missing or invalid format (must be YYYY-MM-DD)`);
+              }
+              if (!deal.sources || !Array.isArray(deal.sources) || deal.sources.length === 0) {
+                issues.push(`dealActivity[${index}]: sources array is missing or empty`);
+              } else {
+                deal.sources.forEach((source: string, sourceIndex: number) => {
+                  if (!source || !source.startsWith('http')) {
+                    issues.push(`dealActivity[${index}].sources[${sourceIndex}]: invalid URL format`);
+                  }
+                });
+              }
+            });
           }
+          
+          // Check for missing critical data
           if (!data.keyMarketAssumptions?.avgSellingPriceUSD) {
             issues.push('keyMarketAssumptions.avgSellingPriceUSD is missing');
           }
