@@ -67,5 +67,10 @@ export function calcStrategicFit(
     return 0; // Return 0 similarity for zero vectors
   }
 
-  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+  const denominator = Math.sqrt(normA) * Math.sqrt(normB);
+  if (denominator === 0) {
+    return 0; // Zero-division guard
+  }
+
+  return dotProduct / denominator;
 } 

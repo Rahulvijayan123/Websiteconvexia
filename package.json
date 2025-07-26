@@ -11,6 +11,7 @@
     "test:ci": "jest --ci --coverage"
   },
   "dependencies": {
+    "@dqbd/tiktoken": "^1.0.21",
     "@hookform/resolvers": "^3.9.1",
     "@opentelemetry/auto-instrumentations-node": "^0.62.0",
     "@opentelemetry/sdk-node": "^0.203.0",
@@ -51,9 +52,11 @@
     "crypto": "^1.0.1",
     "date-fns": "4.1.0",
     "embla-carousel-react": "latest",
+    "fast-json-stable-stringify": "^2.1.0",
     "geist": "^1.3.1",
     "input-otp": "latest",
     "lucide-react": "^0.454.0",
+    "msgpackr": "^1.11.5",
     "next": "15.2.4",
     "next-themes": "latest",
     "react": "^19",

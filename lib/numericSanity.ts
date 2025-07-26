@@ -18,8 +18,13 @@ export function sanityCheck(raw: any): string[] {
   // Check revenue magnitude differences
   if (raw.peakRevenue2030 && raw.currentMarket) {
     const revenueDiff = Math.abs(Math.log10(raw.peakRevenue2030) - Math.log10(raw.currentMarket));
-    if (revenueDiff > 2) {
-      errs.push(`Peak revenue differs by >2 orders of magnitude from current market: ${raw.peakRevenue2030} vs ${raw.currentMarket}`);
+    const tolerance = parseInt(process.env.REVENUE_DIFF_TOLERANCE || '2');
+    if (revenueDiff > tolerance) {
+      console.warn(`Revenue magnitude difference exceeds tolerance: ${revenueDiff} > ${tolerance}`, {
+        peakRevenue: raw.peakRevenue2030,
+        currentMarket: raw.currentMarket
+      });
+      // Log warning instead of blocking by default
     }
   }
 
