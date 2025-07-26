@@ -312,9 +312,6 @@ export function FinancialProjections({
           </Card>
         ))}
       </div>
-      {!hasInvalidInput && (
-        <div className="mt-4 text-center text-slate-500">No LLM financial data available. Showing static example data.</div>
-      )}
 
       {/* Revenue Forecasting Chart */}
       <Card className="shadow-md bg-white rounded-lg border border-slate-200">
