@@ -6,7 +6,6 @@ import { UserInputSchema } from '@/schemas/userInputs';
 import { sanityCheck } from '@/lib/numericSanity';
 import { redis } from '@/lib/redisClient';
 import { sb } from '@/lib/supabaseClient';
-import { safeParseJson } from '@/lib/safeJson';
 import { createHash } from "crypto";
 
 // Cache configuration
