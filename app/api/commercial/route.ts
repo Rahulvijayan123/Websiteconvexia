@@ -88,9 +88,15 @@ function buildRetrievalPrompt(inputs: any) {
 Given:
 ${JSON.stringify(inputs, null, 2)}
 
-Return an object matching RawFactsSchema. 
-Populate every numeric field with a number, not a range. 
-Echo a sourceMap: {field: [urls...]}. One primary source per field minimum.` }
+Instructions:
+1. Return a structured JSON object that satisfies RawFactsSchema. Do not skip fields. Use null for missing values but always include a brief rationale for each.
+2. For dealActivity[], extract from PitchBook, BusinessWire, or SEC filings. Each entry must include: asset name, stage, deal price (USD), deal date (ISO), rationale, and sources.
+3. For keyMarketAssumptions, extract: avgSellingPriceUSD, persistenceRate, treatmentDurationMonths, and geographicSplit. Cite real values and sources from EvaluatePharma, IQVIA, or GlobalData.
+4. For regIncentives (PRV eligibility, national priority, review timeline), include a short 1-2 sentence rationale explaining each value, citing relevant FDA/EMA sources.
+5. For ipStrength (exclusivity years, genericEntryRiskPercent, coreIpPosition), provide specific real-world estimates — not placeholders like "45%" or "strong" — and include a rationale and source URLs.
+6. For financialForecast.totalTenYearRevenueUSD, use a number that reflects peakRevenue2030 and back it up with a concise rationale.
+7. Return a sourceMap: {field:[urls]} for every non-null field.
+8. Return only valid JSON conforming to RawFactsSchema.` }
   ];
 }
 
@@ -126,16 +132,52 @@ export async function POST(req: Request) {
       const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
 
       try {
-        const rawFacts = await fetchPplx({
+        // Enhanced search parameters for better data retrieval
+        const extra = {
+          search_domain_filter: [
+            'pitchbook.com','businesswire.com','sec.gov',
+            'evaluatepharma.com','iqvia.com','globaldata.com',
+            'orangebook.fda.gov','pair.uspto.gov','patentscope.wipo.int',
+            'fda.gov','ema.europa.eu'
+          ],
+          search_context_size: model === 'sonar-deep-research' ? 'high' : 'medium',
+          search_mode: 'company'
+        };
+
+        let rawFacts = await fetchPplx({
           model: model,
           messages: retrievalPrompt,
           response_format: {
             type: 'json_schema',
             json_schema: { schema: RawFactsSchema }
-          }
+          },
+          ...extra
         }).then(parseJson);
 
         clearTimeout(timeoutId);
+
+        // Validate schema
+        RawFactsSchema.parse(rawFacts);
+
+        // Retry if critical fields are missing
+        const critical = ['dealActivity','keyMarketAssumptions','financialForecast'];
+        if (critical.some(k => !rawFacts[k] || (Array.isArray(rawFacts[k]) && rawFacts[k].length === 0))) {
+          console.warn('Critical fields missing, retrying with high reasoning effort', { missing: critical.filter(k => !rawFacts[k] || (Array.isArray(rawFacts[k]) && rawFacts[k].length === 0)), traceId });
+          
+          const retryBody = {
+            model: model,
+            messages: retrievalPrompt,
+            response_format: {
+              type: 'json_schema',
+              json_schema: { schema: RawFactsSchema }
+            },
+            reasoning_effort: 'high',
+            ...extra
+          };
+          
+          rawFacts = await fetchPplx(retryBody).then(parseJson);
+          RawFactsSchema.parse(rawFacts); // enforce schema again
+        }
 
         // Apply numeric sanity checks after raw model output
         const issues = sanityCheck(rawFacts);
@@ -148,7 +190,7 @@ export async function POST(req: Request) {
         // Calculate derived fields using pure functions instead of model calls
         const derived = {
           cagr: calc.calcCAGR(rawFacts.peakRevenue2030, rawFacts.currentMarket, rawFacts.yearsToPeak),
-          peakPatients2030: calc.calcPeakPatients(rawFacts.peakRevenue2030, rawFacts.avgPrice, rawFacts.persistenceRate),
+          peakPatients2030: calc.calcPeakPatients(rawFacts.peakRevenue2030, rawFacts.keyMarketAssumptions.avgSellingPriceUSD, rawFacts.keyMarketAssumptions.persistenceRate),
           pipelineDensity: calc.calcPipelineDensity(rawFacts.sameTargetAssets, rawFacts.totalAssets),
           strategicFit: calc.calcStrategicFit(rawFacts.vectorA, rawFacts.vectorB)
         };

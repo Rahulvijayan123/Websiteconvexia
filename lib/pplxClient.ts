@@ -15,6 +15,7 @@ interface PplxOptions {
   search_domain_filter?: string[];
   search_queries_per_search?: number;
   search_mode?: string;
+  search_context_size?: string;
 }
 
 export async function fetchPplx(options: PplxOptions) {
@@ -29,6 +30,7 @@ export async function fetchPplx(options: PplxOptions) {
     search_domain_filter: options.search_domain_filter,
     search_queries_per_search: options.search_queries_per_search || 5,
     search_mode: options.search_mode,
+    search_context_size: options.search_context_size,
     response_format: options.response_format || {
       type: 'json_schema',
       json_schema: { schema: commercialSchema }

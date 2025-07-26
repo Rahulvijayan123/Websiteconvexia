@@ -46,6 +46,20 @@ export function sanityCheck(raw: any): string[] {
     }
   });
 
+  // Enhanced validation for new nested fields
+  if (raw.financialForecast?.totalTenYearRevenueUSD?.value && raw.peakRevenue2030) {
+    if (raw.financialForecast.totalTenYearRevenueUSD.value < raw.peakRevenue2030) {
+      errs.push('10-year revenue is lower than peak revenue');
+    }
+  }
+
+  if (raw.dealActivity && Array.isArray(raw.dealActivity)) {
+    const lowPriceDeals = raw.dealActivity.filter((d: any) => d.priceUSD < 1_000_000);
+    if (lowPriceDeals.length > 0) {
+      errs.push(`Deal price below realistic threshold (< $1M): ${lowPriceDeals.map((d: any) => d.asset).join(', ')}`);
+    }
+  }
+
   // Check persistence rate is valid
   if (raw.persistenceRate !== undefined) {
     if (raw.persistenceRate < 0 || raw.persistenceRate > 1) {
