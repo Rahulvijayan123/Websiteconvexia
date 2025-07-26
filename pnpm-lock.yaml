@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@dqbd/tiktoken':
-        specifier: ^1.0.21
-        version: 1.0.21
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.9.1(react-hook-form@7.61.0(react@19.0.0))
@@ -391,9 +388,6 @@ packages:
 
   '@date-fns/tz@1.2.0':
     resolution: {integrity: sha512-LBrd7MiJZ9McsOgxqWX7AaxrDjcFVjWH/tIKJd7pnR7McaslGYOP1QmmiBXdJH/H/yLCT+rcQ7FaPBUxRGUtrg==}
-
-  '@dqbd/tiktoken@1.0.21':
-    resolution: {integrity: sha512-grBxRSY9+/iBM205EWjbMm5ySeXQrhJyXWMP38VJd+pO2DRGraDAbi4n8J8T9M4XY1M/FHgonMcmu3J+KjcX0Q==}
 
   '@emnapi/core@1.4.5':
     resolution: {integrity: sha512-XsLw1dEOpkSX/WucdqUhPWP7hDxSvZiY+fsUC14h+FtQ2Ifni4znbBt8punRX+Uj2JG/uDb8nEHVKvrVlvdZ5Q==}
@@ -4672,8 +4666,6 @@ snapshots:
   '@bcoe/v8-coverage@0.2.3': {}
 
   '@date-fns/tz@1.2.0': {}
-
-  '@dqbd/tiktoken@1.0.21': {}
 
   '@emnapi/core@1.4.5':
     dependencies:
