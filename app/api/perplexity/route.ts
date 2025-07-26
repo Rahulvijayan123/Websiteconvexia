@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import commercialSchema from '@/schemas/commercialOutputSchema.json';
 
 function estimateTokens(str: string): number {
   // More accurate token estimation: ~4 characters per token for English text
@@ -349,6 +350,10 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
       search_recency_filter: "year",
       search_domain_filter: domainAllowlist,
       search_queries_per_search: isDeep ? 10 : 5,
+      response_format: {
+        type: 'json_schema',
+        json_schema: { schema: commercialSchema }
+      },
       ...(body?.academic === true && { search_mode: "academic" })
     };
 
@@ -402,7 +407,11 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
         reasoning_effort: "high",
         max_tokens: 8000,
         search_queries_per_search: 15,
-        search_domain_filter: nextSources
+        search_domain_filter: nextSources,
+        response_format: {
+          type: 'json_schema',
+          json_schema: { schema: commercialSchema }
+        }
       };
       
       perplexityRes = await fetchWithFallback(retryPayload, model, currentPass);
@@ -445,7 +454,11 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
         },
         reasoning_effort: "high",
         max_tokens: 10000,
-        search_queries_per_search: 25
+        search_queries_per_search: 25,
+        response_format: {
+          type: 'json_schema',
+          json_schema: { schema: commercialSchema }
+        }
       };
       // Remove domain filter for comprehensive web search
       const { search_domain_filter, ...finalPayloadWithoutDomain } = finalPayload;

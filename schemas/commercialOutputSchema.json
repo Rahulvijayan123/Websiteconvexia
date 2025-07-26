@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "cagr": {
+      "type": "string",
+      "description": "Compound Annual Growth Rate as percentage or range"
+    },
+    "marketSize": {
+      "type": "string",
+      "description": "Current and projected market size in billions"
+    },
+    "directCompetitors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Names of direct competitors"
+    },
+    "prvEligibility": {
+      "oneOf": [
+        {"type": "string"},
+        {"type": "number"}
+      ],
+      "description": "Priority Review Voucher eligibility"
+    },
+    "nationalPriority": {
+      "type": "string",
+      "description": "Public health priority tier"
+    },
+    "reviewTimelineMonths": {
+      "oneOf": [
+        {"type": "string"},
+        {"type": "number"}
+      ],
+      "description": "Expected FDA review timeline in months"
+    },
+    "peakRevenue2030": {
+      "type": "string",
+      "description": "Forecasted peak revenue by 2030 in billions"
+    },
+    "total10YearRevenue": {
+      "type": "string",
+      "description": "Estimated total revenue over 10 years"
+    },
+    "peakMarketShare2030": {
+      "type": "string",
+      "description": "Projected market share by 2030 as percentage"
+    },
+    "peakPatients2030": {
+      "type": "string",
+      "description": "Estimated treated patient population by 2030"
+    },
+    "dealActivity": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "assetName": {"type": "string"},
+          "buyer": {"type": "string"},
+          "developmentStage": {"type": "string"},
+          "dealPrice": {"type": "string"},
+          "dealDate": {"type": "string"},
+          "rationale": {"type": "string"}
+        },
+        "required": ["assetName", "buyer", "developmentStage", "dealPrice", "dealDate", "rationale"]
+      },
+      "description": "Recent M&A/licensing deals"
+    },
+    "pipelineAnalysis": {
+      "type": "object",
+      "properties": {
+        "crowdingPercent": {
+          "type": "string",
+          "description": "Pipeline density as percentage"
+        },
+        "competitiveThreats": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of competitive threats"
+        },
+        "strategicFitRank": {
+          "type": "string",
+          "description": "Strategic fit rank 0-100"
+        }
+      },
+      "required": ["crowdingPercent", "competitiveThreats", "strategicFitRank"]
+    }
+  },
+  "required": [
+    "cagr",
+    "marketSize", 
+    "directCompetitors",
+    "prvEligibility",
+    "nationalPriority",
+    "reviewTimelineMonths",
+    "peakRevenue2030",
+    "total10YearRevenue",
+    "peakMarketShare2030",
+    "peakPatients2030",
+    "dealActivity",
+    "pipelineAnalysis"
+  ],
+  "additionalProperties": false
+} 
