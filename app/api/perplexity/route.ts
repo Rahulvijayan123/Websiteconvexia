@@ -45,84 +45,123 @@ export async function POST(req: NextRequest) {
 
   const isDeep = model === 'sonar-deep-research';
 
-  // Comprehensive source categories for different search phases
+  // Comprehensive source categories organized by type
   const sourceCategories = {
-    // Pass 1: High-confidence, structured sources (max 10 for API)
-    primarySources: [
+    // Deal Activity & M&A Sources
+    dealSources: [
       "evaluatepharma.com",
-      "clinicaltrials.gov", 
-      "fda.gov",
-      "pubmed.ncbi.nlm.nih.gov",
       "pitchbook.com",
       "clarivate.com",
-      "nature.com",
-      "science.org",
       "biocentury.com",
-      "citeline.com"
+      "citeline.com",
+      "spglobal.com",
+      "seekingalpha.com",
+      "morningstar.com",
+      "reuters.com",
+      "bloomberg.com"
     ],
     
-    // Additional sources for broader search (used in pass 2+)
-    secondarySources: [
-      "ema.europa.eu",
-      "iqvia.com",
-      "globaldata.com",
-      "spglobal.com",
+    // Pipeline & Clinical Sources
+    clinicalSources: [
+      "clinicaltrials.gov",
+      "pubmed.ncbi.nlm.nih.gov",
+      "citeline.com",
       "who.int",
+      "biorender.com",
+      "litcovid.org",
+      "pmc.ncbi.nlm.nih.gov",
+      "nejm.org",
+      "thelancet.com",
+      "jamanetwork.com"
+    ],
+    
+    // Regulatory & Patent Sources
+    regulatorySources: [
+      "fda.gov",
+      "ema.europa.eu",
       "uspto.gov",
       "wipo.int",
-      "thelancet.com",
-      "nejm.org",
-      "jamanetwork.com",
-      "bmj.com",
+      "orpha.net",
+      "cdc.gov",
+      "pmda.go.jp",
+      "espacenet.com",
+      "jpo.go.jp",
+      "inpadoc.epo.org"
+    ],
+    
+    // Market & Financial Sources
+    marketSources: [
+      "evaluatepharma.com",
+      "iqvia.com",
+      "globaldata.com",
+      "statista.com",
+      "frost.com",
+      "wsj.com",
+      "ft.com",
+      "biopharminsight.com",
+      "firstwordpharma.com",
+      "roche.com"
+    ],
+    
+    // Academic & Research Sources
+    academicSources: [
+      "nature.com",
+      "science.org",
+      "pubmed.ncbi.nlm.nih.gov",
       "scholar.google.com",
       "ieee.org",
       "acm.org",
       "arxiv.org",
       "biorxiv.org",
       "medrxiv.org",
+      "bmj.com"
+    ],
+    
+    // News & Industry Sources
+    newsSources: [
       "biospace.com",
       "fiercebiotech.com",
       "biopharmadive.com",
       "pharmatimes.com",
       "pharmaceutical-journal.com",
-      "statista.com",
-      "frost.com",
-      "seekingalpha.com",
-      "morningstar.com",
       "reuters.com",
       "bloomberg.com",
       "wsj.com",
       "ft.com",
-      "biopharminsight.com",
-      "firstwordpharma.com",
+      "crunchbase.com"
+    ],
+    
+    // IP & Patent Sources
+    patentSources: [
+      "uspto.gov",
+      "wipo.int",
+      "espacenet.com",
+      "jpo.go.jp",
+      "patents.google.com",
+      "lens.org",
       "patsnap.com",
       "drugbank.ca",
       "chembl.org",
-      "reaxys.com",
-      "lens.org",
-      "patents.google.com",
-      "roche.com",
-      "crunchbase.com",
-      "informa.com",
-      "biorender.com",
-      "litcovid.org",
-      "pmc.ncbi.nlm.nih.gov",
-      "orpha.net",
-      "cdc.gov",
-      "healthdata.org",
-      "eurostat.europa.eu",
-      "seer.cancer.gov",
-      "pmda.go.jp",
-      "hc-sc.gc.ca",
-      "espacenet.com",
-      "jpo.go.jp",
-      "inpadoc.epo.org",
-      "markush.org"
+      "reaxys.com"
     ]
   };
 
-  // Use primary sources for initial search (respects 10-domain limit)
-  const domainAllowlist = sourceCategories.primarySources;
+  // Function to get sources for a specific pass
+  const getSourcesForPass = (passNumber: number) => {
+    switch (passNumber) {
+      case 1: return sourceCategories.dealSources; // Start with deal activity
+      case 2: return sourceCategories.clinicalSources; // Then clinical data
+      case 3: return sourceCategories.regulatorySources; // Then regulatory
+      case 4: return sourceCategories.marketSources; // Then market data
+      case 5: return sourceCategories.academicSources; // Then academic
+      case 6: return sourceCategories.newsSources; // Then news
+      case 7: return sourceCategories.patentSources; // Finally patents
+      default: return sourceCategories.dealSources;
+    }
+  };
+
+  // Use deal sources for initial search
+  const domainAllowlist = getSourcesForPass(1);
 
   // Extract target and indication from the request body
   const target = body.target || '';
@@ -315,9 +354,8 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
 
     let perplexityRes = await fetchWithFallback(payload, model, 1);
     
-    // Multi-pass instrumentation-based retry with escalating search scope
-    const MIN_QUERIES_PASS1 = 25;
-    const MIN_QUERIES_PASS2 = 15;
+        // Multi-pass instrumentation-based retry with comprehensive source coverage
+    const MIN_QUERIES_PER_PASS = 20;
     let perplexityText = await perplexityRes.text();
     let parsedResponse;
     try {
@@ -332,30 +370,28 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
       numSearchQueries: parsedResponse?.usage?.num_search_queries,
       searchContextSize: payload.web_search_options?.search_context_size,
       reasoningEffort: payload.reasoning_effort,
-      pass: 1
+      pass: 1,
+      sourcesUsed: domainAllowlist
     });
     
-    // Pass 2: Remove domain filter and increase search depth
-    if (parsedResponse?.usage?.num_search_queries < MIN_QUERIES_PASS1 && isDeep) {
-      logs.push({ 
-        step: 'Pass 2: Retrying with expanded search scope', 
-        numSearchQueries: parsedResponse?.usage?.num_search_queries,
-        minQueries: MIN_QUERIES_PASS1
-      });
+    // Multi-pass strategy to cover all source categories
+    let currentPass = 1;
+    const maxPasses = 7; // Cover all 7 source categories
+    
+    while (parsedResponse?.usage?.num_search_queries < MIN_QUERIES_PER_PASS && 
+           currentPass < maxPasses && 
+           isDeep) {
       
-      // Pass 2: Use a different set of high-value sources (still max 10)
-      const pass2Sources = [
-        "ema.europa.eu",
-        "iqvia.com", 
-        "globaldata.com",
-        "who.int",
-        "uspto.gov",
-        "thelancet.com",
-        "nejm.org",
-        "biospace.com",
-        "reuters.com",
-        "bloomberg.com"
-      ];
+      currentPass++;
+      const nextSources = getSourcesForPass(currentPass);
+      
+      logs.push({ 
+        step: `Pass ${currentPass}: Retrying with ${nextSources.length} sources`, 
+        numSearchQueries: parsedResponse?.usage?.num_search_queries,
+        minQueries: MIN_QUERIES_PER_PASS,
+        sources: nextSources,
+        sourceCategory: Object.keys(sourceCategories)[currentPass - 1]
+      });
       
       const retryPayload = {
         ...payload,
@@ -366,10 +402,10 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
         reasoning_effort: "high",
         max_tokens: 8000,
         search_queries_per_search: 15,
-        search_domain_filter: pass2Sources
+        search_domain_filter: nextSources
       };
       
-              perplexityRes = await fetchWithFallback(retryPayload, model, 2);
+      perplexityRes = await fetchWithFallback(retryPayload, model, currentPass);
       perplexityText = await perplexityRes.text();
       
       try {
@@ -379,57 +415,61 @@ Do not include any extra text, explanation, or markdown. Output ONLY the JSON ob
       }
       
       logs.push({ 
-        step: 'Pass 2 response status', 
+        step: `Pass ${currentPass} response status`, 
         status: perplexityRes.status,
         numSearchQueries: parsedResponse?.usage?.num_search_queries,
-        pass: 2
+        pass: currentPass,
+        sourcesUsed: nextSources
       });
       
       if (!perplexityRes.ok) {
-        logs.push({ error: 'Perplexity API pass 2 error', details: perplexityText });
-        return NextResponse.json({ error: `Perplexity API pass 2 error: ${perplexityText}`, status: perplexityRes.status, logs }, { status: 500 });
+        logs.push({ error: `Perplexity API pass ${currentPass} error`, details: perplexityText });
+        return NextResponse.json({ error: `Perplexity API pass ${currentPass} error: ${perplexityText}`, status: perplexityRes.status, logs }, { status: 500 });
+      }
+    }
+    
+    // Final pass: Academic mode with web search for comprehensive coverage
+    if (parsedResponse?.usage?.num_search_queries < MIN_QUERIES_PER_PASS && isDeep) {
+      logs.push({ 
+        step: 'Final pass: Academic mode with web search', 
+        numSearchQueries: parsedResponse?.usage?.num_search_queries,
+        minQueries: MIN_QUERIES_PER_PASS
+      });
+      
+      const finalPayload = {
+        ...payload,
+        search_mode: "academic",
+        web_search_options: { 
+          search_context_size: "high",
+          search_depth: "deep"
+        },
+        reasoning_effort: "high",
+        max_tokens: 10000,
+        search_queries_per_search: 25
+      };
+      // Remove domain filter for comprehensive web search
+      const { search_domain_filter, ...finalPayloadWithoutDomain } = finalPayload;
+      
+      perplexityRes = await fetchWithFallback(finalPayloadWithoutDomain, model, 8);
+      perplexityText = await perplexityRes.text();
+      
+      try {
+        parsedResponse = JSON.parse(perplexityText);
+      } catch (e) {
+        parsedResponse = null;
       }
       
-      // Pass 3: Academic search mode for very shallow results
-      if (parsedResponse?.usage?.num_search_queries < MIN_QUERIES_PASS2 && isDeep) {
-        logs.push({ 
-          step: 'Pass 3: Retrying with academic search mode', 
-          numSearchQueries: parsedResponse?.usage?.num_search_queries,
-          minQueries: MIN_QUERIES_PASS2
-        });
-        
-        const academicPayload = {
-          ...retryPayload,
-          search_mode: "academic",
-          web_search_options: { 
-            search_context_size: "high",
-            search_depth: "deep"
-          },
-          reasoning_effort: "high",
-          max_tokens: 10000,
-          search_queries_per_search: 20
-        };
-        
-        perplexityRes = await fetchWithFallback(academicPayload, model, 3);
-        perplexityText = await perplexityRes.text();
-        
-        try {
-          parsedResponse = JSON.parse(perplexityText);
-        } catch (e) {
-          parsedResponse = null;
-        }
-        
-        logs.push({ 
-          step: 'Pass 3 response status', 
-          status: perplexityRes.status,
-          numSearchQueries: parsedResponse?.usage?.num_search_queries,
-          pass: 3
-        });
-        
-        if (!perplexityRes.ok) {
-          logs.push({ error: 'Perplexity API pass 3 error', details: perplexityText });
-          return NextResponse.json({ error: `Perplexity API pass 3 error: ${perplexityText}`, status: perplexityRes.status, logs }, { status: 500 });
-        }
+      logs.push({ 
+        step: 'Final pass response status', 
+        status: perplexityRes.status,
+        numSearchQueries: parsedResponse?.usage?.num_search_queries,
+        pass: 8,
+        mode: 'academic_web_search'
+      });
+      
+      if (!perplexityRes.ok) {
+        logs.push({ error: 'Perplexity API final pass error', details: perplexityText });
+        return NextResponse.json({ error: `Perplexity API final pass error: ${perplexityText}`, status: perplexityRes.status, logs }, { status: 500 });
       }
     }
     logs.push({ step: 'Perplexity API raw response', perplexityText });
