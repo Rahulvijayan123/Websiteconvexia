@@ -1,0 +1,151 @@
+{
+  "timestamp": "2025-07-27T21:41:32.862Z",
+  "testInput": {
+    "cagr": "12.5%",
+    "marketSize": "2.8B",
+    "directCompetitors": [
+      "Enhertu",
+      "Kadcyla",
+      "Perjeta"
+    ],
+    "prvEligibility": "Eligible - Orphan Drug Designation",
+    "nationalPriority": "High - Unmet Medical Need",
+    "reviewTimelineMonths": "12",
+    "peakRevenue2030": "1.8B",
+    "total10YearRevenue": "12.5B",
+    "peakMarketShare2030": "15%",
+    "peakPatients2030": "150K",
+    "avgSellingPrice": "$45K",
+    "persistenceRate": "75%",
+    "treatmentDuration": "18 months",
+    "geographicSplit": "60% US / 40% Ex-US",
+    "competitorPricing": [
+      {
+        "drugName": "Enhertu",
+        "annualPrice": "$165K",
+        "indication": "HER2+ Breast Cancer",
+        "accessLevel": "Broad",
+        "rationale": "FDA approved with broad payer coverage"
+      }
+    ],
+    "pricingScenarios": [
+      {
+        "scenario": "Base Case",
+        "usPrice": "$180K",
+        "exUsPrice": "$120K",
+        "grossToNet": "35%",
+        "copay": "Yes",
+        "access": "Yes",
+        "genericYear": "Yr 8",
+        "lossOfExclusivity": "65%",
+        "rationale": "Competitive pricing with comprehensive access programs"
+      }
+    ],
+    "strategicTailwindData": {
+      "fdaDesignations": {
+        "breakthroughTherapy": "Likely",
+        "fastTrack": "Eligible",
+        "orphanDrug": "Eligible",
+        "priorityReview": "Likely",
+        "rationale": "Unmet medical need in metastatic setting"
+      }
+    },
+    "dealActivity": [
+      {
+        "assetName": "Enhertu",
+        "buyer": "AstraZeneca",
+        "developmentStage": "Phase 3",
+        "dealPrice": "$6.9B",
+        "dealDate": "2020-03-27",
+        "rationale": "Major global co-development and commercialization deal"
+      }
+    ],
+    "pipelineAnalysis": {
+      "crowdingPercent": "12%",
+      "competitiveThreats": [
+        "ADC competition",
+        "Novel HER2 inhibitors"
+      ],
+      "strategicFitRank": "85"
+    }
+  },
+  "assessment": {
+    "overallScore": 78.5,
+    "categoryScores": {
+      "factualAccuracy": {
+        "score": 80,
+        "confidence": 0.8,
+        "reasoning": "Some numerical data lacks context, but overall accurate."
+      },
+      "scientificCoherence": {
+        "score": 78,
+        "confidence": 0.75,
+        "reasoning": "Biological plausibility is sound, but clinical interpretation could be deeper."
+      },
+      "sourceCredibility": {
+        "score": 70,
+        "confidence": 0.65,
+        "reasoning": "Insufficient primary sources and lack of peer-reviewed references."
+      },
+      "pharmaExpertise": {
+        "score": 85,
+        "confidence": 0.85,
+        "reasoning": "Strong understanding of market access and competitive landscape."
+      },
+      "reasoningDepth": {
+        "score": 75,
+        "confidence": 0.75,
+        "reasoning": "Causal relationships are present but lack depth in alternative scenarios."
+      },
+      "regulatoryCompliance": {
+        "score": 80,
+        "confidence": 0.8,
+        "reasoning": "Good understanding of regulatory pathways but missing specific guidance references."
+      },
+      "marketIntelligence": {
+        "score": 82,
+        "confidence": 0.82,
+        "reasoning": "Solid market analysis but growth projections need more justification."
+      },
+      "competitiveAnalysis": {
+        "score": 77,
+        "confidence": 0.78,
+        "reasoning": "Competitor identification is adequate but lacks detailed threat assessment."
+      }
+    },
+    "criticalIssues": [
+      {
+        "severity": "high",
+        "category": "sourceCredibility",
+        "description": "Lack of primary regulatory and clinical trial sources.",
+        "impact": "Significantly reduces confidence in regulatory and clinical claims.",
+        "suggestedFix": "Incorporate primary sources such as FDA.gov and clinicaltrials.gov."
+      }
+    ],
+    "sourceValidation": {
+      "totalSources": 15,
+      "validSources": 12,
+      "primarySources": 5,
+      "recentSources": 10,
+      "authoritativeSources": 8,
+      "sourceQualityScore": 75,
+      "missingCriticalSources": [
+        "FDA.gov",
+        "clinicaltrials.gov"
+      ]
+    },
+    "confidenceLevel": 0.8,
+    "shouldRetry": true,
+    "retryPriority": "medium",
+    "correctiveInstructions": "Include primary regulatory and clinical trial sources to enhance credibility.",
+    "estimatedImprovementPotential": 10
+  },
+  "reviewTime": 11293,
+  "reviewMetadata": {
+    "model": "gpt-4o",
+    "tokensUsed": 2016,
+    "promptTokens": 1491,
+    "completionTokens": 525
+  },
+  "overallScore": 78.5
+}

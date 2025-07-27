@@ -1,0 +1,193 @@
+{
+  "timestamp": "2025-07-27T21:44:10.620Z",
+  "testInput": {
+    "cagr": "12.5%",
+    "marketSize": "2.8B",
+    "directCompetitors": [
+      "Enhertu",
+      "Kadcyla",
+      "Perjeta"
+    ],
+    "prvEligibility": "Eligible - Orphan Drug Designation",
+    "nationalPriority": "High - Unmet Medical Need",
+    "reviewTimelineMonths": "12",
+    "peakRevenue2030": "1.8B",
+    "total10YearRevenue": "12.5B",
+    "peakMarketShare2030": "15%",
+    "peakPatients2030": "150K",
+    "avgSellingPrice": "$45K",
+    "persistenceRate": "75%",
+    "treatmentDuration": "18 months",
+    "geographicSplit": "60% US / 40% Ex-US",
+    "competitorPricing": [
+      {
+        "drugName": "Enhertu",
+        "annualPrice": "$165K",
+        "indication": "HER2+ Breast Cancer",
+        "accessLevel": "Broad",
+        "rationale": "FDA approved with broad payer coverage"
+      }
+    ],
+    "pricingScenarios": [
+      {
+        "scenario": "Base Case",
+        "usPrice": "$180K",
+        "exUsPrice": "$120K",
+        "grossToNet": "35%",
+        "copay": "Yes",
+        "access": "Yes",
+        "genericYear": "Yr 8",
+        "lossOfExclusivity": "65%",
+        "rationale": "Competitive pricing with comprehensive access programs"
+      }
+    ],
+    "strategicTailwindData": {
+      "fdaDesignations": {
+        "breakthroughTherapy": "Likely",
+        "fastTrack": "Eligible",
+        "orphanDrug": "Eligible",
+        "priorityReview": "Likely",
+        "rationale": "Unmet medical need in metastatic setting"
+      }
+    },
+    "dealActivity": [
+      {
+        "assetName": "Enhertu",
+        "buyer": "AstraZeneca",
+        "developmentStage": "Phase 3",
+        "dealPrice": "$6.9B",
+        "dealDate": "2020-03-27",
+        "rationale": "Major global co-development and commercialization deal"
+      }
+    ],
+    "pipelineAnalysis": {
+      "crowdingPercent": "12%",
+      "competitiveThreats": [
+        "ADC competition",
+        "Novel HER2 inhibitors"
+      ],
+      "strategicFitRank": "85"
+    }
+  },
+  "assessment": {
+    "overallScore": 85.5,
+    "categoryScores": {
+      "factualAccuracy": {
+        "score": 88,
+        "confidence": 0.9,
+        "reasoning": "Strong numerical accuracy",
+        "evidence": [
+          "Market data verified"
+        ],
+        "issues": []
+      },
+      "scientificCoherence": {
+        "score": 85,
+        "confidence": 0.85,
+        "reasoning": "Good biological plausibility",
+        "evidence": [
+          "Mechanism validated"
+        ],
+        "issues": []
+      },
+      "sourceCredibility": {
+        "score": 85,
+        "confidence": 0.85,
+        "reasoning": "Primary sources included",
+        "evidence": [
+          "FDA.gov cited"
+        ],
+        "issues": []
+      },
+      "pharmaExpertise": {
+        "score": 90,
+        "confidence": 0.9,
+        "reasoning": "Excellent industry knowledge",
+        "evidence": [
+          "Regulatory strategy clear"
+        ],
+        "issues": []
+      },
+      "reasoningDepth": {
+        "score": 85,
+        "confidence": 0.85,
+        "reasoning": "Strong causal relationships",
+        "evidence": [
+          "3 scenarios analyzed"
+        ],
+        "issues": []
+      },
+      "regulatoryCompliance": {
+        "score": 85,
+        "confidence": 0.85,
+        "reasoning": "FDA guidance followed",
+        "evidence": [
+          "Guidance documents cited"
+        ],
+        "issues": []
+      },
+      "marketIntelligence": {
+        "score": 88,
+        "confidence": 0.88,
+        "reasoning": "Excellent market analysis",
+        "evidence": [
+          "Projections validated"
+        ],
+        "issues": []
+      },
+      "competitiveAnalysis": {
+        "score": 82,
+        "confidence": 0.82,
+        "reasoning": "Good competitive assessment",
+        "evidence": [
+          "Competitors identified"
+        ],
+        "issues": []
+      }
+    },
+    "criticalIssues": [
+      {
+        "severity": "medium",
+        "category": "sourceCredibility",
+        "description": "Missing clinical trial data",
+        "impact": "Reduces clinical confidence",
+        "suggestedFix": "Include clinicaltrials.gov data"
+      }
+    ],
+    "sourceValidation": {
+      "totalSources": 20,
+      "validSources": 18,
+      "primarySources": 8,
+      "recentSources": 15,
+      "authoritativeSources": 12,
+      "sourceQualityScore": 85,
+      "missingCriticalSources": [
+        "clinicaltrials.gov"
+      ],
+      "sourceGaps": [
+        "Limited Phase 3 data"
+      ]
+    },
+    "confidenceLevel": 0.85,
+    "shouldRetry": false,
+    "retryPriority": "low",
+    "correctiveInstructions": "Add clinical trial data from clinicaltrials.gov",
+    "estimatedImprovementPotential": 5
+  },
+  "reviewTime": 10313,
+  "reviewMetadata": {
+    "model": "gpt-4o",
+    "tokensUsed": 2070,
+    "promptTokens": 1499,
+    "completionTokens": 571,
+    "responseTime": 10313
+  },
+  "overallScore": 85.5,
+  "optimization": {
+    "promptOptimization": "Streamlined and focused",
+    "modelOptimization": "Reduced tokens, increased penalties",
+    "parsingOptimization": "Enhanced error handling",
+    "thresholdOptimization": "Adjusted to 82%",
+    "retryOptimization": "Priority-based decisions"
+  }
+}
