@@ -241,6 +241,18 @@ For each field below, you must:
   - Use pricing databases, payer coverage analysis, and market intelligence sources.
   - This must match the competitors listed in directCompetitors.
 
+- For pricingScenarios:
+  - Research and provide three realistic pricing strategy scenarios: "Base Case", "Conservative", and "Optimistic".
+  - For each scenario, find: scenario name, US price, ex-US price, gross-to-net percentage, copay support (Yes/No), access programs (Yes/No), generic entry year, loss of exclusivity impact, and rationale.
+  - US price and ex-US price should be in format like "$180K", "$120K".
+  - Gross-to-net should be percentage like "35%", "45%".
+  - Copay and access should be "Yes" or "No".
+  - Generic entry year should be "Yr 6", "Yr 8", "Yr 10".
+  - Loss of exclusivity should be percentage like "65%", "75%".
+  - Rationale should explain the pricing strategy and market positioning for each scenario.
+  - Use pricing strategy analysis, market access research, and competitive intelligence.
+  - Base prices should be realistic relative to competitor pricing and market dynamics.
+
 - For pipelineAnalysis.crowdingPercent (pipeline density), calculate as: number of same‑target assets ÷ total assets in indication, show as percent. Return only the percentage or range, e.g., "12%" or "10-15%". Do not include any text or explanation.
 
 - For directCompetitors:
@@ -281,6 +293,7 @@ Return ONLY a valid JSON object with the following keys:
 - treatmentDuration: string (median treatment duration in months)
 - geographicSplit: string (revenue split between US and ex-US markets at peak)
 - competitorPricing: array of objects (pricing and access data for direct competitors)
+- pricingScenarios: array of objects (realistic pricing strategy scenarios)
 - dealActivity: array of objects (recent M&A/licensing deals)
 - pipelineAnalysis: object (crowdingPercent, competitiveThreats)
 

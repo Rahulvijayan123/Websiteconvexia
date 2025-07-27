@@ -82,6 +82,25 @@
       },
       "description": "Pricing and access data for direct competitors"
     },
+    "pricingScenarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "scenario": {"type": "string"},
+          "usPrice": {"type": "string"},
+          "exUsPrice": {"type": "string"},
+          "grossToNet": {"type": "string"},
+          "copay": {"type": "string"},
+          "access": {"type": "string"},
+          "genericYear": {"type": "string"},
+          "lossOfExclusivity": {"type": "string"},
+          "rationale": {"type": "string"}
+        },
+        "required": ["scenario", "usPrice", "exUsPrice", "grossToNet", "copay", "access", "genericYear", "lossOfExclusivity", "rationale"]
+      },
+      "description": "Real pricing strategy scenarios with market-based values"
+    },
     "dealActivity": {
       "type": "array",
       "items": {
@@ -136,6 +155,7 @@
     "treatmentDuration",
     "geographicSplit",
     "competitorPricing",
+    "pricingScenarios",
     "dealActivity",
     "pipelineAnalysis"
   ],

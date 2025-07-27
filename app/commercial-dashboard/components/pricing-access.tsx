@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 const payerSentiment = [
   {
@@ -30,42 +31,6 @@ const payerSentiment = [
   },
 ]
 
-const pricingScenarios = [
-  {
-    scenario: "Base Case",
-    usPrice: "$180K",
-    exUsPrice: "$120K",
-    grossToNet: "35%",
-    copay: "Yes",
-    access: "Yes",
-    genericYear: "Yr 8",
-    lossOfExclusivity: "65%",
-    rationale: "Conservative pricing aligned with current SOC, balanced access strategy",
-  },
-  {
-    scenario: "Conservative",
-    usPrice: "$150K",
-    exUsPrice: "$100K",
-    grossToNet: "45%",
-    copay: "Yes",
-    access: "Yes",
-    genericYear: "Yr 6",
-    lossOfExclusivity: "75%",
-    rationale: "Lower pricing for faster uptake, higher rebates for broader access",
-  },
-  {
-    scenario: "Optimistic",
-    usPrice: "$220K",
-    exUsPrice: "$150K",
-    grossToNet: "25%",
-    copay: "Yes",
-    access: "No",
-    genericYear: "Yr 10",
-    lossOfExclusivity: "45%",
-    rationale: "Premium pricing based on superior efficacy, limited access programs",
-  },
-]
-
 const comparators = [
   { drug: "Osimertinib", price: "$165K", indication: "EGFR+ NSCLC", access: "Broad" },
   { drug: "Alectinib", price: "$155K", indication: "ALK+ NSCLC", access: "Broad" },
@@ -85,16 +50,72 @@ interface ExpandableDetailProps {
 
 function ExpandableDetail({ title, value, unit, assumptions, formula, sources, aiDerivation }: ExpandableDetailProps) {
   return (
-    <Button variant="secondary" size="sm">
-      View Details
-    </Button>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="secondary" size="sm">
+          View Details
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="blurred-section">{title}</DialogTitle>
+          <DialogDescription className="blurred-section">
+            Detailed analysis and methodology
+          </DialogDescription>
+        </DialogHeader>
+        <div className="blurred-section space-y-4">
+          <div>
+            <h5 className="font-semibold">Key Assumptions:</h5>
+            <ul className="list-disc pl-5">
+              {assumptions.map((assumption, index) => (
+                <li key={index}>{assumption}</li>
+              ))}
+            </ul>
+          </div>
+
+          {formula && (
+            <div>
+              <h5 className="font-semibold">Calculation Formula:</h5>
+              <p>{formula}</p>
+            </div>
+          )}
+
+          <div>
+            <h5 className="font-semibold">Data Sources:</h5>
+            <ul>
+              {sources.map((source, index) => (
+                <li key={index} className="flex items-center gap-2">
+                  {source.url ? (
+                    <a href={source.url} target="_blank" rel="noopener noreferrer" className="underline">
+                      {source.name}
+                    </a>
+                  ) : (
+                    <span>{source.name}</span>
+                  )}
+                  <Badge variant="secondary">{source.type}</Badge>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {aiDerivation && (
+            <div>
+              <h5 className="font-semibold">AI Derivation:</h5>
+              <p className="text-sm">{aiDerivation}</p>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
 export function PricingAccess({
-  competitorPricing
+  competitorPricing,
+  pricingScenarios
 }: {
-  competitorPricing?: any[]
+  competitorPricing?: any[],
+  pricingScenarios?: any[]
 } = {}) {
   return (
     <Tabs defaultValue="sentiment" className="w-full">
@@ -220,7 +241,7 @@ export function PricingAccess({
             <CardDescription>Comparative analysis of pricing and access strategies</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="blurred-section">
+            {pricingScenarios && pricingScenarios.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -256,10 +277,10 @@ export function PricingAccess({
                             title={`${scenario.scenario} Rationale`}
                             value={scenario.usPrice}
                             assumptions={[
-                              "Reference pricing vs osimertinib ($165K) with 10% premium",
-                              "Gross-to-net erosion of 35% based on oncology benchmarks",
-                              "Copay support program covering 80% of patient responsibility",
-                              "Value-based contracts with 3 major payers covering 40% of lives",
+                              `Reference pricing vs competitors with market positioning strategy`,
+                              `Gross-to-net erosion based on oncology benchmarks and payer negotiations`,
+                              `Copay support program covering patient responsibility`,
+                              `Value-based contracts with major payers for broader access`,
                             ]}
                             sources={[
                               { name: "SSR Health Pricing Database", type: "database" },
@@ -273,25 +294,29 @@ export function PricingAccess({
                   </tbody>
                 </table>
               </div>
-            </div>
+            ) : (
+              <div className="text-center text-slate-500 py-8">
+                No pricing scenarios data available. This will be populated with real research data.
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Scenario Rationales */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {pricingScenarios.map((scenario, index) => (
-            <Card key={index}>
-              <CardHeader>
-                <CardTitle className="text-lg">{scenario.scenario} Rationale</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="blurred-section">
+        {pricingScenarios && pricingScenarios.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {pricingScenarios.map((scenario, index) => (
+              <Card key={index}>
+                <CardHeader>
+                  <CardTitle className="text-lg">{scenario.scenario} Rationale</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <p className="text-sm text-slate-700">{scenario.rationale}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* Access Strategy Recommendations */}
         <Card>
