@@ -101,6 +101,67 @@
       },
       "description": "Real pricing strategy scenarios with market-based values"
     },
+    "strategicTailwindData": {
+      "type": "object",
+      "properties": {
+        "fdaDesignations": {
+          "type": "object",
+          "properties": {
+            "breakthroughTherapy": {"type": "string"},
+            "fastTrack": {"type": "string"},
+            "orphanDrug": {"type": "string"},
+            "priorityReview": {"type": "string"},
+            "rationale": {"type": "string"}
+          },
+          "required": ["breakthroughTherapy", "fastTrack", "orphanDrug", "priorityReview", "rationale"]
+        },
+        "guidanceDocuments": {
+          "type": "object",
+          "properties": {
+            "oncologyEndpoints": {"type": "string"},
+            "biomarkerStrategy": {"type": "string"},
+            "realWorldEvidence": {"type": "string"},
+            "patientReportedOutcomes": {"type": "string"},
+            "rationale": {"type": "string"}
+          },
+          "required": ["oncologyEndpoints", "biomarkerStrategy", "realWorldEvidence", "patientReportedOutcomes", "rationale"]
+        },
+        "policyIncentives": {
+          "type": "object",
+          "properties": {
+            "arpaHFunding": {"type": "string"},
+            "medicareInnovation": {"type": "string"},
+            "iraExclusions": {"type": "string"},
+            "taxCredits": {"type": "string"},
+            "rationale": {"type": "string"}
+          },
+          "required": ["arpaHFunding", "medicareInnovation", "iraExclusions", "taxCredits", "rationale"]
+        },
+        "advocacyActivity": {
+          "type": "object",
+          "properties": {
+            "patientOrganizations": {"type": "string"},
+            "kolSupport": {"type": "string"},
+            "medicalSocieties": {"type": "string"},
+            "congressionalInterest": {"type": "string"},
+            "rationale": {"type": "string"}
+          },
+          "required": ["patientOrganizations", "kolSupport", "medicalSocieties", "congressionalInterest", "rationale"]
+        },
+        "marketPrecedent": {
+          "type": "object",
+          "properties": {
+            "similarApprovals": {"type": "string"},
+            "pricingPrecedent": {"type": "string"},
+            "accessPatterns": {"type": "string"},
+            "competitiveResponse": {"type": "string"},
+            "rationale": {"type": "string"}
+          },
+          "required": ["similarApprovals", "pricingPrecedent", "accessPatterns", "competitiveResponse", "rationale"]
+        }
+      },
+      "required": ["fdaDesignations", "guidanceDocuments", "policyIncentives", "advocacyActivity", "marketPrecedent"]
+    },
     "dealActivity": {
       "type": "array",
       "items": {
@@ -156,6 +217,7 @@
     "geographicSplit",
     "competitorPricing",
     "pricingScenarios",
+    "strategicTailwindData",
     "dealActivity",
     "pipelineAnalysis"
   ],

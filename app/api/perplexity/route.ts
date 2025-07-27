@@ -253,6 +253,16 @@ For each field below, you must:
   - Use pricing strategy analysis, market access research, and competitive intelligence.
   - Base prices should be realistic relative to competitor pricing and market dynamics.
 
+- For strategicTailwindData:
+  - Research and provide comprehensive strategic tailwind analysis across five key areas: FDA Designations, Guidance Documents, Policy Incentives, Advocacy Activity, and Market Precedent.
+  - For FDA Designations: Research breakthrough therapy, fast track, orphan drug, and priority review eligibility. Provide status (Likely/Eligible/Potential/Unlikely) and rationale explaining the assessment based on FDA criteria and current guidance.
+  - For Guidance Documents: Research alignment with oncology endpoints, biomarker strategy, real-world evidence, and patient-reported outcomes guidance. Provide status (Aligned/Compliant/Supportive/Included) and rationale based on FDA guidance documents and regulatory precedents.
+  - For Policy Incentives: Research ARPA-H funding, Medicare innovation, IRA exclusions, and tax credits eligibility. Provide status (Potential/Aligned/Eligible/Available) and rationale based on current policy landscape and legislative developments.
+  - For Advocacy Activity: Research patient organizations, KOL support, medical societies, and congressional interest. Provide status (Strong/Established/Engaged/Moderate) and rationale based on stakeholder analysis and advocacy landscape.
+  - For Market Precedent: Research similar approvals, pricing precedent, access patterns, and competitive response. Provide status (Limited/Established/Favorable/Predictable) and rationale based on market analysis and competitive intelligence.
+  - Each section must include a 1-2 sentence rationale explaining the assessment and ensuring cross-tab coherence with other sections of the report.
+  - Use FDA guidance documents, policy analysis, stakeholder research, and market intelligence sources.
+
 - For pipelineAnalysis.crowdingPercent (pipeline density), calculate as: number of same‑target assets ÷ total assets in indication, show as percent. Return only the percentage or range, e.g., "12%" or "10-15%". Do not include any text or explanation.
 
 - For directCompetitors:
@@ -294,6 +304,7 @@ Return ONLY a valid JSON object with the following keys:
 - geographicSplit: string (revenue split between US and ex-US markets at peak)
 - competitorPricing: array of objects (pricing and access data for direct competitors)
 - pricingScenarios: array of objects (realistic pricing strategy scenarios)
+- strategicTailwindData: object (comprehensive strategic tailwind analysis)
 - dealActivity: array of objects (recent M&A/licensing deals)
 - pipelineAnalysis: object (crowdingPercent, competitiveThreats)
 

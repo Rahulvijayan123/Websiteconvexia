@@ -79,7 +79,8 @@ export default function MarketAnalysisAgent() {
     geographicSplit?: string,
     total10YearRevenue?: string,
     competitorPricing?: any[],
-    pricingScenarios?: any[]
+    pricingScenarios?: any[],
+    strategicTailwindData?: any
   }>({})
   const [decodeError, setDecodeError] = useState<string | null>(null)
   const [hasMounted, setHasMounted] = useState(false);
@@ -325,7 +326,7 @@ export default function MarketAnalysisAgent() {
                 )}
               </Button>
             </div>
-            {!collapsedModules.has("strategic") && <StrategicFit />}
+            {!collapsedModules.has("strategic") && <StrategicFit strategicTailwindData={perplexityData.strategicTailwindData} />}
           </div>
         </div>
       </div>
