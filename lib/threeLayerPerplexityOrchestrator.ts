@@ -556,7 +556,8 @@ Return the complete JSON object with regenerated fields.`;
           "description": "Confidence level in validation results"
         }
       },
-      "required": ["isValid", "score", "issues", "corrections", "sourcesValidated", "confidence"]
+      "required": ["isValid", "score", "issues", "corrections", "sourcesValidated", "confidence"],
+      "additionalProperties": false
     };
   }
 
@@ -602,11 +603,13 @@ Return the complete JSON object with regenerated fields.`;
                 "description": "Confidence level in validation results"
               }
             },
-            "required": ["isValid", "score", "issues", "corrections", "sourcesValidated", "confidence"]
+            "required": ["isValid", "score", "issues", "corrections", "sourcesValidated", "confidence"],
+            "additionalProperties": false
           }
         }
       },
-      "required": ["validations"]
+      "required": ["validations"],
+      "additionalProperties": false
     };
   }
 

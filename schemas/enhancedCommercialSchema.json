@@ -1,0 +1,238 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "dealActivity": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "assetName": { "type": "string" },
+          "buyer": { "type": "string" },
+          "developmentStage": { "type": "string" },
+          "dealPrice": { "type": "string" },
+          "dealDate": { "type": "string" },
+          "rationale": { "type": "string" }
+        },
+        "required": ["assetName", "buyer", "developmentStage", "dealPrice", "dealDate", "rationale"]
+      },
+      "description": "Recent M&A/licensing deals with real data"
+    },
+    "directCompetitors": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Names of actual direct competitors"
+    },
+    "indirectCompetitors": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Alternative treatment approaches and indirect competitors"
+    },
+    "pipelineAnalysis": {
+      "type": "object",
+      "properties": {
+        "crowdingPercent": { "type": "string" },
+        "competitiveThreats": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "strategicFitRank": { "type": "string" }
+      },
+      "required": ["crowdingPercent", "competitiveThreats", "strategicFitRank"],
+      "description": "Pipeline crowding analysis"
+    },
+    "peakRevenue2030": {
+      "type": "number",
+      "description": "Forecasted peak revenue by 2030 in billions (numeric value)"
+    },
+    "cagr": {
+      "type": "number",
+      "description": "Compound Annual Growth Rate as percentage (numeric value)"
+    },
+    "marketSize": {
+      "type": "string",
+      "description": "Current and projected market size in billions"
+    },
+    "avgSellingPrice": {
+      "type": "number",
+      "description": "Average selling price per patient in dollars (numeric value)"
+    },
+    "pricingScenarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "scenario": { "type": "string" },
+          "usPrice": { "type": "string" },
+          "exUsPrice": { "type": "string" },
+          "grossToNet": { "type": "string" },
+          "copay": { "type": "string" },
+          "access": { "type": "string" },
+          "genericYear": { "type": "string" },
+          "lossOfExclusivity": { "type": "string" },
+          "rationale": { "type": "string" }
+        },
+        "required": ["scenario", "usPrice", "exUsPrice", "grossToNet", "copay", "access", "genericYear", "lossOfExclusivity", "rationale"]
+      },
+      "description": "Real pricing strategy scenarios"
+    },
+    "prvEligibility": {
+      "type": "boolean",
+      "description": "Priority Review Voucher eligibility (boolean)"
+    },
+    "rareDiseaseEligibility": {
+      "type": "boolean",
+      "description": "Rare disease designation eligibility (boolean)"
+    },
+    "reviewTimelineMonths": {
+      "type": "number",
+      "description": "Expected FDA review timeline in months (numeric value)"
+    },
+    "patentStatus": {
+      "type": "string",
+      "description": "Current patent status and protection"
+    },
+    "exclusivityPeriod": {
+      "type": "number",
+      "description": "Years of exclusivity protection (numeric value)"
+    },
+    "ipPositioning": {
+      "type": "string",
+      "description": "IP positioning and strategy analysis"
+    },
+    "total10YearRevenue": {
+      "type": "number",
+      "description": "Estimated total revenue over 10 years in billions (numeric value)"
+    },
+    "geographicSplit": {
+      "type": "object",
+      "properties": {
+        "us": { "type": "number" },
+        "exUs": { "type": "number" }
+      },
+      "required": ["us", "exUs"],
+      "description": "Revenue split between US and ex-US markets (percentages must sum to 100)"
+    },
+    "persistenceRate": {
+      "type": "number",
+      "description": "12-month treatment persistence rate as percentage (numeric value)"
+    },
+    "strategicTailwindData": {
+      "type": "object",
+      "properties": {
+        "fdaDesignations": {
+          "type": "object",
+          "properties": {
+            "breakthroughTherapy": { "type": "string" },
+            "fastTrack": { "type": "string" },
+            "orphanDrug": { "type": "string" },
+            "priorityReview": { "type": "string" },
+            "rationale": { "type": "string" }
+          },
+          "required": ["breakthroughTherapy", "fastTrack", "orphanDrug", "priorityReview", "rationale"]
+        },
+        "guidanceDocuments": {
+          "type": "object",
+          "properties": {
+            "oncologyEndpoints": { "type": "string" },
+            "biomarkerStrategy": { "type": "string" },
+            "realWorldEvidence": { "type": "string" },
+            "patientReportedOutcomes": { "type": "string" },
+            "rationale": { "type": "string" }
+          },
+          "required": ["oncologyEndpoints", "biomarkerStrategy", "realWorldEvidence", "patientReportedOutcomes", "rationale"]
+        },
+        "policyIncentives": {
+          "type": "object",
+          "properties": {
+            "arpaHFunding": { "type": "string" },
+            "medicareInnovation": { "type": "string" },
+            "iraExclusions": { "type": "string" },
+            "taxCredits": { "type": "string" },
+            "rationale": { "type": "string" }
+          },
+          "required": ["arpaHFunding", "medicareInnovation", "iraExclusions", "taxCredits", "rationale"]
+        },
+        "advocacyActivity": {
+          "type": "object",
+          "properties": {
+            "patientOrganizations": { "type": "string" },
+            "kolSupport": { "type": "string" },
+            "medicalSocieties": { "type": "string" },
+            "congressionalInterest": { "type": "string" },
+            "rationale": { "type": "string" }
+          },
+          "required": ["patientOrganizations", "kolSupport", "medicalSocieties", "congressionalInterest", "rationale"]
+        },
+        "marketPrecedent": {
+          "type": "object",
+          "properties": {
+            "similarApprovals": { "type": "string" },
+            "pricingPrecedent": { "type": "string" },
+            "accessPatterns": { "type": "string" },
+            "competitiveResponse": { "type": "string" },
+            "rationale": { "type": "string" }
+          },
+          "required": ["similarApprovals", "pricingPrecedent", "accessPatterns", "competitiveResponse", "rationale"]
+        }
+      },
+      "required": ["fdaDesignations", "guidanceDocuments", "policyIncentives", "advocacyActivity", "marketPrecedent"],
+      "description": "Comprehensive strategic tailwind analysis"
+    },
+    "competitorPricing": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "drugName": { "type": "string" },
+          "annualPrice": { "type": "string" },
+          "indication": { "type": "string" },
+          "accessLevel": { "type": "string" },
+          "rationale": { "type": "string" }
+        },
+        "required": ["drugName", "annualPrice", "indication", "accessLevel", "rationale"]
+      },
+      "description": "Real competitor pricing data"
+    },
+    "payerSentiment": {
+      "type": "string",
+      "description": "Payer sentiment and reimbursement outlook"
+    },
+    "marketDrivers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Key market drivers and growth catalysts"
+    },
+    "regulatoryCatalysts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Regulatory catalysts and approval drivers"
+    }
+  },
+  "required": [
+    "dealActivity",
+    "directCompetitors", 
+    "indirectCompetitors",
+    "pipelineAnalysis",
+    "peakRevenue2030",
+    "cagr",
+    "marketSize",
+    "avgSellingPrice",
+    "pricingScenarios",
+    "prvEligibility",
+    "rareDiseaseEligibility",
+    "reviewTimelineMonths",
+    "patentStatus",
+    "exclusivityPeriod",
+    "ipPositioning",
+    "total10YearRevenue",
+    "geographicSplit",
+    "persistenceRate",
+    "strategicTailwindData",
+    "competitorPricing",
+    "payerSentiment",
+    "marketDrivers",
+    "regulatoryCatalysts"
+  ],
+  "additionalProperties": false
+} 

@@ -447,7 +447,8 @@ Return improved JSON output that addresses all validation concerns.`;
           "description": "Confidence level in validation results"
         }
       },
-      "required": ["qualityScore", "issues", "corrections", "sourcesValidated", "confidence"]
+      "required": ["qualityScore", "issues", "corrections", "sourcesValidated", "confidence"],
+      "additionalProperties": false
     };
   }
 

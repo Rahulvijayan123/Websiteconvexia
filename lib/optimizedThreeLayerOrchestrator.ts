@@ -1,5 +1,6 @@
 import { fetchPplx } from './pplxClient';
 import { EnhancedMathAuditor } from './enhancedMathAuditor';
+import { EnhancedScoringSystem } from './enhancedScoringSystem';
 import { globalCostTracker } from './costTracker';
 import { validateLogic, validateMath, enhanceOutputWithRationales, finalQualityEnhancement } from './gpt4oClient';
 import commercialSchema from '@/schemas/commercialOutputSchema.json';
@@ -67,6 +68,7 @@ interface OptimizedResult {
 class OptimizedThreeLayerOrchestrator {
   private config: OptimizedConfig;
   private mathAuditor: EnhancedMathAuditor;
+  private scoringSystem: EnhancedScoringSystem;
   private fieldCache: Map<string, any> = new Map();
   private apiCallCount: number = 0;
   private lastApiCall: number = 0;
@@ -90,6 +92,7 @@ class OptimizedThreeLayerOrchestrator {
     };
 
     this.mathAuditor = new EnhancedMathAuditor();
+    this.scoringSystem = new EnhancedScoringSystem();
   }
 
   async orchestrate(inputs: any): Promise<OptimizedResult> {
@@ -179,6 +182,19 @@ class OptimizedThreeLayerOrchestrator {
       }
 
       const totalTimeMs = Date.now() - startTime;
+
+      // Final quality assessment using enhanced scoring system
+      try {
+        const qualityAssessment = await this.scoringSystem.assessOutputQuality(currentOutput, inputs);
+        finalQualityScore = qualityAssessment.overallQuality;
+        console.log(`📊 Final Quality Score: ${finalQualityScore.toFixed(2)}/10`);
+        console.log(`🎯 Confidence: ${qualityAssessment.confidence.toFixed(1)}%`);
+      } catch (error) {
+        console.error('❌ Quality assessment failed:', error);
+        // Fallback to simple assessment
+        const quickAssessment = this.quickQualityAssessment(currentOutput);
+        finalQualityScore = quickAssessment.score;
+      }
 
       // Calculate cost optimization metrics
       const costOptimization = this.calculateCostOptimization(totalApiCalls, validationCycles);
@@ -286,7 +302,7 @@ class OptimizedThreeLayerOrchestrator {
   private async validateFieldBatch(inputs: any, currentOutput: any, fieldNames: string[]): Promise<FieldValidation[]> {
     await this.rateLimit();
     
-    const prompt = this.generateFieldValidationPrompt(inputs, currentOutput, fieldNames);
+    const prompt = this.generateExecutiveValidationPrompt(inputs, currentOutput, fieldNames);
     
     const payload = {
       model: 'sonar-pro', // Use cheaper model for validation
@@ -301,11 +317,7 @@ class OptimizedThreeLayerOrchestrator {
         search_context_size: 'medium', // Back to medium
         search_depth: 'standard'
       },
-      search_queries_per_search: 2, // Back to original
-      response_format: {
-        type: 'json_schema' as const,
-        json_schema: { schema: this.getValidationSchema() }
-      }
+      search_queries_per_search: 2 // Back to original
     };
 
     const response = await fetchPplx(payload);
@@ -342,7 +354,7 @@ class OptimizedThreeLayerOrchestrator {
         search_context_size: 'medium',
         search_depth: 'standard'
       },
-      search_queries_per_search: 3, // Back to original
+      search_queries_per_search: 3, // Back to original,
       response_format: {
         type: 'json_schema' as const,
         json_schema: { schema: this.getCommercialSchema() }
@@ -632,15 +644,37 @@ Return only the regenerated fields in valid JSON format matching the commercial 
 IMPORTANT: Ensure ALL mathematical calculations are correct and consistent. Double-check all formulas and cross-references.`;
   }
 
+  private generateExecutiveValidationPrompt(inputs: any, currentOutput: any, fieldNames: string[]): string {
+    return `Validate the following fields in the commercial intelligence data:
+Fields: ${fieldNames.join(', ')}
+Current Output: ${JSON.stringify(currentOutput)}
+Inputs: ${JSON.stringify(inputs)}
+
+Return validation results for each field.`;
+  }
+
   private getCommercialSchema(): any {
     return commercialSchema;
   }
 
   private getValidationSchema(): any {
     return {
-      type: 'object',
-      properties: {
-        // Dynamic validation schema
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "fieldValidations": {
+          "type": "object",
+          "description": "Validation results for each field"
+        }
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "isValid": { "type": "boolean" },
+          "score": { "type": "number", "minimum": 0, "maximum": 1 },
+          "details": { "type": "object" }
+        },
+        "required": ["isValid", "score", "details"]
       }
     };
   }
@@ -701,9 +735,47 @@ IMPORTANT: Ensure ALL mathematical calculations are correct and consistent. Doub
 
   private parseValidationResponse(content: string): any {
     try {
+      // Handle Perplexity's thinking responses with markdown code blocks
+      const jsonMatch = content.match(/```json\s*(\{[\s\S]*?\})\s*```/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[1]);
+      }
+      
+      // Try to extract JSON from markdown without language specifier
+      const markdownMatch = content.match(/```\s*(\{[\s\S]*?\})\s*```/);
+      if (markdownMatch) {
+        return JSON.parse(markdownMatch[1]);
+      }
+      
+      // Try to find JSON object in the content
+      const jsonObjectMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonObjectMatch) {
+        return JSON.parse(jsonObjectMatch[0]);
+      }
+      
+      // Try direct JSON parsing
       return JSON.parse(content);
     } catch (error) {
-      throw new Error(`Failed to parse validation response: ${error}`);
+      console.error('Failed to parse validation response:', error);
+      console.error('Raw content length:', content.length);
+      console.error('Raw content preview:', content.substring(0, 500));
+      
+      // Return a safe fallback with all expected fields
+      const fallbackResult: any = {};
+      const expectedFields = [
+        'dealActivity', 'peakRevenue2030', 'directCompetitors', 'cagr', 'marketSize',
+        'avgSellingPrice', 'pricingScenarios', 'prvEligibility', 'patentStatus', 'strategicTailwindData'
+      ];
+      
+      expectedFields.forEach(field => {
+        fallbackResult[field] = { 
+          isValid: false, 
+          score: 0, 
+          details: { error: 'Parse failed', originalError: error instanceof Error ? error.message : String(error) } 
+        };
+      });
+      
+      return fallbackResult;
     }
   }
 
