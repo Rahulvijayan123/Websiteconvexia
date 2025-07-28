@@ -2,6 +2,7 @@ import { fetchPplx } from './pplxClient';
 import { optimizedReviewPerplexityOutput } from './optimizedReviewClient';
 import { generateEnhancedPrompt, generateEnhancedSystemPrompt, getEnhancedPromptConfig, getQualityStandard } from './enhancedPromptEngine';
 import { ConsistencyAnalyzer } from './consistencyAnalyzer';
+import { EnhancedResearchValidator } from './enhancedResearchValidator';
 
 interface EnhancedOrchestratorConfig {
   maxRetries: number;
@@ -90,6 +91,7 @@ export class EnhancedPharmaOrchestrator {
   private config: EnhancedOrchestratorConfig;
   private traceId: string;
   private consistencyAnalyzer: ConsistencyAnalyzer;
+  private researchValidator: EnhancedResearchValidator;
 
   constructor(config: Partial<EnhancedOrchestratorConfig> = {}) {
     this.config = {
@@ -107,6 +109,13 @@ export class EnhancedPharmaOrchestrator {
     
     this.traceId = `enhanced_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     this.consistencyAnalyzer = new ConsistencyAnalyzer();
+    this.researchValidator = new EnhancedResearchValidator({
+      enableRealTimeResearch: true,
+      enableMultiLayerValidation: true,
+      enableFactChecking: true,
+      enablePatientPopulationValidation: true,
+      validationThreshold: 0.85
+    });
   }
 
   async orchestrate(inputs: any, model: string = 'sonar-deep-research'): Promise<EnhancedOrchestrationResult> {
@@ -145,6 +154,41 @@ export class EnhancedPharmaOrchestrator {
         currentOutput = researchResult.output;
         totalSourcesUsed = researchResult.totalSources;
         totalSearchQueries = researchResult.totalSearchQueries;
+
+        // Validate deal activity and patient populations with real research
+        if (currentOutput.dealActivity && currentOutput.dealActivity.length > 0) {
+          console.log('Validating deal activity with real research...');
+          
+          const validatedDeals = await this.researchValidator.validateDealActivity(
+            inputs.target || 'EGFR',
+            inputs.indication || 'NSCLC'
+          );
+          
+          if (validatedDeals.length > 0) {
+            currentOutput.dealActivity = validatedDeals;
+            console.log(`Validated ${validatedDeals.length} deals with real research`);
+          } else {
+            console.log('No validated deals found, removing placeholder data');
+            currentOutput.dealActivity = [];
+          }
+        }
+
+        // Validate scoring model output
+        if (currentOutput.strategicFitScore || currentOutput.overallScore) {
+          console.log('Validating scoring model output...');
+          
+          const scoringValidation = await this.researchValidator.validateScoringModel(
+            currentOutput.strategicFitScore || currentOutput.overallScore,
+            currentOutput.strategicRationale || currentOutput.analysisRationale,
+            currentOutput
+          );
+          
+          if (!scoringValidation.isValid) {
+            console.log('Scoring validation failed, adjusting scores');
+            currentOutput.strategicFitScore = Math.min(currentOutput.strategicFitScore || 0, 75);
+            currentOutput.overallScore = Math.min(currentOutput.overallScore || 0, 75);
+          }
+        }
 
         // Review output quality if enabled
         if (this.config.enableReviewPipeline) {
