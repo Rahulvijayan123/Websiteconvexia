@@ -458,7 +458,23 @@ Therapeutic Area: ${inputs.therapeuticArea}
 Geography: ${inputs.geography}
 Development Phase: ${inputs.developmentPhase}
 
-Focus on the most critical fields first. Return only valid JSON matching the commercial schema.`;
+IMPORTANT REQUIREMENTS:
+
+1. **For Geographic Split**: Use real regional market data from sources like IQVIA, EvaluatePharma, or regional market reports. Don't use placeholder values - find actual regional distribution percentages.
+
+2. **For Treatment Duration**: Reference actual clinical trial data, prescribing information, or real-world evidence studies. Include specific trial names or data sources.
+
+3. **For Math Calculations**: Include calculation explanations for:
+   - CAGR: Show the formula and specific numbers used
+   - Peak Revenue: Explain the calculation method
+   - Total Revenue: Show how it was derived
+   - Patient calculations: Include the math
+
+4. **For PRV/Eligibility**: Reference specific regulatory sources like OBBBA, FDA guidance, or regulatory documents. Include actual eligibility criteria.
+
+5. **For All Data**: Use real research data from credible sources. Cite specific reports, studies, or market intelligence sources.
+
+Focus on the most critical fields first. Return only valid JSON matching the commercial schema with detailed, research-backed values.`;
   }
 
   private generateFieldValidationPrompt(inputs: any, currentOutput: any, fieldNames: string[]): string {
@@ -471,12 +487,45 @@ Return validation results for each field.`;
   }
 
   private generateFieldRegenerationPrompt(inputs: any, currentOutput: any, failedFields: string[]): string {
-    return `Regenerate the following failed fields:
-Failed Fields: ${failedFields.join(', ')}
-Current Output: ${JSON.stringify(currentOutput)}
-Inputs: ${JSON.stringify(inputs)}
+    return `Regenerate the following failed fields for:
+Target: ${inputs.target}
+Indication: ${inputs.indication}
+Therapeutic Area: ${inputs.therapeuticArea}
+Geography: ${inputs.geography}
+Development Phase: ${inputs.developmentPhase}
 
-Return improved data for the failed fields.`;
+FAILED FIELDS TO REGENERATE: ${failedFields.join(', ')}
+
+CURRENT OUTPUT:
+${JSON.stringify(currentOutput, null, 2)}
+
+IMPORTANT REQUIREMENTS:
+
+1. **For Math/Calculated Fields** (CAGR, Peak Revenue, etc.):
+   - Include calculation explanations in the rationale
+   - Show the exact formula and numbers used
+   - Example: "CAGR = (Peak Revenue / Current Market Size)^(1/years) - 1 = ($4.2B / $2.1B)^(1/6) - 1 = 12.3%"
+
+2. **For Geographic Split**:
+   - Use real regional market data from sources like IQVIA, EvaluatePharma
+   - Reference specific regional distribution reports
+   - Don't use placeholder values
+
+3. **For Treatment Duration**:
+   - Reference actual clinical trial data or prescribing information
+   - Include specific trial names or studies
+   - Don't use generic placeholder values
+
+4. **For PRV/Eligibility**:
+   - Reference specific regulatory sources (OBBBA, FDA guidance, etc.)
+   - Include actual eligibility criteria
+
+5. **For All Fields**:
+   - Use real research data from credible sources
+   - Include detailed rationales with specific calculations
+   - Maintain consistency with existing data
+
+Return only the regenerated fields in valid JSON format matching the commercial schema.`;
   }
 
   private getCommercialSchema(): any {

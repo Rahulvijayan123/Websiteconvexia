@@ -172,7 +172,7 @@ IMPORTANT: Return ONLY valid JSON, no other text.`;
 
 // Enhanced writing with rationales
 export async function enhanceOutputWithRationales(data: any, inputs: any): Promise<any> {
-  const prompt = `You are a senior pharmaceutical industry expert. Enhance the following commercial intelligence data with clear rationales for each field.
+  const prompt = `You are a senior pharmaceutical industry expert. Enhance the following commercial intelligence data with clear rationales and calculation explanations.
 
 INPUTS:
 ${JSON.stringify(inputs, null, 2)}
@@ -180,24 +180,50 @@ ${JSON.stringify(inputs, null, 2)}
 CURRENT DATA:
 ${JSON.stringify(data, null, 2)}
 
-For each field, add a one-sentence rationale explaining:
-- How the number was calculated or derived
-- What sources or logic were used
-- Why this value is reasonable given the market context
+For each field, add a detailed rationale explaining:
+
+1. **For Math/Calculated Fields** (CAGR, Peak Revenue, Total Revenue, etc.):
+   - Show the exact calculation formula used
+   - Include the specific numbers plugged into the formula
+   - Example: "CAGR = (Peak Revenue / Current Market Size)^(1/years) - 1 = ($4.2B / $2.1B)^(1/6) - 1 = 12.3%"
+
+2. **For Geographic Split**:
+   - Use real research data from sources like IQVIA, EvaluatePharma, or regional market reports
+   - Reference specific sources and data points
+   - Don't use placeholder values - find actual regional distribution data
+
+3. **For Treatment Duration**:
+   - Reference actual clinical trial data, prescribing information, or real-world evidence
+   - Include specific sources and studies
+   - Don't use generic placeholder values
+
+4. **For PRV/Eligibility**:
+   - Reference specific sources like OBBBA, FDA guidance, or regulatory documents
+   - Include actual eligibility criteria and requirements
+   - Cite specific regulatory pathways or designations
+
+5. **For All Other Fields**:
+   - How the number was calculated or derived
+   - What sources or logic were used
+   - Why this value is reasonable given the market context
 
 Enhance the data structure to include rationales while maintaining the original format. Each field should have a "rationale" property.
 
 Example format:
 {
   "marketSize": "1.2B",
-  "marketSize_rationale": "Based on EvaluatePharma forecasts and similar oncology assets, accounting for market growth and competitive landscape.",
+  "marketSize_rationale": "Based on EvaluatePharma 2024 NSCLC market report ($1.1B) plus 9% growth projection = $1.2B",
   "cagr": "12.3%",
-  "cagr_rationale": "Calculated using CAGR formula: (1.2B / 0.8B)^(1/6) - 1, reflecting realistic market expansion timeline."
+  "cagr_rationale": "CAGR = (Peak Revenue / Current Market Size)^(1/years) - 1 = ($4.2B / $2.1B)^(1/6) - 1 = 12.3%",
+  "geographicSplit": {"US": "65%", "EU": "25%", "ROW": "10%"},
+  "geographicSplit_rationale": "Based on IQVIA 2024 regional sales data: US dominates with 65% market share, EU follows with 25%, ROW represents 10%",
+  "treatmentDuration": "12 months",
+  "treatmentDuration_rationale": "Based on KEYNOTE-024 trial data showing median treatment duration of 12.3 months for pembrolizumab in NSCLC"
 }
 
-Return the enhanced data with rationales for all fields.
+Return the enhanced data with detailed rationales for all fields.
 
-IMPORTANT: Return ONLY valid JSON, no other text.`;
+IMPORTANT: Return ONLY valid JSON, no other text. Use real research data and specific calculations.`;
 
   const response = await fetchGPT4o({
     model: 'gpt-4o-mini',
@@ -233,10 +259,20 @@ ${JSON.stringify(mathValidation, null, 2)}
 
 Based on the validation results:
 1. Fix any identified logic or math errors
-2. Improve rationales where needed
-3. Ensure all cross-field relationships are consistent
-4. Add any missing critical information
-5. Maintain the original data structure with enhanced quality
+2. Ensure all calculation explanations in rationales are accurate and complete
+3. Verify that geographic split and treatment duration use real research data (not placeholders)
+4. Ensure PRV/eligibility references specific regulatory sources (OBBBA, FDA guidance, etc.)
+5. Maintain all detailed calculation formulas in rationales
+6. Ensure all cross-field relationships are consistent
+7. Add any missing critical information with proper sourcing
+8. Maintain the original data structure with enhanced quality
+
+IMPORTANT REQUIREMENTS:
+- Keep all calculation explanations (e.g., "CAGR = (Peak Revenue / Current Market Size)^(1/years) - 1 = ($4.2B / $2.1B)^(1/6) - 1 = 12.3%")
+- Ensure geographic split references real regional data sources
+- Ensure treatment duration references actual clinical trial data
+- Ensure PRV/eligibility references specific regulatory documents
+- Use real research data throughout, not placeholder values
 
 Return the final enhanced data with all corrections applied and rationales included.
 
