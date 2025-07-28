@@ -365,7 +365,37 @@ class OptimizedThreeLayerOrchestrator {
 
   private async executeGPT4oEnhancement(inputs: any, currentOutput: any): Promise<any> {
     console.log('  🔍 Logic Validation...');
-    const logicValidation = await validateLogic(currentOutput, inputs);
+    let logicValidation = await validateLogic(currentOutput, inputs);
+    
+    // Check for critical failures that require immediate regeneration
+    if (logicValidation.criticalFailures && logicValidation.criticalFailures.length > 0) {
+      console.log('  ⚠️  CRITICAL LOGIC FAILURES DETECTED:');
+      logicValidation.criticalFailures.forEach((failure: string) => {
+        console.log(`    - ${failure}`);
+      });
+      console.log('  🔄 Forcing complete regeneration due to critical logic failures');
+      
+      // Force regeneration of the entire output
+      const failedValidations: FieldValidation[] = Object.keys(currentOutput).map(field => ({
+        fieldName: field,
+        isValid: false,
+        score: 0,
+        requiresRegeneration: true,
+        validationDetails: { criticalFailure: true }
+      }));
+      
+      const regeneratedOutput = await this.regenerateFailedFields(inputs, currentOutput, failedValidations);
+      
+      // Re-validate the regenerated output
+      const revalidation = await validateLogic(regeneratedOutput, inputs);
+      if (revalidation.criticalFailures && revalidation.criticalFailures.length > 0) {
+        console.log('  ❌ Regeneration failed to resolve critical failures');
+      } else {
+        console.log('  ✅ Regeneration resolved critical failures');
+        currentOutput = regeneratedOutput;
+        logicValidation = revalidation;
+      }
+    }
     
     console.log('  🧮 Math Validation...');
     const mathValidation = await validateMath(currentOutput);
@@ -384,7 +414,8 @@ class OptimizedThreeLayerOrchestrator {
       enhancementSummary: {
         logicScore: logicValidation.overallLogicScore,
         mathScore: mathValidation.mathScore,
-        totalEnhancements: (logicValidation.logicCorrections?.length || 0) + (mathValidation.mathCorrections?.length || 0)
+        totalEnhancements: (logicValidation.logicCorrections?.length || 0) + (mathValidation.mathCorrections?.length || 0),
+        criticalFailures: logicValidation.criticalFailures || []
       }
     };
   }

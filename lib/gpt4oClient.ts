@@ -72,7 +72,7 @@ export async function fetchGPT4o(options: GPT4oOptions) {
 
 // Logic validation function
 export async function validateLogic(data: any, inputs: any): Promise<any> {
-  const prompt = `You are a senior pharmaceutical industry expert conducting logic validation.
+  const prompt = `You are a senior pharmaceutical industry expert conducting STRICT logic validation.
 
 Analyze the following commercial intelligence data for logical consistency and accuracy:
 
@@ -82,29 +82,60 @@ ${JSON.stringify(inputs, null, 2)}
 DATA TO VALIDATE:
 ${JSON.stringify(data, null, 2)}
 
-Validate the following aspects:
-1. Cross-field consistency (e.g., peak revenue should align with market size and share)
-2. Mathematical accuracy (CAGR calculations, patient calculations)
-3. Logical coherence (pricing vs competitors, market share vs pipeline density)
-4. Source credibility and recency
-5. Industry benchmark alignment
+CRITICAL LOGIC CHECKS - ENFORCE STRICT CONSISTENCY:
+
+1. **Rare Disease Designation vs Patient Count**:
+   - Rare disease designation requires <200K patients in US
+   - If PRV eligibility shows rare disease, patient count MUST be <200K
+   - If patient count >200K, rare disease designation is IMPOSSIBLE
+
+2. **Market Size vs Patient Count Consistency**:
+   - Market size should align with patient count × price
+   - Peak patients should be realistic for the indication
+   - Geographic split percentages should sum to 100%
+
+3. **Revenue vs Market Share Logic**:
+   - Peak revenue should align with market size × market share
+   - Total revenue should be 5-8x peak revenue
+   - CAGR calculations should be mathematically consistent
+
+4. **Treatment Duration vs Patient Count**:
+   - Treatment duration affects patient calculations
+   - Longer duration = fewer new patients needed for same revenue
+
+5. **Competitive Landscape Consistency**:
+   - Number of competitors should align with market share distribution
+   - Pricing should be consistent with competitive landscape
+
+6. **Regulatory Pathway Consistency**:
+   - PRV eligibility should match indication characteristics
+   - Review timeline should align with development phase
+   - Regulatory pathway should be consistent with drug type
+
+7. **Cross-Reference All Numbers**:
+   - Every number should be mathematically consistent with others
+   - No conflicting data points should exist
+   - All percentages should sum appropriately
 
 Return a JSON object with:
-- overallLogicScore: number (0-1)
-- logicIssues: array of strings
-- logicCorrections: array of strings
+- overallLogicScore: number (0-1) - BE STRICT, fail if any major inconsistencies
+- logicIssues: array of strings - List ALL inconsistencies found
+- logicCorrections: array of strings - Specific corrections needed
 - validatedFields: array of field names that passed validation
 - confidenceLevel: number (0-1)
+- criticalFailures: array of strings - Major logic failures that invalidate the data
+
+BE EXTREMELY STRICT. If you find ANY major inconsistencies, mark them as critical failures and give a low logic score.
 
 IMPORTANT: Return ONLY valid JSON, no other text.`;
 
   const response = await fetchGPT4o({
     model: 'gpt-4o-mini',
     messages: [
-      { role: 'system', content: 'You are a logic validation expert. Be thorough and analytical. Return only valid JSON.' },
+      { role: 'system', content: 'You are a strict logic validation expert. Be extremely thorough and fail fast on any major inconsistencies. Return only valid JSON.' },
       { role: 'user', content: prompt }
     ],
-    max_tokens: 1500, // Back to original
+    max_tokens: 2000, // Increased for more detailed validation
     temperature: 0.1
   });
 
@@ -113,11 +144,12 @@ IMPORTANT: Return ONLY valid JSON, no other text.`;
   } catch (error) {
     console.error('Failed to parse logic validation response:', error);
     return {
-      overallLogicScore: 0.5,
+      overallLogicScore: 0.0,
       logicIssues: ['Failed to parse validation response'],
       logicCorrections: [],
       validatedFields: [],
-      confidenceLevel: 0.0
+      confidenceLevel: 0.0,
+      criticalFailures: ['Validation system error']
     };
   }
 }
