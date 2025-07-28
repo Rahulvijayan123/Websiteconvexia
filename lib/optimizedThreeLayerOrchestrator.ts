@@ -375,7 +375,7 @@ class OptimizedThreeLayerOrchestrator {
       });
       console.log('  🔄 Forcing complete regeneration due to critical logic failures');
       
-      // Force regeneration of the entire output
+      // Force regeneration of the entire output with enhanced prompts
       const failedValidations: FieldValidation[] = Object.keys(currentOutput).map(field => ({
         fieldName: field,
         isValid: false,
@@ -390,10 +390,32 @@ class OptimizedThreeLayerOrchestrator {
       const revalidation = await validateLogic(regeneratedOutput, inputs);
       if (revalidation.criticalFailures && revalidation.criticalFailures.length > 0) {
         console.log('  ❌ Regeneration failed to resolve critical failures');
+        console.log('  ⚠️  Proceeding with original data but marking as low quality');
+        logicValidation = revalidation;
       } else {
         console.log('  ✅ Regeneration resolved critical failures');
         currentOutput = regeneratedOutput;
         logicValidation = revalidation;
+      }
+    }
+    
+    // If logic score is very low (0.0), force another regeneration attempt
+    if (logicValidation.overallLogicScore === 0.0) {
+      console.log('  🚨 Logic score is 0.0 - forcing additional regeneration attempt');
+      const regeneratedOutput2 = await this.regenerateFailedFields(inputs, currentOutput, 
+        Object.keys(currentOutput).map(field => ({
+          fieldName: field,
+          isValid: false,
+          score: 0,
+          requiresRegeneration: true,
+          validationDetails: { ultraStrictFailure: true }
+        })));
+      
+      const revalidation2 = await validateLogic(regeneratedOutput2, inputs);
+      if (revalidation2.overallLogicScore > 0.0) {
+        console.log('  ✅ Second regeneration improved logic score');
+        currentOutput = regeneratedOutput2;
+        logicValidation = revalidation2;
       }
     }
     
@@ -415,7 +437,8 @@ class OptimizedThreeLayerOrchestrator {
         logicScore: logicValidation.overallLogicScore,
         mathScore: mathValidation.mathScore,
         totalEnhancements: (logicValidation.logicCorrections?.length || 0) + (mathValidation.mathCorrections?.length || 0),
-        criticalFailures: logicValidation.criticalFailures || []
+        criticalFailures: logicValidation.criticalFailures || [],
+        validationQuality: logicValidation.overallLogicScore > 0.5 ? 'High' : logicValidation.overallLogicScore > 0.2 ? 'Medium' : 'Low'
       }
     };
   }
@@ -489,23 +512,56 @@ Therapeutic Area: ${inputs.therapeuticArea}
 Geography: ${inputs.geography}
 Development Phase: ${inputs.developmentPhase}
 
-IMPORTANT REQUIREMENTS:
+ULTRA-STRICT REQUIREMENTS - ENFORCE MATHEMATICAL CONSISTENCY FROM START:
 
-1. **For Geographic Split**: Use real regional market data from sources like IQVIA, EvaluatePharma, or regional market reports. Don't use placeholder values - find actual regional distribution percentages.
+1. **PRV Eligibility vs Patient Count (CRITICAL)**:
+   - Rare disease designation REQUIRES <200,000 patients in US
+   - If patient count >200,000, PRV eligibility is IMPOSSIBLE
+   - Check both US and global patient counts
+   - Tropical disease PRVs still require <200K US patients
 
-2. **For Treatment Duration**: Reference actual clinical trial data, prescribing information, or real-world evidence studies. Include specific trial names or data sources.
+2. **Revenue Calculation Consistency (CRITICAL)**:
+   - Peak Revenue = Market Size × Peak Market Share
+   - Total Revenue should be 5-8× Peak Revenue
+   - CAGR must be mathematically correct: CAGR = (Final/Initial)^(1/years) - 1
+   - All revenue numbers must be internally consistent
 
-3. **For Math Calculations**: Include calculation explanations for:
-   - CAGR: Show the formula and specific numbers used
-   - Peak Revenue: Explain the calculation method
-   - Total Revenue: Show how it was derived
-   - Patient calculations: Include the math
+3. **Patient Count Logic (CRITICAL)**:
+   - Peak Patients = Peak Revenue ÷ (Average Selling Price × Persistence Rate)
+   - Patient count must align with treatment duration and persistence
+   - For rare diseases: patient count MUST be <200,000
+   - For common diseases: patient count can be >200,000
 
-4. **For PRV/Eligibility**: Reference specific regulatory sources like OBBBA, FDA guidance, or regulatory documents. Include actual eligibility criteria.
+4. **Geographic Split Validation (CRITICAL)**:
+   - Percentages MUST sum to exactly 100%
+   - Use consistent format (object with percentages)
+   - Distribution should align with market size data
 
-5. **For All Data**: Use real research data from credible sources. Cite specific reports, studies, or market intelligence sources.
+5. **Market Size Consistency (CRITICAL)**:
+   - Market size should align with patient count × price
+   - CAGR calculations must be mathematically accurate
+   - Growth projections must be realistic
 
-Focus on the most critical fields first. Return only valid JSON matching the commercial schema with detailed, research-backed values.`;
+6. **Treatment Duration Impact (CRITICAL)**:
+   - Longer duration = fewer new patients needed for same revenue
+   - Must account for persistence rates
+   - Should align with patient count calculations
+
+7. **Cross-Reference All Numbers (CRITICAL)**:
+   - Every number must be mathematically consistent with others
+   - No conflicting data points should exist
+   - All percentages must sum appropriately
+   - All calculations must be mathematically accurate
+
+8. **Real Research Data Requirements**:
+   - Use real regional market data from sources like IQVIA, EvaluatePharma
+   - Reference actual clinical trial data for treatment duration
+   - Include specific regulatory sources for PRV eligibility
+   - Cite specific market reports and studies
+
+Focus on the most critical fields first. Return only valid JSON matching the commercial schema with mathematically consistent, research-backed values.
+
+IMPORTANT: Double-check ALL mathematical calculations and cross-references before returning the data.`;
   }
 
   private generateFieldValidationPrompt(inputs: any, currentOutput: any, fieldNames: string[]): string {
@@ -530,33 +586,50 @@ FAILED FIELDS TO REGENERATE: ${failedFields.join(', ')}
 CURRENT OUTPUT:
 ${JSON.stringify(currentOutput, null, 2)}
 
-IMPORTANT REQUIREMENTS:
+ULTRA-STRICT REQUIREMENTS - ENFORCE MATHEMATICAL CONSISTENCY:
 
-1. **For Math/Calculated Fields** (CAGR, Peak Revenue, etc.):
-   - Include calculation explanations in the rationale
-   - Show the exact formula and numbers used
-   - Example: "CAGR = (Peak Revenue / Current Market Size)^(1/years) - 1 = ($4.2B / $2.1B)^(1/6) - 1 = 12.3%"
+1. **PRV Eligibility vs Patient Count (CRITICAL)**:
+   - Rare disease designation REQUIRES <200,000 patients in US
+   - If patient count >200,000, PRV eligibility is IMPOSSIBLE
+   - Check both US and global patient counts
+   - Tropical disease PRVs still require <200K US patients
 
-2. **For Geographic Split**:
-   - Use real regional market data from sources like IQVIA, EvaluatePharma
-   - Reference specific regional distribution reports
-   - Don't use placeholder values
+2. **Revenue Calculation Consistency (CRITICAL)**:
+   - Peak Revenue = Market Size × Peak Market Share
+   - Total Revenue should be 5-8× Peak Revenue
+   - CAGR must be mathematically correct: CAGR = (Final/Initial)^(1/years) - 1
+   - All revenue numbers must be internally consistent
 
-3. **For Treatment Duration**:
-   - Reference actual clinical trial data or prescribing information
-   - Include specific trial names or studies
-   - Don't use generic placeholder values
+3. **Patient Count Logic (CRITICAL)**:
+   - Peak Patients = Peak Revenue ÷ (Average Selling Price × Persistence Rate)
+   - Patient count must align with treatment duration and persistence
+   - For rare diseases: patient count MUST be <200,000
+   - For common diseases: patient count can be >200,000
 
-4. **For PRV/Eligibility**:
-   - Reference specific regulatory sources (OBBBA, FDA guidance, etc.)
-   - Include actual eligibility criteria
+4. **Geographic Split Validation (CRITICAL)**:
+   - Percentages MUST sum to exactly 100%
+   - Use consistent format (object with percentages)
+   - Distribution should align with market size data
 
-5. **For All Fields**:
-   - Use real research data from credible sources
-   - Include detailed rationales with specific calculations
-   - Maintain consistency with existing data
+5. **Market Size Consistency (CRITICAL)**:
+   - Market size should align with patient count × price
+   - CAGR calculations must be mathematically accurate
+   - Growth projections must be realistic
 
-Return only the regenerated fields in valid JSON format matching the commercial schema.`;
+6. **Treatment Duration Impact (CRITICAL)**:
+   - Longer duration = fewer new patients needed for same revenue
+   - Must account for persistence rates
+   - Should align with patient count calculations
+
+7. **Cross-Reference All Numbers (CRITICAL)**:
+   - Every number must be mathematically consistent with others
+   - No conflicting data points should exist
+   - All percentages must sum appropriately
+   - All calculations must be mathematically accurate
+
+Return only the regenerated fields in valid JSON format matching the commercial schema.
+
+IMPORTANT: Ensure ALL mathematical calculations are correct and consistent. Double-check all formulas and cross-references.`;
   }
 
   private getCommercialSchema(): any {

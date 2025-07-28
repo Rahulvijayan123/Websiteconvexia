@@ -72,7 +72,7 @@ export async function fetchGPT4o(options: GPT4oOptions) {
 
 // Logic validation function
 export async function validateLogic(data: any, inputs: any): Promise<any> {
-  const prompt = `You are a senior pharmaceutical industry expert conducting STRICT logic validation.
+  const prompt = `You are a senior pharmaceutical industry expert conducting ULTRA-STRICT logic validation.
 
 Analyze the following commercial intelligence data for logical consistency and accuracy:
 
@@ -82,60 +82,66 @@ ${JSON.stringify(inputs, null, 2)}
 DATA TO VALIDATE:
 ${JSON.stringify(data, null, 2)}
 
-CRITICAL LOGIC CHECKS - ENFORCE STRICT CONSISTENCY:
+CRITICAL LOGIC CHECKS - ENFORCE ULTRA-STRICT CONSISTENCY:
 
-1. **Rare Disease Designation vs Patient Count**:
-   - Rare disease designation requires <200K patients in US
-   - If PRV eligibility shows rare disease, patient count MUST be <200K
-   - If patient count >200K, rare disease designation is IMPOSSIBLE
+1. **PRV Eligibility vs Patient Count (CRITICAL)**:
+   - Rare disease designation REQUIRES <200,000 patients in US
+   - If patient count >200,000, PRV eligibility is IMPOSSIBLE
+   - Check both US and global patient counts
+   - Tropical disease PRVs have different criteria but still require <200K US patients
 
-2. **Market Size vs Patient Count Consistency**:
+2. **Revenue Calculation Consistency (CRITICAL)**:
+   - Peak Revenue = Market Size × Peak Market Share
+   - Total Revenue should be 5-8× Peak Revenue
+   - CAGR must be mathematically correct: CAGR = (Final/Initial)^(1/years) - 1
+   - All revenue numbers must be internally consistent
+
+3. **Patient Count Logic (CRITICAL)**:
+   - Peak Patients = Peak Revenue ÷ (Average Selling Price × Persistence Rate)
+   - Patient count must align with treatment duration and persistence
+   - For rare diseases: patient count MUST be <200,000
+   - For common diseases: patient count can be >200,000
+
+4. **Geographic Split Validation (CRITICAL)**:
+   - Percentages MUST sum to exactly 100%
+   - Format must be consistent (object vs string)
+   - Distribution should align with market size data
+
+5. **Market Size Consistency (CRITICAL)**:
    - Market size should align with patient count × price
-   - Peak patients should be realistic for the indication
-   - Geographic split percentages should sum to 100%
+   - CAGR calculations must be mathematically accurate
+   - Growth projections must be realistic
 
-3. **Revenue vs Market Share Logic**:
-   - Peak revenue should align with market size × market share
-   - Total revenue should be 5-8x peak revenue
-   - CAGR calculations should be mathematically consistent
-
-4. **Treatment Duration vs Patient Count**:
-   - Treatment duration affects patient calculations
+6. **Treatment Duration Impact (CRITICAL)**:
    - Longer duration = fewer new patients needed for same revenue
+   - Must account for persistence rates
+   - Should align with patient count calculations
 
-5. **Competitive Landscape Consistency**:
-   - Number of competitors should align with market share distribution
-   - Pricing should be consistent with competitive landscape
-
-6. **Regulatory Pathway Consistency**:
-   - PRV eligibility should match indication characteristics
-   - Review timeline should align with development phase
-   - Regulatory pathway should be consistent with drug type
-
-7. **Cross-Reference All Numbers**:
-   - Every number should be mathematically consistent with others
+7. **Cross-Reference All Numbers (CRITICAL)**:
+   - Every number must be mathematically consistent with others
    - No conflicting data points should exist
-   - All percentages should sum appropriately
+   - All percentages must sum appropriately
+   - All calculations must be mathematically accurate
 
 Return a JSON object with:
-- overallLogicScore: number (0-1) - BE STRICT, fail if any major inconsistencies
-- logicIssues: array of strings - List ALL inconsistencies found
-- logicCorrections: array of strings - Specific corrections needed
+- overallLogicScore: number (0-1) - BE ULTRA-STRICT, fail if ANY major inconsistencies
+- logicIssues: array of strings - List ALL inconsistencies found with specific calculations
+- logicCorrections: array of strings - Specific corrections needed with exact formulas
 - validatedFields: array of field names that passed validation
 - confidenceLevel: number (0-1)
 - criticalFailures: array of strings - Major logic failures that invalidate the data
 
-BE EXTREMELY STRICT. If you find ANY major inconsistencies, mark them as critical failures and give a low logic score.
+BE ULTRA-STRICT. If you find ANY major inconsistencies, mark them as critical failures and give a logic score of 0.0.
 
-IMPORTANT: Return ONLY valid JSON, no other text.`;
+IMPORTANT: Return ONLY valid JSON, no other text. Include specific mathematical formulas and calculations in your analysis.`;
 
   const response = await fetchGPT4o({
     model: 'gpt-4o-mini',
     messages: [
-      { role: 'system', content: 'You are a strict logic validation expert. Be extremely thorough and fail fast on any major inconsistencies. Return only valid JSON.' },
+      { role: 'system', content: 'You are an ultra-strict logic validation expert. Be extremely thorough and fail fast on any major inconsistencies. Return only valid JSON with specific mathematical formulas.' },
       { role: 'user', content: prompt }
     ],
-    max_tokens: 2000, // Increased for more detailed validation
+    max_tokens: 2500, // Increased for more detailed validation
     temperature: 0.1
   });
 
