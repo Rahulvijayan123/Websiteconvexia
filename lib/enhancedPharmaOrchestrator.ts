@@ -114,7 +114,13 @@ export class EnhancedPharmaOrchestrator {
       enableMultiLayerValidation: true,
       enableFactChecking: true,
       enablePatientPopulationValidation: true,
-      validationThreshold: 0.85
+      enableAggressiveRetry: true,
+      enableDeepSourceValidation: true,
+      enableCrossVerification: true,
+      minSourceCount: 4,
+      maxRetryAttempts: 5,
+      strictFactChecking: true,
+      validationThreshold: 0.92
     });
   }
 
