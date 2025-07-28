@@ -1,0 +1,299 @@
+{
+  "testResults": [
+    {
+      "target": "HER2",
+      "indication": "HER2-Positive Breast Cancer",
+      "description": "High-value oncology target with established market",
+      "runs": [
+        {
+          "run": 1,
+          "target": "HER2",
+          "indication": "HER2-Positive Breast Cancer",
+          "responseTime": 0,
+          "output": null,
+          "error": "API error: 500 Internal Server Error",
+          "qualityMetrics": {
+            "overallScore": 0,
+            "mathAuditScore": 0,
+            "consistencyScore": 0,
+            "sourceValidationScore": 0,
+            "logicAnnotationScore": 0,
+            "validationEfficiency": 0,
+            "outputCompleteness": 0
+          },
+          "timestamp": "2025-07-28T06:05:27.756Z"
+        },
+        {
+          "run": 2,
+          "target": "HER2",
+          "indication": "HER2-Positive Breast Cancer",
+          "responseTime": 0,
+          "output": null,
+          "error": "API error: 500 Internal Server Error",
+          "qualityMetrics": {
+            "overallScore": 0,
+            "mathAuditScore": 0,
+            "consistencyScore": 0,
+            "sourceValidationScore": 0,
+            "logicAnnotationScore": 0,
+            "validationEfficiency": 0,
+            "outputCompleteness": 0
+          },
+          "timestamp": "2025-07-28T06:05:27.911Z"
+        },
+        {
+          "run": 3,
+          "target": "HER2",
+          "indication": "HER2-Positive Breast Cancer",
+          "responseTime": 0,
+          "output": null,
+          "error": "API error: 500 Internal Server Error",
+          "qualityMetrics": {
+            "overallScore": 0,
+            "mathAuditScore": 0,
+            "consistencyScore": 0,
+            "sourceValidationScore": 0,
+            "logicAnnotationScore": 0,
+            "validationEfficiency": 0,
+            "outputCompleteness": 0
+          },
+          "timestamp": "2025-07-28T06:05:28.008Z"
+        }
+      ],
+      "consistencyAnalysis": {
+        "consistencyScore": 0,
+        "averageValidationCycles": 0,
+        "qualityScoreVariance": 0,
+        "responseTimeVariance": 0,
+        "issues": [
+          "No successful runs to analyze"
+        ]
+      },
+      "averageQualityScore": 0,
+      "averageResponseTime": 0,
+      "successRate": 0
+    },
+    {
+      "target": "PD-L1",
+      "indication": "Non-Small Cell Lung Cancer",
+      "description": "Immuno-oncology target with competitive landscape",
+      "runs": [
+        {
+          "run": 1,
+          "target": "PD-L1",
+          "indication": "Non-Small Cell Lung Cancer",
+          "responseTime": 0,
+          "output": null,
+          "error": "API error: 500 Internal Server Error",
+          "qualityMetrics": {
+            "overallScore": 0,
+            "mathAuditScore": 0,
+            "consistencyScore": 0,
+            "sourceValidationScore": 0,
+            "logicAnnotationScore": 0,
+            "validationEfficiency": 0,
+            "outputCompleteness": 0
+          },
+          "timestamp": "2025-07-28T06:05:28.146Z"
+        },
+        {
+          "run": 2,
+          "target": "PD-L1",
+          "indication": "Non-Small Cell Lung Cancer",
+          "responseTime": 0,
+          "output": null,
+          "error": "API error: 500 Internal Server Error",
+          "qualityMetrics": {
+            "overallScore": 0,
+            "mathAuditScore": 0,
+            "consistencyScore": 0,
+            "sourceValidationScore": 0,
+            "logicAnnotationScore": 0,
+            "validationEfficiency": 0,
+            "outputCompleteness": 0
+          },
+          "timestamp": "2025-07-28T06:05:28.255Z"
+        },
+        {
+          "run": 3,
+          "target": "PD-L1",
+          "indication": "Non-Small Cell Lung Cancer",
+          "responseTime": 0,
+          "output": null,
+          "error": "API error: 500 Internal Server Error",
+          "qualityMetrics": {
+            "overallScore": 0,
+            "mathAuditScore": 0,
+            "consistencyScore": 0,
+            "sourceValidationScore": 0,
+            "logicAnnotationScore": 0,
+            "validationEfficiency": 0,
+            "outputCompleteness": 0
+          },
+          "timestamp": "2025-07-28T06:05:28.382Z"
+        }
+      ],
+      "consistencyAnalysis": {
+        "consistencyScore": 0,
+        "averageValidationCycles": 0,
+        "qualityScoreVariance": 0,
+        "responseTimeVariance": 0,
+        "issues": [
+          "No successful runs to analyze"
+        ]
+      },
+      "averageQualityScore": 0,
+      "averageResponseTime": 0,
+      "successRate": 0
+    },
+    {
+      "target": "SOD1",
+      "indication": "Amyotrophic Lateral Sclerosis",
+      "description": "Rare disease target with high unmet need",
+      "runs": [
+        {
+          "run": 1,
+          "target": "SOD1",
+          "indication": "Amyotrophic Lateral Sclerosis",
+          "responseTime": 0,
+          "output": null,
+          "error": "API error: 500 Internal Server Error",
+          "qualityMetrics": {
+            "overallScore": 0,
+            "mathAuditScore": 0,
+            "consistencyScore": 0,
+            "sourceValidationScore": 0,
+            "logicAnnotationScore": 0,
+            "validationEfficiency": 0,
+            "outputCompleteness": 0
+          },
+          "timestamp": "2025-07-28T06:05:28.553Z"
+        },
+        {
+          "run": 2,
+          "target": "SOD1",
+          "indication": "Amyotrophic Lateral Sclerosis",
+          "responseTime": 0,
+          "output": null,
+          "error": "API error: 500 Internal Server Error",
+          "qualityMetrics": {
+            "overallScore": 0,
+            "mathAuditScore": 0,
+            "consistencyScore": 0,
+            "sourceValidationScore": 0,
+            "logicAnnotationScore": 0,
+            "validationEfficiency": 0,
+            "outputCompleteness": 0
+          },
+          "timestamp": "2025-07-28T06:05:28.651Z"
+        },
+        {
+          "run": 3,
+          "target": "SOD1",
+          "indication": "Amyotrophic Lateral Sclerosis",
+          "responseTime": 0,
+          "output": null,
+          "error": "API error: 500 Internal Server Error",
+          "qualityMetrics": {
+            "overallScore": 0,
+            "mathAuditScore": 0,
+            "consistencyScore": 0,
+            "sourceValidationScore": 0,
+            "logicAnnotationScore": 0,
+            "validationEfficiency": 0,
+            "outputCompleteness": 0
+          },
+          "timestamp": "2025-07-28T06:05:28.748Z"
+        }
+      ],
+      "consistencyAnalysis": {
+        "consistencyScore": 0,
+        "averageValidationCycles": 0,
+        "qualityScoreVariance": 0,
+        "responseTimeVariance": 0,
+        "issues": [
+          "No successful runs to analyze"
+        ]
+      },
+      "averageQualityScore": 0,
+      "averageResponseTime": 0,
+      "successRate": 0
+    }
+  ],
+  "analysisReport": {
+    "performanceAnalysis": {
+      "overallSuccessRate": 0,
+      "averageQualityScore": 0,
+      "averageResponseTime": 0,
+      "totalTests": 3,
+      "totalRuns": 9,
+      "successfulRuns": 0,
+      "failedRuns": 9
+    },
+    "qualityBreakdown": [
+      {
+        "target": "HER2",
+        "indication": "HER2-Positive Breast Cancer",
+        "averageQualityScore": 0,
+        "averageResponseTime": 0,
+        "successRate": 0,
+        "consistencyScore": 0
+      },
+      {
+        "target": "PD-L1",
+        "indication": "Non-Small Cell Lung Cancer",
+        "averageQualityScore": 0,
+        "averageResponseTime": 0,
+        "successRate": 0,
+        "consistencyScore": 0
+      },
+      {
+        "target": "SOD1",
+        "indication": "Amyotrophic Lateral Sclerosis",
+        "averageQualityScore": 0,
+        "averageResponseTime": 0,
+        "successRate": 0,
+        "consistencyScore": 0
+      }
+    ],
+    "validationEfficiency": [
+      {
+        "target": "HER2",
+        "indication": "HER2-Positive Breast Cancer",
+        "averageValidationCycles": 0,
+        "averageQualityScore": 0,
+        "efficiencyRatio": null
+      },
+      {
+        "target": "PD-L1",
+        "indication": "Non-Small Cell Lung Cancer",
+        "averageValidationCycles": 0,
+        "averageQualityScore": 0,
+        "efficiencyRatio": null
+      },
+      {
+        "target": "SOD1",
+        "indication": "Amyotrophic Lateral Sclerosis",
+        "averageValidationCycles": 0,
+        "averageQualityScore": 0,
+        "efficiencyRatio": null
+      }
+    ],
+    "recommendations": [
+      {
+        "category": "Reliability",
+        "priority": "High",
+        "recommendation": "Improve system reliability - success rate below 80%",
+        "action": "Review error handling and timeout configurations"
+      },
+      {
+        "category": "Quality",
+        "priority": "High",
+        "recommendation": "Enhance output quality - average score below 85%",
+        "action": "Adjust validation thresholds and improve research prompts"
+      }
+    ],
+    "timestamp": "2025-07-28T06:05:28.749Z"
+  },
+  "timestamp": "2025-07-28T06:05:28.749Z"
+}

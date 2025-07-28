@@ -75,7 +75,7 @@ export class ConsistencyAnalyzer {
 
         let output;
         try {
-          output = JSON.parse(response.choices[0].message.content);
+          output = this.parsePerplexityResponse(response.choices[0].message.content);
         } catch (error) {
           throw new Error(`Failed to parse JSON response: ${error}`);
         }
@@ -320,6 +320,28 @@ CRITICAL: This analysis must meet the standards of a senior pharmaceutical indus
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
     const squaredDifferences = values.map(value => Math.pow(value - mean, 2));
     return squaredDifferences.reduce((a, b) => a + b, 0) / values.length;
+  }
+
+  private parsePerplexityResponse(content: string): any {
+    // Handle thinking responses and extract JSON
+    if (content.includes('<think>')) {
+      const thinkMatch = content.match(/<think>[\s\S]*?<\/think>/);
+      if (thinkMatch) {
+        content = content.replace(thinkMatch[0], '').trim();
+      }
+    }
+    
+    // Try to extract JSON from the response
+    try {
+      return JSON.parse(content);
+    } catch (e) {
+      // Fallback: try to extract JSON from code block
+      const codeBlockMatch = content.match(/^```(?:json)?\n([\s\S]*?)\n```$/);
+      if (codeBlockMatch) {
+        return JSON.parse(codeBlockMatch[1]);
+      }
+      throw new Error(`Failed to parse JSON response: ${e}`);
+    }
   }
 
   async runComprehensiveAnalysis(): Promise<void> {
