@@ -1,6 +1,7 @@
 import { fetchPplx } from './pplxClient';
 import { EnhancedMathAuditor } from './enhancedMathAuditor';
 import { EnhancedScoringSystem } from './enhancedScoringSystem';
+import { LogicScoringLayer } from './logicScoringLayer';
 import commercialSchema from '@/schemas/commercialOutputSchema.json';
 
 // Simple cost tracker for enhanced orchestrator
@@ -101,6 +102,7 @@ export class EnhancedPharmaOrchestrator {
   private config: EnhancedPharmaConfig;
   private mathAuditor: EnhancedMathAuditor;
   private scoringSystem: EnhancedScoringSystem;
+  private logicScoringLayer: LogicScoringLayer;
   private fieldCache: Map<string, any> = new Map();
   private apiCallCount: number = 0;
   private lastApiCall: number = 0;
@@ -127,6 +129,7 @@ export class EnhancedPharmaOrchestrator {
 
     this.mathAuditor = new EnhancedMathAuditor();
     this.scoringSystem = new EnhancedScoringSystem();
+    this.logicScoringLayer = new LogicScoringLayer();
     this.costTracker = new SimpleCostTracker(); // Initialize costTracker
   }
 
@@ -147,6 +150,42 @@ export class EnhancedPharmaOrchestrator {
       // COMPREHENSIVE VALIDATION OF PERPLEXITY OUTPUT
       console.log('🔍 Performing comprehensive validation of Perplexity output...');
       const comprehensiveValidation = await this.performComprehensiveValidation(inputs, currentOutput);
+      
+      // LOGIC SCORING LAYER VALIDATION
+      console.log('🧠 Executing Logic Scoring Layer Validation...');
+      const logicValidation = await this.logicScoringLayer.validateLogic(currentOutput, inputs);
+      
+      // If logic validation reveals critical failures, attempt regeneration
+      if (logicValidation.requiresRegeneration) {
+        console.log(`🚨 Logic scoring layer detected critical failures. Regeneration required.`);
+        console.log(`📋 Regeneration fields: ${logicValidation.regenerationFields.join(', ')}`);
+        console.log(`📝 Instructions: ${logicValidation.regenerationInstructions}`);
+        
+        // Attempt logic fix first
+        const logicFixedOutput = await this.logicScoringLayer.attemptLogicFix(currentOutput, logicValidation.logicIssues);
+        
+        // If logic fix was insufficient, regenerate with Perplexity
+        if (logicFixedOutput === currentOutput || logicValidation.criticalFailures.length > 0) {
+          console.log('🔄 Logic fix insufficient, routing back to Perplexity for regeneration...');
+          
+          // Regenerate the entire output with logic validation feedback
+          const regenerationPrompt = this.generateLogicRegenerationPrompt(inputs, currentOutput, logicValidation);
+          const regeneratedOutput = await this.executeRegenerationWithValidation(regenerationPrompt);
+          
+          // Re-validate the regenerated output
+          const revalidation = await this.logicScoringLayer.validateLogic(regeneratedOutput, inputs);
+          
+          if (!revalidation.requiresRegeneration || revalidation.overallLogicScore > logicValidation.overallLogicScore) {
+            console.log('✅ Regeneration improved logic score');
+            currentOutput = regeneratedOutput;
+          } else {
+            console.log('⚠️  Regeneration did not resolve logic issues, proceeding with original');
+          }
+        } else {
+          console.log('✅ Logic fix successful');
+          currentOutput = logicFixedOutput;
+        }
+      }
       
       // If validation reveals critical issues, attempt regeneration
       if (comprehensiveValidation.criticalIssues.length > 0) {
@@ -1962,6 +2001,46 @@ CRITICAL BUSINESS LOGIC RULES - MUST BE FOLLOWED:
    - Market share must be realistic (5-30% for new drugs)
 
 Return completely regenerated JSON that addresses ALL validation issues and follows ALL business logic rules exactly.`;
+  }
+
+  private generateLogicRegenerationPrompt(inputs: any, currentOutput: any, logicValidation: any): string {
+    return `Regenerate the commercial intelligence data with the following logic fixes:
+
+ORIGINAL INPUTS:
+${JSON.stringify(inputs, null, 2)}
+
+CURRENT OUTPUT WITH LOGIC ISSUES:
+${JSON.stringify(currentOutput, null, 2)}
+
+LOGIC VALIDATION RESULTS:
+${JSON.stringify(logicValidation, null, 2)}
+
+CRITICAL LOGIC FAILURES:
+${logicValidation.criticalFailures.map((failure: string) => `- ${failure}`).join('\n')}
+
+LOGIC ISSUES TO FIX:
+${logicValidation.logicIssues.slice(0, 10).map((issue: string) => `- ${issue}`).join('\n')}
+
+REGENERATION INSTRUCTIONS:
+${logicValidation.regenerationInstructions}
+
+CRITICAL REQUIREMENTS:
+1. Fix all mathematical inconsistencies
+2. Ensure PRV eligibility logic is correct (patient count < 200,000 for eligibility)
+3. Validate revenue projections are mathematically sound
+4. Check patient count aligns with disease epidemiology
+5. Verify geographic split sums to 100%
+6. Ensure all percentages are between 0-100%
+7. Fix cross-field consistency issues
+8. Validate business logic compliance
+
+MATHEMATICAL FORMULAS TO VERIFY:
+- Peak Revenue = (peakPatients2030 × avgSellingPrice × peakMarketShare2030) / 1,000,000,000
+- Total 10-Year Revenue should be 5-8× Peak Revenue
+- CAGR = ((Peak Revenue / Current Market Size)^(1/6) - 1) × 100
+- Peak Patients = (Peak Revenue × 1,000,000,000) / (avgSellingPrice × peakMarketShare2030)
+
+Return only valid JSON matching the commercial schema with mathematically consistent values.`;
   }
 
   private async executeRegenerationWithValidation(prompt: string): Promise<any> {
