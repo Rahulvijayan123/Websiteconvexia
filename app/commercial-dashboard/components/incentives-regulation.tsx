@@ -71,6 +71,8 @@ const regulatorySources = [
 
 export function IncentivesRegulation({
   prvEligibility,
+  nationalPriority,
+  reviewTimelineMonths,
   orphanDrugEligibility,
   breakthroughTherapyEligibility,
   fastTrackEligibility,
@@ -79,6 +81,8 @@ export function IncentivesRegulation({
   approvalProbability
 }: {
   prvEligibility?: string,
+  nationalPriority?: string,
+  reviewTimelineMonths?: string,
   orphanDrugEligibility?: string,
   breakthroughTherapyEligibility?: string,
   fastTrackEligibility?: string,
@@ -196,51 +200,66 @@ export function IncentivesRegulation({
             <div className="p-4 border rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold">Orphan Drug Designation</h4>
-                <Badge variant={orphanDrugEligibility === 'Eligible' ? "default" : "secondary"}>
-                  {hasInvalidInput ? 'N/A' : (orphanDrugEligibility || 'N/A')}
+                <Badge variant={prvEligibility === 'Eligible' ? "default" : "secondary"}>
+                  {hasInvalidInput ? 'N/A' : (prvEligibility === 'Eligible' ? 'Eligible' : 'Not Eligible')}
                 </Badge>
               </div>
               <p className="text-sm text-slate-600 mb-2">Rare disease indication with &lt;200K US patients</p>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-700">7-year exclusivity + tax credits</span>
-                <span className="font-medium text-blue-600">85%</span>
+                <span className="font-medium text-blue-600">
+                  {prvEligibility === 'Eligible' ? '85%' : '0%'}
+                </span>
               </div>
               <p className="text-xs text-slate-700 mt-2 leading-relaxed">
-                {getOrphanDrugRationale()}
+                {prvEligibility === 'Eligible' ? 
+                  'Eligible - based on patient population analysis and rare disease assessment' : 
+                  'Not eligible - patient population exceeds 200K threshold or does not meet rare disease criteria'
+                }
               </p>
             </div>
 
             <div className="p-4 border rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold">Breakthrough Therapy</h4>
-                <Badge variant={breakthroughTherapyEligibility === 'Eligible' ? "default" : "secondary"}>
-                  {hasInvalidInput ? 'N/A' : (breakthroughTherapyEligibility || 'N/A')}
+                <Badge variant={nationalPriority === 'High' ? "default" : "secondary"}>
+                  {hasInvalidInput ? 'N/A' : (nationalPriority === 'High' ? 'Eligible' : 'Not Eligible')}
                 </Badge>
               </div>
               <p className="text-sm text-slate-600 mb-2">Substantial improvement over existing therapies</p>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-700">Accelerated review + FDA guidance</span>
-                <span className="font-medium text-blue-600">70%</span>
+                <span className="font-medium text-blue-600">
+                  {nationalPriority === 'High' ? '70%' : '0%'}
+                </span>
               </div>
               <p className="text-xs text-slate-700 mt-2 leading-relaxed">
-                {getBreakthroughTherapyRationale()}
+                {nationalPriority === 'High' ? 
+                  'Eligible - based on clinical data analysis and comparative efficacy assessment' : 
+                  'Not eligible - insufficient clinical data or comparable efficacy to existing therapies'
+                }
               </p>
             </div>
 
             <div className="p-4 border rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold">Fast Track Designation</h4>
-                <Badge variant={fastTrackEligibility === 'Eligible' ? "default" : "secondary"}>
-                  {hasInvalidInput ? 'N/A' : (fastTrackEligibility || 'N/A')}
+                <Badge variant={reviewTimelineMonths && parseInt(reviewTimelineMonths) < 12 ? "default" : "secondary"}>
+                  {hasInvalidInput ? 'N/A' : (reviewTimelineMonths && parseInt(reviewTimelineMonths) < 12 ? 'Eligible' : 'Not Eligible')}
                 </Badge>
               </div>
               <p className="text-sm text-slate-600 mb-2">Unmet medical need in serious condition</p>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-700">Rolling review + priority review</span>
-                <span className="font-medium text-blue-600">90%</span>
+                <span className="font-medium text-blue-600">
+                  {reviewTimelineMonths && parseInt(reviewTimelineMonths) < 12 ? '90%' : '0%'}
+                </span>
               </div>
               <p className="text-xs text-slate-700 mt-2 leading-relaxed">
-                {getFastTrackRationale()}
+                {reviewTimelineMonths && parseInt(reviewTimelineMonths) < 12 ? 
+                  'Eligible - based on unmet medical need analysis and serious condition assessment' : 
+                  'Not eligible - insufficient unmet medical need or condition severity criteria'
+                }
               </p>
             </div>
 
@@ -254,10 +273,15 @@ export function IncentivesRegulation({
               <p className="text-sm text-slate-600 mb-2">Rare pediatric disease or tropical disease</p>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-700">6-month priority review for future drug</span>
-                <span className="font-medium text-blue-600">0%</span>
+                <span className="font-medium text-blue-600">
+                  {prvEligibility === 'Eligible' ? '100%' : '0%'}
+                </span>
               </div>
               <p className="text-xs text-slate-700 mt-2 leading-relaxed">
-                {getPRVEligibilityRationale()}
+                {prvEligibility === 'Eligible' ? 
+                  'Eligible - based on disease prevalence, pediatric population, and FDA guidance for Priority Review Voucher eligibility' : 
+                  'Not eligible - does not meet rare pediatric disease or tropical disease criteria'
+                }
               </p>
             </div>
           </div>
@@ -272,60 +296,62 @@ export function IncentivesRegulation({
             <CardDescription>Expected development and approval milestones</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="font-medium">Pre-IND Meeting</p>
-                  <p className="text-sm text-slate-600">Q1 2024</p>
+            <div className="blurred-section">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Pre-IND Meeting</p>
+                    <p className="text-sm text-slate-600">Q1 2024</p>
+                  </div>
+                  <Badge variant="default">Completed</Badge>
                 </div>
-                <Badge variant="default">Completed</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="font-medium">IND Submission</p>
-                  <p className="text-sm text-slate-600">Q2 2024</p>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">IND Submission</p>
+                    <p className="text-sm text-slate-600">Q2 2024</p>
+                  </div>
+                  <Badge variant="default">Completed</Badge>
                 </div>
-                <Badge variant="default">Completed</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="font-medium">Phase I Start</p>
-                  <p className="text-sm text-slate-600">Q3 2024</p>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Phase I Start</p>
+                    <p className="text-sm text-slate-600">Q3 2024</p>
+                  </div>
+                  <Badge variant="secondary">In Progress</Badge>
                 </div>
-                <Badge variant="secondary">In Progress</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="font-medium">Phase II Start</p>
-                  <p className="text-sm text-slate-600">Q1 2025</p>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Phase II Start</p>
+                    <p className="text-sm text-slate-600">Q1 2025</p>
+                  </div>
+                  <Badge variant="outline">Planned</Badge>
                 </div>
-                <Badge variant="outline">Planned</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="font-medium">Phase III Start</p>
-                  <p className="text-sm text-slate-600">Q3 2026</p>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">Phase III Start</p>
+                    <p className="text-sm text-slate-600">Q3 2026</p>
+                  </div>
+                  <Badge variant="outline">Planned</Badge>
                 </div>
-                <Badge variant="outline">Planned</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="font-medium">NDA Submission</p>
-                  <p className="text-sm text-slate-600">Q4 2028</p>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">NDA Submission</p>
+                    <p className="text-sm text-slate-600">Q4 2028</p>
+                  </div>
+                  <Badge variant="outline">Planned</Badge>
                 </div>
-                <Badge variant="outline">Planned</Badge>
-              </div>
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="font-medium">FDA Approval</p>
-                  <p className="text-sm text-slate-600">Q2 2029</p>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">FDA Approval</p>
+                    <p className="text-sm text-slate-600">Q2 2029</p>
+                  </div>
+                  <Badge variant="outline">Planned</Badge>
                 </div>
-                <Badge variant="outline">Planned</Badge>
               </div>
+              <p className="text-xs text-slate-700 mt-4 leading-relaxed">
+                Regulatory timeline requires clinical development planning and FDA consultation
+              </p>
             </div>
-            <p className="text-xs text-slate-700 mt-4 leading-relaxed">
-              {getRegulatoryTimelineRationale()}
-            </p>
           </CardContent>
         </Card>
 
@@ -336,54 +362,54 @@ export function IncentivesRegulation({
             <CardDescription>Risk factors and success likelihood</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center mb-6">
-              <div className="text-3xl font-bold text-green-600 mb-2">
-                {hasInvalidInput ? 'N/A' : (approvalProbability || 'N/A')}
-              </div>
-              <p className="text-sm text-slate-600">Overall Approval Probability</p>
-              <p className="text-xs text-slate-700 mt-2 leading-relaxed">
-                {getApprovalProbabilityRationale()}
-              </p>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium">Clinical Data Quality</span>
-                  <span className="text-sm font-bold text-green-600">High</span>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
-                </div>
+            <div className="blurred-section">
+              <div className="text-center mb-6">
+                <div className="text-3xl font-bold text-green-600 mb-2">85%</div>
+                <p className="text-sm text-slate-600">Overall Approval Probability</p>
+                <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+                  Approval probability requires clinical data analysis and regulatory risk assessment
+                </p>
               </div>
               
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium">Safety Profile</span>
-                  <span className="text-sm font-bold text-green-600">Favorable</span>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium">Clinical Data Quality</span>
+                    <span className="text-sm font-bold text-green-600">High</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
+                  </div>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '90%' }}></div>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium">Safety Profile</span>
+                    <span className="text-sm font-bold text-green-600">Favorable</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '90%' }}></div>
+                  </div>
                 </div>
-              </div>
-              
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium">Unmet Medical Need</span>
-                  <span className="text-sm font-bold text-blue-600">Moderate</span>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium">Unmet Medical Need</span>
+                    <span className="text-sm font-bold text-blue-600">Moderate</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '70%' }}></div>
+                  </div>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: '70%' }}></div>
-                </div>
-              </div>
-              
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium">Regulatory Risk</span>
-                  <span className="text-sm font-bold text-yellow-600">Low-Medium</span>
-                </div>
-                <div className="w-full bg-slate-200 rounded-full h-2">
-                  <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium">Regulatory Risk</span>
+                    <span className="text-sm font-bold text-yellow-600">Low-Medium</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+                  </div>
                 </div>
               </div>
             </div>

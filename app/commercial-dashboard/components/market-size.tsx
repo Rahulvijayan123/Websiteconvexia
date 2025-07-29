@@ -90,16 +90,14 @@ const marketSources = [
 ]
 
 export function MarketSize({
-  marketSize2024,
-  marketSize2030,
+  marketSize,
   cagr,
   marketDrivers: drivers,
   marketBarriers: barriers,
   geographicSplit: geo,
   totalAddressableMarket
 }: {
-  marketSize2024?: string,
-  marketSize2030?: string,
+  marketSize?: string,
   cagr?: string,
   marketDrivers?: string,
   marketBarriers?: string,
@@ -149,8 +147,8 @@ export function MarketSize({
   // Generate detailed rationales for each market aspect
   const getMarketSizeRationale = () => {
     if (hasInvalidInput) return 'N/A';
-    if (marketSize2024 && marketSize2030 && marketSize2024 !== 'Unknown' && marketSize2030 !== 'Unknown') {
-      return `${marketSize2024} in 2024 growing to ${marketSize2030} in 2030 - based on epidemiology data, treatment penetration, and market dynamics analysis`;
+    if (marketSize && marketSize !== 'Unknown') {
+      return `${marketSize} - based on epidemiology data, treatment penetration, and market dynamics analysis`;
     }
     return 'Market size projection requires epidemiology analysis, treatment penetration modeling, and market dynamics assessment';
   };
@@ -207,20 +205,18 @@ export function MarketSize({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="text-center p-4 border rounded-lg">
               <div className="text-2xl font-bold text-blue-600">
-                {hasInvalidInput ? 'N/A' : (marketSize2024 || 'N/A')}
+                {hasInvalidInput ? 'N/A' : (marketSize || 'N/A')}
               </div>
               <div className="text-sm text-slate-600">2024 Market Size</div>
               <p className="text-xs text-slate-700 mt-2 leading-relaxed">
                 {getMarketSizeRationale()}
               </p>
             </div>
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
-                {hasInvalidInput ? 'N/A' : (marketSize2030 || 'N/A')}
-              </div>
+            <div className="text-center p-4 border rounded-lg blurred-section">
+              <div className="text-2xl font-bold text-green-600">$29.8B</div>
               <div className="text-sm text-slate-600">2030 Market Size</div>
               <p className="text-xs text-slate-700 mt-2 leading-relaxed">
-                {getMarketSizeRationale()}
+                Market size projection requires epidemiology analysis, treatment penetration modeling, and market dynamics assessment
               </p>
             </div>
             <div className="text-center p-4 border rounded-lg">
@@ -232,13 +228,11 @@ export function MarketSize({
                 {getCAGRRationale()}
               </p>
             </div>
-            <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">
-                {hasInvalidInput ? 'N/A' : (totalAddressableMarket || 'N/A')}
-              </div>
+            <div className="text-center p-4 border rounded-lg blurred-section">
+              <div className="text-2xl font-bold text-orange-600">$45.2B</div>
               <div className="text-sm text-slate-600">Total Addressable Market</div>
               <p className="text-xs text-slate-700 mt-2 leading-relaxed">
-                {getTAMRationale()}
+                Total addressable market requires global epidemiology and treatment eligibility analysis
               </p>
             </div>
           </div>
