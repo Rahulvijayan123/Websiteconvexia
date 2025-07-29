@@ -60,19 +60,19 @@ export default function MarketAnalysisAgent() {
     marketSize?: string,
     cagr?: string,
     directCompetitors?: string[],
-    prvEligibility?: string | number,
+    prvEligibility?: string,
     nationalPriority?: string,
-    reviewTimelineMonths?: string | number,
+    reviewTimelineMonths?: string,
     peakRevenue2030?: string,
     peakMarketShare2030?: string,
     peakPatients2030?: string,
     dealActivity?: any[],
     pipelineAnalysis?: any,
     dealCommentary?: string,
-    yearsToExpiration?: string | number,
-    genericEntryRisk?: string | number,
+    yearsToExpiration?: string,
+    genericEntryRisk?: string,
     coreIPPosition?: string,
-    exclusivityPeriod?: string | number,
+    exclusivityPeriod?: string,
     avgSellingPrice?: string,
     persistenceRate?: string,
     treatmentDuration?: string,
@@ -170,6 +170,18 @@ export default function MarketAnalysisAgent() {
               <div className="flex items-center gap-4">
                 <div>
                   <h1 className="text-3xl font-bold text-slate-900">Market Analysis Agent</h1>
+                  {/* Display user inputs */}
+                  {moleculeData && (
+                    <div className="mt-2 text-sm text-slate-600">
+                      <div className="flex flex-wrap gap-4">
+                        <span><strong>Molecule:</strong> {moleculeData.moleculeName}</span>
+                        <span><strong>Indication:</strong> {moleculeData.indications.join(', ')}</span>
+                        <span><strong>Phase:</strong> {moleculeData.developmentPhase}</span>
+                        <span><strong>Launch Year:</strong> {moleculeData.targetLaunchYear}</span>
+                        <span><strong>Regions:</strong> {moleculeData.regionsOfInterest.join(', ')}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
