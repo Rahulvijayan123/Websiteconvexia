@@ -1,49 +1,40 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Line, ComposedChart } from "recharts"
+import { Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Line, ComposedChart, Area, AreaChart } from "recharts"
 import { ExpandableDetail } from "./expandable-detail"
 import { SourceAttribution } from "./source-attribution"
-import { useState, useEffect } from "react";
-import { AlertTriangle, CheckCircle, XCircle, TrendingUp, Users } from "lucide-react"
-
-// Input validation utility function
-const isInvalidInput = (input: string | null | undefined): boolean => {
-  if (!input || typeof input !== 'string') return true;
-  const trimmed = input.trim().toLowerCase();
-  // Only detect obviously invalid inputs - be more permissive for real drug/target names
-  const invalidPatterns = ['xxx', 'n/a', 'random', 'asdf', 'test', 'placeholder', 'dummy', 'fake', 'qwerty', '123456'];
-  return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 1;
-};
-
-const getInputValues = () => {
-  try {
-    const stored = localStorage.getItem('perplexityResult');
-    if (stored) {
-      const data = JSON.parse(stored);
-      return data.inputValues || {
-        therapeuticArea: '',
-        indication: '',
-        target: '',
-        geography: '',
-        developmentPhase: ''
-      };
-    }
-  } catch (e) {
-    // If localStorage fails, assume valid input
-  }
-  return { therapeuticArea: '', indication: '', target: '', geography: '', developmentPhase: '' };
-};
 
 const marketData = [
-  { year: "2024", marketSize: 1506, cagr: 8.2, penetration: 12 },
-  { year: "2025", marketSize: 1680, cagr: 8.8, penetration: 15 },
-  { year: "2026", marketSize: 1890, cagr: 9.2, penetration: 18 },
-  { year: "2027", marketSize: 2140, cagr: 9.8, penetration: 22 },
-  { year: "2028", marketSize: 2420, cagr: 10.2, penetration: 25 },
-  { year: "2029", marketSize: 2680, cagr: 10.8, penetration: 27 },
-  { year: "2030", marketSize: 2910, cagr: 11.2, penetration: 27 },
+  { year: "2024", marketSize: 19200, cagr: 7.5, drivers: 85, barriers: 15 },
+  { year: "2025", marketSize: 20640, cagr: 7.5, drivers: 82, barriers: 18 },
+  { year: "2026", marketSize: 22188, cagr: 7.5, drivers: 80, barriers: 20 },
+  { year: "2027", marketSize: 23852, cagr: 7.5, drivers: 78, barriers: 22 },
+  { year: "2028", marketSize: 25641, cagr: 7.5, drivers: 75, barriers: 25 },
+  { year: "2029", marketSize: 27564, cagr: 7.5, drivers: 72, barriers: 28 },
+  { year: "2030", marketSize: 29631, cagr: 7.5, drivers: 70, barriers: 30 },
+]
+
+const marketDrivers = [
+  { driver: "Increasing incidence rates", impact: "High", confidence: 85 },
+  { driver: "Improved diagnostic capabilities", impact: "Medium", confidence: 75 },
+  { driver: "Aging population", impact: "High", confidence: 90 },
+  { driver: "Treatment innovation", impact: "High", confidence: 80 },
+  { driver: "Healthcare access expansion", impact: "Medium", confidence: 70 },
+]
+
+const marketBarriers = [
+  { barrier: "High treatment costs", impact: "High", confidence: 85 },
+  { barrier: "Limited awareness", impact: "Medium", confidence: 65 },
+  { barrier: "Regulatory hurdles", impact: "Medium", confidence: 70 },
+  { barrier: "Competitive pressure", impact: "High", confidence: 80 },
+  { barrier: "Reimbursement challenges", impact: "High", confidence: 75 },
+]
+
+const geographicSplit = [
+  { region: "North America", share: 45, growth: 8.2 },
+  { region: "Europe", share: 28, growth: 6.8 },
+  { region: "Asia Pacific", share: 20, growth: 9.5 },
+  { region: "Rest of World", share: 7, growth: 5.2 },
 ]
 
 const chartConfig = {
@@ -55,73 +46,95 @@ const chartConfig = {
     label: "CAGR (%)",
     color: "hsl(var(--chart-2))",
   },
-  penetration: {
-    label: "Penetration (%)",
+  drivers: {
+    label: "Market Drivers (%)",
     color: "hsl(var(--chart-3))",
+  },
+  barriers: {
+    label: "Market Barriers (%)",
+    color: "hsl(var(--chart-4))",
+  },
+  share: {
+    label: "Market Share (%)",
+    color: "hsl(var(--chart-1))",
+  },
+  growth: {
+    label: "Growth Rate (%)",
+    color: "hsl(var(--chart-2))",
   },
 }
 
-const marketSizeSources = [
+const marketSources = [
   {
-    name: "EvaluatePharma",
+    name: "EvaluatePharma Market Intelligence",
     type: "database" as const,
     url: "https://www.evaluate.com",
-    description: "Market sizing and competitive intelligence",
+    description: "Comprehensive pharmaceutical market data and forecasts",
     lastUpdated: "Dec 2024",
   },
   {
     name: "IQVIA Market Research",
     type: "database" as const,
-    description: "Patient population and treatment patterns",
-    lastUpdated: "Nov 2024",
+    description: "Real-world evidence and market analytics",
   },
   {
-    name: "Internal Analysis",
-    type: "manual" as const,
-    description: "Company-specific market assumptions and pricing strategy",
+    name: "GlobalData Healthcare",
+    type: "database" as const,
+    description: "Disease epidemiology and market sizing",
   },
   {
-    name: "AI Market Model",
+    name: "Market Analysis AI Model",
     type: "ai-generated" as const,
-    description: "Machine learning-based market projections using comparable asset analysis",
+    description: "AI-powered market trend analysis and forecasting",
   },
 ]
 
-// Curated list of 20+ realistic sources
-const researchSources = [
-  { name: 'EvaluatePharma', type: 'database' },
-  { name: 'GlobalData Pharma Intelligence', type: 'database' },
-  { name: 'Statista Market Insights', type: 'database' },
-  { name: 'IQVIA Market Research', type: 'database' },
-  { name: 'FDA Orange Book', type: 'regulatory' },
-  { name: 'BioCentury BCIQ', type: 'database' },
-  { name: 'Cortellis Competitive Intelligence', type: 'database' },
-  { name: 'ClinicalTrials.gov', type: 'regulatory' },
-  { name: 'Pharma Intelligence Informa', type: 'database' },
-  { name: 'FierceBiotech', type: 'news' },
-  { name: 'Nature Reviews Drug Discovery', type: 'literature' },
-  { name: 'PubMed Literature', type: 'literature' },
-  { name: 'Company IR Presentations', type: 'manual' },
-  { name: 'Scrip Intelligence', type: 'news' },
-  { name: 'PharmaTimes', type: 'news' },
-  { name: 'Evaluate Vantage', type: 'database' },
-  { name: 'PitchBook', type: 'database' },
-  { name: 'HHS Announcements', type: 'regulatory' },
-  { name: 'NIH Strategic Plans', type: 'regulatory' },
-  { name: 'CDC Target Lists', type: 'regulatory' },
-  { name: 'BARDA Focus Areas', type: 'regulatory' },
-  { name: 'White House Pandemic Strategies', type: 'regulatory' },
-  { name: 'GBD (Global Burden of Disease)', type: 'database' },
-  { name: 'SEER Epidemiology', type: 'database' },
-  { name: 'Company Press Releases', type: 'manual' },
-  { name: 'Pharma Analyst Decks', type: 'manual' },
-  { name: 'Stat News', type: 'news' },
-  { name: 'BioPharma Dive', type: 'news' },
-  { name: 'Global Market Insights', type: 'database' },
-];
+export function MarketSize({
+  marketSize2024,
+  marketSize2030,
+  cagr,
+  marketDrivers: drivers,
+  marketBarriers: barriers,
+  geographicSplit: geo,
+  totalAddressableMarket
+}: {
+  marketSize2024?: string,
+  marketSize2030?: string,
+  cagr?: string,
+  marketDrivers?: string,
+  marketBarriers?: string,
+  geographicSplit?: string,
+  totalAddressableMarket?: string
+} = {}) {
+  // Input validation function to detect invalid inputs
+  const isInvalidInput = (input: string | null | undefined): boolean => {
+    if (!input || typeof input !== 'string') return true;
+    const trimmed = input.trim().toLowerCase();
+    // Only detect obviously invalid inputs - be more permissive for real drug/target names
+    const invalidPatterns = ['xxx', 'n/a', 'random', 'asdf', 'test', 'placeholder', 'dummy', 'fake', 'qwerty', '123456'];
+    return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 1;
+  };
 
-export function MarketSize({ marketSize, cagr, currentMarketSize, peakShare }: { marketSize?: string, cagr?: string, currentMarketSize?: string, peakShare?: string }) {
-  // Check for invalid inputs
+  // Get input values from localStorage to validate
+  const getInputValues = () => {
+    try {
+      const stored = localStorage.getItem('perplexityResult');
+      if (stored) {
+        const data = JSON.parse(stored);
+        return data.inputValues || {
+          therapeuticArea: '',
+          indication: '',
+          target: '',
+          geography: '',
+          developmentPhase: ''
+        };
+      }
+    } catch (e) {
+      // If localStorage fails, assume valid input
+    }
+    return { therapeuticArea: '', indication: '', target: '', geography: '', developmentPhase: '' };
+  };
+
   const inputValues = getInputValues();
   // Only trigger fallback if MOST fields are invalid (at least 3 out of 5)
   const invalidFields = [
@@ -133,261 +146,244 @@ export function MarketSize({ marketSize, cagr, currentMarketSize, peakShare }: {
   ].filter(Boolean);
   const hasInvalidInput = invalidFields.length >= 3;
 
-  // Business logic validation functions
-  const validateMarketSizeRealism = () => {
-    if (!marketSize) return { isValid: false, message: 'Market size data not available' };
-    
-    const size = parseFloat(marketSize.replace(/[^0-9.]/g, ''));
-    const multiplier = marketSize.includes('B') ? 1000000000 : 
-                      marketSize.includes('M') ? 1000000 : 1;
-    const actualSize = size * multiplier;
-    
-    // Market size should be reasonable for the indication
-    if (actualSize < 10000000) { // < $10M
-      return { isValid: false, message: 'Market size may be too small for commercial viability' };
-    } else if (actualSize > 100000000000) { // > $100B
-      return { isValid: false, message: 'Market size may be unrealistically large' };
-    } else {
-      return { isValid: true, message: 'Market size appears realistic' };
-    }
-  };
-
-  const validateCAGRRealism = () => {
-    if (!cagr) return { isValid: false, message: 'CAGR data not available' };
-    
-    const cagrValue = parseFloat(cagr.replace(/[^0-9.]/g, ''));
-    
-    if (cagrValue < 0) {
-      return { isValid: false, message: 'Negative CAGR indicates declining market' };
-    } else if (cagrValue > 50) {
-      return { isValid: false, message: 'CAGR may be unrealistically high' };
-    } else if (cagrValue > 20) {
-      return { isValid: true, message: 'High growth market (>20% CAGR)' };
-    } else {
-      return { isValid: true, message: 'Moderate growth market' };
-    }
-  };
-
-  const validateMarketConsistency = () => {
-    if (!marketSize || !cagr) return { isValid: false, message: 'Missing market data for validation' };
-    
-    const size = parseFloat(marketSize.replace(/[^0-9.]/g, ''));
-    const sizeMultiplier = marketSize.includes('B') ? 1000000000 : 
-                          marketSize.includes('M') ? 1000000 : 1;
-    const actualSize = size * sizeMultiplier;
-    
-    const cagrValue = parseFloat(cagr.replace(/[^0-9.]/g, ''));
-    
-    // Large markets typically have lower CAGR, small markets can have higher CAGR
-    if (actualSize > 10000000000 && cagrValue > 25) { // > $10B market with >25% CAGR
-      return { isValid: false, message: 'Large market with very high growth may be inconsistent' };
-    } else if (actualSize < 1000000000 && cagrValue < 5) { // < $1B market with <5% CAGR
-      return { isValid: false, message: 'Small market with low growth may indicate limited opportunity' };
-    } else {
-      return { isValid: true, message: 'Market size and growth are consistent' };
-    }
-  };
-
-  // Run validations
-  const marketSizeValidation = validateMarketSizeRealism();
-  const cagrValidation = validateCAGRRealism();
-  const consistencyValidation = validateMarketConsistency();
-
-  // Generate detailed rationales
+  // Generate detailed rationales for each market aspect
   const getMarketSizeRationale = () => {
     if (hasInvalidInput) return 'N/A';
-    if (marketSize && marketSize !== 'Unknown') {
-      return `${marketSize} market size - based on epidemiology data, treatment penetration, and pricing analysis for the target indication`;
+    if (marketSize2024 && marketSize2030 && marketSize2024 !== 'Unknown' && marketSize2030 !== 'Unknown') {
+      return `${marketSize2024} in 2024 growing to ${marketSize2030} in 2030 - based on epidemiology data, treatment penetration, and market dynamics analysis`;
     }
-    return 'Market size requires comprehensive epidemiology and pricing analysis';
+    return 'Market size projection requires epidemiology analysis, treatment penetration modeling, and market dynamics assessment';
   };
 
   const getCAGRRationale = () => {
     if (hasInvalidInput) return 'N/A';
     if (cagr && cagr !== 'Unknown') {
-      return `${cagr} CAGR - projected growth based on increasing diagnosis rates, treatment adoption, and market expansion`;
+      return `${cagr} CAGR - based on historical growth patterns, innovation pipeline, and market expansion factors`;
     }
-    return 'CAGR projection requires analysis of market dynamics and growth drivers';
+    return 'CAGR calculation requires historical market analysis and future growth factor assessment';
+  };
+
+  const getMarketDriversRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (drivers && drivers !== 'Unknown') {
+      return `${drivers} - key market drivers include increasing incidence, improved diagnostics, and treatment innovation`;
+    }
+    return 'Market drivers analysis requires epidemiology trends and healthcare innovation assessment';
+  };
+
+  const getMarketBarriersRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (barriers && barriers !== 'Unknown') {
+      return `${barriers} - primary barriers include high costs, regulatory hurdles, and competitive pressure`;
+    }
+    return 'Market barriers analysis requires cost structure and regulatory environment assessment';
+  };
+
+  const getGeographicSplitRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (geo && geo !== 'Unknown') {
+      return `${geo} - geographic distribution based on healthcare infrastructure, regulatory environment, and market access`;
+    }
+    return 'Geographic split requires healthcare infrastructure and market access analysis';
+  };
+
+  const getTAMRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (totalAddressableMarket && totalAddressableMarket !== 'Unknown') {
+      return `${totalAddressableMarket} total addressable market - based on global epidemiology and treatment-eligible population`;
+    }
+    return 'Total addressable market requires global epidemiology and treatment eligibility analysis';
   };
 
   return (
     <div className="space-y-6">
-      {/* Business Logic Validation Alert */}
-      <Card className="border-l-4 border-l-blue-500">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-blue-500" />
-            Market Validation
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-2">
-              {marketSizeValidation.isValid ? (
-                <CheckCircle className="w-4 h-4 text-green-500" />
-              ) : (
-                <XCircle className="w-4 h-4 text-red-500" />
-              )}
-              <span className="text-sm">{marketSizeValidation.message}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {cagrValidation.isValid ? (
-                <CheckCircle className="w-4 h-4 text-green-500" />
-              ) : (
-                <AlertTriangle className="w-4 h-4 text-yellow-500" />
-              )}
-              <span className="text-sm">{cagrValidation.message}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {consistencyValidation.isValid ? (
-                <CheckCircle className="w-4 h-4 text-green-500" />
-              ) : (
-                <AlertTriangle className="w-4 h-4 text-yellow-500" />
-              )}
-              <span className="text-sm">{consistencyValidation.message}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Market Overview */}
-      <Card>
+      <Card className="shadow-md bg-white rounded-lg border border-slate-200">
         <CardHeader>
-          <CardTitle>Market Size & Growth Overview</CardTitle>
-          <CardDescription>Current market size and projected growth trajectory</CardDescription>
+          <CardTitle>Market Overview</CardTitle>
+          <CardDescription>Market size, growth, and key dynamics</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="text-center p-6 border rounded-lg">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
-                <h3 className="text-lg font-semibold">Market Size</h3>
+          <div className="blurred-section">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="text-center p-4 border rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">$19.2B</div>
+                <div className="text-sm text-slate-600">2024 Market Size</div>
+                <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+                  {getMarketSizeRationale()}
+                </p>
               </div>
-              <div className="text-3xl font-bold text-blue-600 mb-2">
-                {hasInvalidInput ? 'N/A' : (marketSize || 'N/A')}
+              <div className="text-center p-4 border rounded-lg">
+                <div className="text-2xl font-bold text-green-600">$29.8B</div>
+                <div className="text-sm text-slate-600">2030 Market Size</div>
+                <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+                  {getMarketSizeRationale()}
+                </p>
               </div>
-              <Badge variant={marketSizeValidation.isValid ? "default" : "destructive"} className="mb-3">
-                {marketSizeValidation.isValid ? "Realistic" : "Review Required"}
-              </Badge>
-              <ExpandableDetail
-                title="Market Size Analysis"
-                value={marketSize || 'N/A'}
-                aiDerivation={getMarketSizeRationale()}
-              />
-            </div>
-            
-            <div className="text-center p-6 border rounded-lg">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <TrendingUp className="w-5 h-5 text-green-600" />
-                <h3 className="text-lg font-semibold">Growth Rate</h3>
+              <div className="text-center p-4 border rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">7.5%</div>
+                <div className="text-sm text-slate-600">CAGR (2024-2030)</div>
+                <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+                  {getCAGRRationale()}
+                </p>
               </div>
-              <div className="text-3xl font-bold text-green-600 mb-2">
-                {hasInvalidInput ? 'N/A' : (cagr || 'N/A')}
+              <div className="text-center p-4 border rounded-lg">
+                <div className="text-2xl font-bold text-orange-600">$45.2B</div>
+                <div className="text-sm text-slate-600">Total Addressable Market</div>
+                <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+                  {getTAMRationale()}
+                </p>
               </div>
-              <Badge variant={cagrValidation.isValid ? "default" : "destructive"} className="mb-3">
-                {cagrValidation.isValid ? "Sustainable" : "Review Required"}
-              </Badge>
-              <ExpandableDetail
-                title="Growth Analysis"
-                value={cagr || 'N/A'}
-                aiDerivation={getCAGRRationale()}
-              />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Market Growth Chart */}
-      <Card>
+      {/* Market Dynamics Chart */}
+      <Card className="shadow-md bg-white rounded-lg border border-slate-200">
         <CardHeader>
-          <CardTitle>Market Growth Projection</CardTitle>
-          <CardDescription>Annual market size and growth rate trends</CardDescription>
+          <CardTitle>Market Dynamics (2024-2030)</CardTitle>
+          <CardDescription>Market size growth with drivers and barriers overlay</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[400px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={marketData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="year" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
-                <ChartTooltip />
-                <Bar yAxisId="left" dataKey="marketSize" fill="hsl(var(--chart-1))" name="Market Size ($M)" />
-                <Line yAxisId="right" type="monotone" dataKey="cagr" stroke="hsl(var(--chart-2))" name="CAGR (%)" />
-                <Line yAxisId="right" type="monotone" dataKey="penetration" stroke="hsl(var(--chart-3))" name="Penetration (%)" />
-              </ComposedChart>
-            </ResponsiveContainer>
+          <div className="blurred-section">
+            <ChartContainer config={chartConfig} className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={marketData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="year" />
+                  <YAxis yAxisId="left" />
+                  <YAxis yAxisId="right" orientation="right" />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar yAxisId="left" dataKey="marketSize" fill="var(--color-marketSize)" />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="cagr"
+                    stroke="var(--color-cagr)"
+                    strokeWidth={2}
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="drivers"
+                    stroke="var(--color-drivers)"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="barriers"
+                    stroke="var(--color-barriers)"
+                    strokeWidth={2}
+                    strokeDasharray="3 3"
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </div>
         </CardContent>
       </Card>
 
-      {/* Market Dynamics */}
-      <Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Market Drivers */}
+        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+          <CardHeader>
+            <CardTitle>Key Market Drivers</CardTitle>
+            <CardDescription>Factors driving market growth</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="blurred-section">
+              <div className="space-y-4">
+                {marketDrivers.map((driver, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <p className="font-medium">{driver.driver}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-slate-600">Impact: {driver.impact}</span>
+                        <span className="text-sm text-slate-600">Confidence: {driver.confidence}%</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-slate-700 mt-4 leading-relaxed">
+                {getMarketDriversRationale()}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Market Barriers */}
+        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+          <CardHeader>
+            <CardTitle>Market Barriers</CardTitle>
+            <CardDescription>Challenges limiting market growth</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="blurred-section">
+              <div className="space-y-4">
+                {marketBarriers.map((barrier, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <p className="font-medium">{barrier.barrier}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-sm text-slate-600">Impact: {barrier.impact}</span>
+                        <span className="text-sm text-slate-600">Confidence: {barrier.confidence}%</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-slate-700 mt-4 leading-relaxed">
+                {getMarketBarriersRationale()}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Geographic Distribution */}
+      <Card className="shadow-md bg-white rounded-lg border border-slate-200">
         <CardHeader>
-          <CardTitle>Market Dynamics & Drivers</CardTitle>
-          <CardDescription>Key factors influencing market growth and adoption</CardDescription>
+          <CardTitle>Geographic Market Distribution</CardTitle>
+          <CardDescription>Regional market shares and growth rates</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-4">
-              <h4 className="font-semibold text-slate-700">Growth Drivers</h4>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
-                  <span>Increasing diagnosis rates</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
-                  <span>Treatment paradigm shifts</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
-                  <span>Market expansion in emerging regions</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="font-semibold text-slate-700">Market Barriers</h4>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0" />
-                  <span>Reimbursement challenges</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0" />
-                  <span>Competitive pressure</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0" />
-                  <span>Regulatory uncertainty</span>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="space-y-4">
-              <h4 className="font-semibold text-slate-700">Opportunities</h4>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                  <span>Unmet medical needs</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                  <span>Orphan drug designations</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                  <span>Precision medicine adoption</span>
-                </li>
-              </ul>
+          <div className="blurred-section">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <ChartContainer config={chartConfig} className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <Bar dataKey="share" fill="var(--color-share)" />
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </div>
+              <div className="space-y-4">
+                {geographicSplit.map((region, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{region.region}</p>
+                      <p className="text-sm text-slate-600">{region.share}% market share</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-green-600">{region.growth}%</p>
+                      <p className="text-sm text-slate-600">Growth rate</p>
+                    </div>
+                  </div>
+                ))}
+                <p className="text-xs text-slate-700 mt-4 leading-relaxed">
+                  {getGeographicSplitRationale()}
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Data Sources */}
-      <SourceAttribution sectionTitle="Market Size Analysis" sources={marketSizeSources} />
+      <SourceAttribution sectionTitle="Market Size Analysis" sources={marketSources} />
     </div>
   )
 }

@@ -1,121 +1,120 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { ExpandableDetail } from "./expandable-detail"
-import { AlertTriangle, CheckCircle, XCircle, Info } from "lucide-react"
+import { SourceAttribution } from "./source-attribution"
 
-// Input validation utility function
-const isInvalidInput = (input: string | null | undefined): boolean => {
-  if (!input || typeof input !== 'string') return true;
-  const trimmed = input.trim().toLowerCase();
-  // Only detect obviously invalid inputs - be more permissive for real drug/target names
-  const invalidPatterns = ['xxx', 'n/a', 'random', 'asdf', 'test', 'placeholder', 'dummy', 'fake', 'qwerty', '123456'];
-  return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 1;
-};
-
-const getInputValues = () => {
-  try {
-    const stored = localStorage.getItem('perplexityResult');
-    if (stored) {
-      const data = JSON.parse(stored);
-      return data.inputValues || {
-        therapeuticArea: '',
-        indication: '',
-        target: '',
-        geography: '',
-        developmentPhase: ''
-      };
-    }
-  } catch (e) {
-    // If localStorage fails, assume valid input
-  }
-  return { therapeuticArea: '', indication: '', target: '', geography: '', developmentPhase: '' };
-};
-
-const incentives = [
+const regulatoryIncentives = [
   {
-    name: "Orphan Drug Designation",
+    incentive: "Orphan Drug Designation",
     status: "Eligible",
-    value: "$3M PDUFA fee waiver",
-    exclusivity: "7 years",
-    probability: 85,
+    description: "Rare disease indication with <200K US patients",
+    impact: "7-year exclusivity + tax credits",
+    probability: "85%",
   },
   {
-    name: "Priority Review Voucher",
-    status: "Potential",
-    value: "$100-350M",
-    exclusivity: "N/A",
-    probability: 45,
-  },
-  {
-    name: "Breakthrough Designation",
-    status: "Likely",
-    value: "Expedited review",
-    exclusivity: "N/A",
-    probability: 70,
-  },
-  {
-    name: "Fast Track Designation",
+    incentive: "Breakthrough Therapy",
     status: "Eligible",
-    value: "Rolling review",
-    exclusivity: "N/A",
-    probability: 90,
+    description: "Substantial improvement over existing therapies",
+    impact: "Accelerated review + FDA guidance",
+    probability: "70%",
+  },
+  {
+    incentive: "Fast Track Designation",
+    status: "Eligible",
+    description: "Unmet medical need in serious condition",
+    impact: "Rolling review + priority review",
+    probability: "90%",
+  },
+  {
+    incentive: "Priority Review Voucher",
+    status: "Not Eligible",
+    description: "Rare pediatric disease or tropical disease",
+    impact: "6-month priority review for future drug",
+    probability: "0%",
   },
 ]
 
-const regulatoryTimeline = [
-  { milestone: "IND Filing", timeline: "Completed", status: "done" },
-  { milestone: "Phase I Initiation", timeline: "Q1 2024", status: "done" },
-  { milestone: "Phase II Initiation", timeline: "Q3 2024", status: "current" },
-  { milestone: "Breakthrough Designation", timeline: "Q4 2024", status: "pending" },
-  { milestone: "Phase III Initiation", timeline: "Q2 2025", status: "pending" },
-  { milestone: "NDA Filing", timeline: "Q4 2026", status: "pending" },
-  { milestone: "FDA Approval", timeline: "Q2 2027", status: "pending" },
+const reviewTimeline = [
+  { phase: "Pre-IND Meeting", timeline: "Q1 2024", status: "Completed" },
+  { phase: "IND Submission", timeline: "Q2 2024", status: "Completed" },
+  { phase: "Phase I Start", timeline: "Q3 2024", status: "In Progress" },
+  { phase: "Phase II Start", timeline: "Q1 2025", status: "Planned" },
+  { phase: "Phase III Start", timeline: "Q3 2026", status: "Planned" },
+  { phase: "NDA Submission", timeline: "Q4 2028", status: "Planned" },
+  { phase: "FDA Approval", timeline: "Q2 2029", status: "Planned" },
 ]
 
-const policyIncentives = [
+const regulatorySources = [
   {
-    category: "OBBBA 2024 Provisions",
-    items: [
-      "ODD expansion for rare cancer subtypes",
-      "IRA pricing exclusion (7 years)",
-      "Enhanced tax credits for pediatric trials",
-      "Accelerated PDUFA fee waivers",
-      "Extended market exclusivity periods",
-    ],
+    name: "FDA Guidance Documents",
+    type: "manual" as const,
+    description: "Orphan Drug Act, Breakthrough Therapy Designation guidance",
   },
   {
-    category: "FDA Modernization",
-    items: [
-      "Real-world evidence acceptance",
-      "Biomarker-driven approvals",
-      "Patient-reported outcomes emphasis",
-      "Decentralized trial support",
-      "AI/ML guidance implementation",
-    ],
+    name: "ClinicalTrials.gov",
+    type: "database" as const,
+    url: "https://clinicaltrials.gov",
+    description: "Clinical trial registration and status",
+    lastUpdated: "Dec 2024",
   },
   {
-    category: "International Harmonization",
-    items: [
-      "EMA parallel scientific advice",
-      "PMDA consultation alignment",
-      "Health Canada priority review",
-      "Global regulatory strategy coordination",
-      "Mutual recognition agreements",
-    ],
+    name: "FDA Drug Approval Database",
+    type: "database" as const,
+    description: "Historical approval timelines and designations",
+  },
+  {
+    name: "Regulatory Intelligence Platform",
+    type: "ai-generated" as const,
+    description: "AI-powered regulatory pathway analysis",
   },
 ]
 
 export function IncentivesRegulation({
   prvEligibility,
-  nationalPriority,
-  reviewTimelineMonths
+  orphanDrugEligibility,
+  breakthroughTherapyEligibility,
+  fastTrackEligibility,
+  priorityReviewEligibility,
+  regulatoryTimeline,
+  approvalProbability
 }: {
-  prvEligibility?: string | number,
-  nationalPriority?: string,
-  reviewTimelineMonths?: string | number
-}) {
-  // Check for invalid inputs
+  prvEligibility?: string,
+  orphanDrugEligibility?: string,
+  breakthroughTherapyEligibility?: string,
+  fastTrackEligibility?: string,
+  priorityReviewEligibility?: string,
+  regulatoryTimeline?: string,
+  approvalProbability?: string
+} = {}) {
+  // Input validation function to detect invalid inputs
+  const isInvalidInput = (input: string | null | undefined): boolean => {
+    if (!input || typeof input !== 'string') return true;
+    const trimmed = input.trim().toLowerCase();
+    // Only detect obviously invalid inputs - be more permissive for real drug/target names
+    const invalidPatterns = ['xxx', 'n/a', 'random', 'asdf', 'test', 'placeholder', 'dummy', 'fake', 'qwerty', '123456'];
+    return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 1;
+  };
+
+  // Get input values from localStorage to validate
+  const getInputValues = () => {
+    try {
+      const stored = localStorage.getItem('perplexityResult');
+      if (stored) {
+        const data = JSON.parse(stored);
+        return data.inputValues || {
+          therapeuticArea: '',
+          indication: '',
+          target: '',
+          geography: '',
+          developmentPhase: ''
+        };
+      }
+    } catch (e) {
+      // If localStorage fails, assume valid input
+    }
+    return { therapeuticArea: '', indication: '', target: '', geography: '', developmentPhase: '' };
+  };
+
   const inputValues = getInputValues();
   // Only trigger fallback if MOST fields are invalid (at least 3 out of 5)
   const invalidFields = [
@@ -127,273 +126,248 @@ export function IncentivesRegulation({
   ].filter(Boolean);
   const hasInvalidInput = invalidFields.length >= 3;
 
-  // Business logic validation functions
-  const validatePRVEligibility = () => {
-    if (hasInvalidInput) return { isValid: false, message: 'Input validation failed' };
-    
-    if (prvEligibility === 'Yes' || prvEligibility === 'yes' || prvEligibility === 1) {
-      return { isValid: true, message: 'Eligible for Priority Review Voucher' };
-    } else if (prvEligibility === 'No' || prvEligibility === 'no' || prvEligibility === 0) {
-      return { isValid: false, message: 'Not eligible for Priority Review Voucher' };
-    } else if (typeof prvEligibility === 'number' && prvEligibility > 50) {
-      return { isValid: true, message: `High probability (${prvEligibility}%) for PRV eligibility` };
-    } else if (typeof prvEligibility === 'number' && prvEligibility <= 50) {
-      return { isValid: false, message: `Low probability (${prvEligibility}%) for PRV eligibility` };
-    }
-    return { isValid: false, message: 'PRV eligibility unclear' };
-  };
-
-  const validateRareDiseaseEligibility = () => {
-    // This would need patient count data from other components
-    // For now, we'll show a placeholder
-    return { isValid: true, message: 'Rare disease eligibility depends on patient population (<200k)' };
-  };
-
-  const validateReviewTimeline = () => {
-    if (hasInvalidInput) return { isValid: false, message: 'Input validation failed' };
-    
-    if (typeof reviewTimelineMonths === 'number') {
-      if (reviewTimelineMonths <= 6) {
-        return { isValid: true, message: 'Priority review timeline (≤6 months)' };
-      } else if (reviewTimelineMonths <= 12) {
-        return { isValid: true, message: 'Standard review timeline (≤12 months)' };
-      } else {
-        return { isValid: false, message: 'Extended review timeline (>12 months)' };
-      }
-    }
-    return { isValid: false, message: 'Review timeline unclear' };
-  };
-
-  // Run validations
-  const prvValidation = validatePRVEligibility();
-  const rareDiseaseValidation = validateRareDiseaseEligibility();
-  const timelineValidation = validateReviewTimeline();
-
-  // Generate detailed, specific information for each field
-  const getDetailedPRVEligibility = () => {
+  // Generate detailed rationales for each regulatory aspect
+  const getPRVEligibilityRationale = () => {
     if (hasInvalidInput) return 'N/A';
-    if (prvEligibility === 'No' || prvEligibility === 'no' || prvEligibility === 0) {
-      return 'Not eligible for Priority Review Voucher - indication does not meet tropical disease or rare pediatric disease criteria under FDA guidance';
+    if (prvEligibility && prvEligibility !== 'Unknown') {
+      return `${prvEligibility} - based on disease prevalence, pediatric population, and FDA guidance for Priority Review Voucher eligibility`;
     }
-    if (prvEligibility === 'Yes' || prvEligibility === 'yes' || prvEligibility === 1) {
-      return 'Eligible for Priority Review Voucher - meets tropical disease designation criteria with potential $100-350M voucher value';
-    }
-    if (typeof prvEligibility === 'number') {
-      return `Priority Review Voucher eligibility probability: ${prvEligibility}% based on indication classification and regulatory precedent`;
-    }
-    if (typeof prvEligibility === 'string' && prvEligibility.includes('%')) {
-      return `Priority Review Voucher eligibility assessment: ${prvEligibility} probability based on current FDA guidance and indication characteristics`;
-    }
-    return `Priority Review Voucher status: ${prvEligibility} - requires further regulatory assessment for tropical disease or rare pediatric designation`;
+    return 'PRV eligibility requires assessment of disease prevalence and pediatric population impact';
   };
 
-  const getDetailedNationalPriority = () => {
+  const getOrphanDrugRationale = () => {
     if (hasInvalidInput) return 'N/A';
-    if (nationalPriority === 'High') {
-      return 'High national priority designation - addresses critical unmet medical need with significant public health impact and government support';
+    if (orphanDrugEligibility && orphanDrugEligibility !== 'Unknown') {
+      return `${orphanDrugEligibility} - based on patient population size and rare disease criteria per Orphan Drug Act`;
     }
-    if (nationalPriority === 'Medium') {
-      return 'Medium national priority - recognized public health importance with moderate government interest and funding consideration';
-    }
-    if (nationalPriority === 'Low') {
-      return 'Low national priority - limited government focus but may qualify for standard regulatory pathways and incentives';
-    }
-    return `National priority assessment: ${nationalPriority} - based on public health impact, government funding priorities, and regulatory framework`;
+    return 'Orphan drug designation requires patient population analysis and rare disease assessment';
   };
 
-  const getDetailedReviewTimeline = () => {
+  const getBreakthroughTherapyRationale = () => {
     if (hasInvalidInput) return 'N/A';
-    if (typeof reviewTimelineMonths === 'number') {
-      return `FDA review timeline: ${reviewTimelineMonths} months - standard review pathway with potential for priority review if breakthrough designation granted`;
+    if (breakthroughTherapyEligibility && breakthroughTherapyEligibility !== 'Unknown') {
+      return `${breakthroughTherapyEligibility} - based on clinical data showing substantial improvement over existing therapies`;
     }
-    if (typeof reviewTimelineMonths === 'string') {
-      if (reviewTimelineMonths.includes('10-12') || reviewTimelineMonths.includes('12')) {
-        return 'FDA review timeline: 10-12 months - standard review pathway with potential for priority review (6 months) if breakthrough designation criteria met';
-      }
-      if (reviewTimelineMonths.includes('6') || reviewTimelineMonths.includes('priority')) {
-        return 'FDA review timeline: 6 months - priority review pathway granted due to breakthrough designation or unmet medical need';
-      }
-      return `FDA review timeline: ${reviewTimelineMonths} - based on current regulatory pathway and designation status`;
-    }
-    return `FDA review timeline: ${reviewTimelineMonths} - requires confirmation of regulatory pathway and designation status`;
+    return 'Breakthrough therapy designation requires clinical data analysis and comparative efficacy assessment';
   };
 
-  const getDetailedRareDiseaseEligibility = () => {
+  const getFastTrackRationale = () => {
     if (hasInvalidInput) return 'N/A';
-    return 'Rare disease eligibility: 85% probability - patient population estimated below 200,000 in US, qualifying for orphan drug designation with 7-year exclusivity';
+    if (fastTrackEligibility && fastTrackEligibility !== 'Unknown') {
+      return `${fastTrackEligibility} - based on unmet medical need assessment and serious condition criteria`;
+    }
+    return 'Fast track designation requires unmet medical need analysis and serious condition assessment';
+  };
+
+  const getPriorityReviewRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (priorityReviewEligibility && priorityReviewEligibility !== 'Unknown') {
+      return `${priorityReviewEligibility} - based on disease severity, unmet need, and therapeutic advancement criteria`;
+    }
+    return 'Priority review eligibility requires disease severity and therapeutic advancement assessment';
+  };
+
+  const getRegulatoryTimelineRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (regulatoryTimeline && regulatoryTimeline !== 'Unknown') {
+      return `${regulatoryTimeline} - based on development phase, regulatory pathway, and historical approval timelines`;
+    }
+    return 'Regulatory timeline requires development phase analysis and regulatory pathway assessment';
+  };
+
+  const getApprovalProbabilityRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (approvalProbability && approvalProbability !== 'Unknown') {
+      return `${approvalProbability} approval probability - based on clinical data quality, regulatory precedents, and risk factors`;
+    }
+    return 'Approval probability requires clinical data analysis and regulatory risk assessment';
   };
 
   return (
     <div className="space-y-6">
-      {/* Business Logic Validation Alert */}
-      <Card className="border-l-4 border-l-blue-500">
+      {/* Regulatory Incentives */}
+      <Card className="shadow-md bg-white rounded-lg border border-slate-200">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="w-5 h-5 text-blue-500" />
-            Regulatory Validation
-          </CardTitle>
+          <CardTitle>Regulatory Incentives & Designations</CardTitle>
+          <CardDescription>Available regulatory pathways and incentives</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-2">
-              {prvValidation.isValid ? (
-                <CheckCircle className="w-4 h-4 text-green-500" />
-              ) : (
-                <XCircle className="w-4 h-4 text-red-500" />
-              )}
-              <span className="text-sm">{prvValidation.message}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {rareDiseaseValidation.isValid ? (
-                <CheckCircle className="w-4 h-4 text-green-500" />
-              ) : (
-                <AlertTriangle className="w-4 h-4 text-yellow-500" />
-              )}
-              <span className="text-sm">{rareDiseaseValidation.message}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {timelineValidation.isValid ? (
-                <CheckCircle className="w-4 h-4 text-green-500" />
-              ) : (
-                <AlertTriangle className="w-4 h-4 text-yellow-500" />
-              )}
-              <span className="text-sm">{timelineValidation.message}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Header Score */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-xl">CNPV/PRV Eligibility Score</CardTitle>
-              <CardDescription>Regulatory incentive qualification assessment</CardDescription>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-blue-600">
-                {hasInvalidInput ? 'N/A' : (typeof prvEligibility === 'number' ? `${prvEligibility}%` : prvEligibility || 'N/A')}
-              </div>
-              <Badge variant={prvValidation.isValid ? "default" : "destructive"}>
-                {prvValidation.isValid ? "Eligible" : "Not Eligible"}
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">PRV Eligibility</span>
-                <span className="text-sm text-slate-600">
-                  {hasInvalidInput ? 'N/A' : (typeof prvEligibility === 'number' ? `${prvEligibility}%` : prvEligibility || 'N/A')}
-                </span>
-              </div>
-              <Progress value={typeof prvEligibility === 'number' ? prvEligibility : 0} className="h-2" />
-              <ExpandableDetail
-                title="PRV Eligibility Details"
-                value={typeof prvEligibility === 'number' ? `${prvEligibility}%` : prvEligibility || 'N/A'}
-                aiDerivation={getDetailedPRVEligibility()}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Regulatory Designations */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Regulatory Designations & Incentives</CardTitle>
-          <CardDescription>FDA designations and regulatory pathway opportunities</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {incentives.map((incentive, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-semibold">{incentive.name}</h4>
-                    <Badge variant={incentive.status === 'Eligible' ? 'default' : incentive.status === 'Likely' ? 'secondary' : 'outline'}>
+          <div className="blurred-section">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {regulatoryIncentives.map((incentive, index) => (
+                <div key={index} className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold">{incentive.incentive}</h4>
+                    <Badge variant={incentive.status === "Eligible" ? "default" : "secondary"}>
                       {incentive.status}
                     </Badge>
                   </div>
-                  <p className="text-sm text-slate-600">{incentive.value}</p>
-                  {incentive.exclusivity !== 'N/A' && (
-                    <p className="text-xs text-slate-500">Exclusivity: {incentive.exclusivity}</p>
-                  )}
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-blue-600">{incentive.probability}%</div>
-                  <Progress value={incentive.probability} className="w-20 h-2" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Regulatory Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Regulatory Timeline</CardTitle>
-          <CardDescription>Expected FDA review and approval milestones</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {regulatoryTimeline.map((milestone, index) => (
-              <div key={index} className="flex items-center gap-4">
-                <div className={`w-3 h-3 rounded-full ${
-                  milestone.status === 'done' ? 'bg-green-500' : 
-                  milestone.status === 'current' ? 'bg-blue-500' : 'bg-slate-300'
-                }`} />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">{milestone.milestone}</span>
-                    <span className="text-sm text-slate-600">{milestone.timeline}</span>
+                  <p className="text-sm text-slate-600 mb-2">{incentive.description}</p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-700">{incentive.impact}</span>
+                    <span className="font-medium text-blue-600">{incentive.probability}</span>
                   </div>
                 </div>
-              </div>
-            ))}
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Info className="w-4 h-4 text-blue-600" />
-                <span className="font-medium text-blue-900">Review Timeline</span>
-              </div>
-              <ExpandableDetail
-                title="Timeline Details"
-                value={typeof reviewTimelineMonths === 'number' ? `${reviewTimelineMonths} months` : reviewTimelineMonths || 'N/A'}
-                aiDerivation={getDetailedReviewTimeline()}
-              />
+              ))}
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Policy Incentives */}
-      <Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Regulatory Timeline */}
+        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+          <CardHeader>
+            <CardTitle>Regulatory Timeline</CardTitle>
+            <CardDescription>Expected development and approval milestones</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="blurred-section">
+              <div className="space-y-3">
+                {reviewTimeline.map((phase, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{phase.phase}</p>
+                      <p className="text-sm text-slate-600">{phase.timeline}</p>
+                    </div>
+                    <Badge variant={phase.status === "Completed" ? "default" : phase.status === "In Progress" ? "secondary" : "outline"}>
+                      {phase.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Approval Probability */}
+        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+          <CardHeader>
+            <CardTitle>Approval Probability Analysis</CardTitle>
+            <CardDescription>Risk factors and success likelihood</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="blurred-section">
+              <div className="text-center mb-6">
+                <div className="text-3xl font-bold text-green-600 mb-2">85%</div>
+                <p className="text-sm text-slate-600">Overall Approval Probability</p>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium">Clinical Data Quality</span>
+                    <span className="text-sm font-bold text-green-600">High</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium">Safety Profile</span>
+                    <span className="text-sm font-bold text-green-600">Favorable</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '90%' }}></div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium">Unmet Medical Need</span>
+                    <span className="text-sm font-bold text-blue-600">Moderate</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '70%' }}></div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium">Regulatory Risk</span>
+                    <span className="text-sm font-bold text-yellow-600">Low-Medium</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2">
+                    <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Key Risk Factors */}
+      <Card className="shadow-md bg-white rounded-lg border border-slate-200">
         <CardHeader>
-          <CardTitle>Policy Incentives & Regulatory Tailwinds</CardTitle>
-          <CardDescription>Current regulatory environment and policy support</CardDescription>
+          <CardTitle>Key Regulatory Risk Factors</CardTitle>
+          <CardDescription>Potential challenges and mitigation strategies</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            {policyIncentives.map((category, index) => (
-              <div key={index}>
-                <h4 className="font-semibold text-slate-700 mb-3">{category.category}</h4>
-                <ul className="space-y-2">
-                  {category.items.map((item, itemIndex) => (
-                    <li key={itemIndex} className="text-sm text-slate-600 flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                      {item}
-                    </li>
-                  ))}
+          <div className="blurred-section">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <h4 className="font-semibold text-sm text-slate-600 mb-3">Clinical Development Risks</h4>
+                <ul className="text-sm space-y-2">
+                  <li className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <span>Patient recruitment challenges</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <span>Strong preclinical data</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <span>Endpoint validation required</span>
+                  </li>
                 </ul>
               </div>
-            ))}
+
+              <div>
+                <h4 className="font-semibold text-sm text-slate-600 mb-3">Regulatory Risks</h4>
+                <ul className="text-sm space-y-2">
+                  <li className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <span>Clear regulatory pathway</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <span>FDA guidance evolution</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <span>Precedent approvals exist</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-sm text-slate-600 mb-3">Market Access Risks</h4>
+                <ul className="text-sm space-y-2">
+                  <li className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <span>Payer coverage uncertainty</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <span>Strong value proposition</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                    <span>Competitive landscape changes</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Data Sources */}
+      <SourceAttribution sectionTitle="Regulatory Analysis" sources={regulatorySources} />
     </div>
   )
 }
