@@ -80,7 +80,14 @@ export default function MarketAnalysisAgent() {
     total10YearRevenue?: string,
     competitorPricing?: any[],
     pricingScenarios?: any[],
-    strategicTailwindData?: any
+    strategicTailwindData?: any,
+    inputValues?: {
+      therapeuticArea?: string,
+      indication?: string,
+      target?: string,
+      geography?: string,
+      developmentPhase?: string
+    }
   }>({})
   const [decodeError, setDecodeError] = useState<string | null>(null)
   const [hasMounted, setHasMounted] = useState(false);
@@ -171,14 +178,14 @@ export default function MarketAnalysisAgent() {
                 <div>
                   <h1 className="text-3xl font-bold text-slate-900">Market Analysis Agent</h1>
                   {/* Display user inputs */}
-                  {moleculeData && (
+                  {perplexityData.inputValues && (
                     <div className="mt-2 text-sm text-slate-600">
                       <div className="flex flex-wrap gap-4">
-                        <span><strong>Molecule:</strong> {moleculeData.moleculeName}</span>
-                        <span><strong>Indication:</strong> {moleculeData.indications.join(', ')}</span>
-                        <span><strong>Phase:</strong> {moleculeData.developmentPhase}</span>
-                        <span><strong>Launch Year:</strong> {moleculeData.targetLaunchYear}</span>
-                        <span><strong>Regions:</strong> {moleculeData.regionsOfInterest.join(', ')}</span>
+                        <span><strong>Therapeutic Area:</strong> {perplexityData.inputValues.therapeuticArea}</span>
+                        <span><strong>Indication:</strong> {perplexityData.inputValues.indication}</span>
+                        <span><strong>Target:</strong> {perplexityData.inputValues.target}</span>
+                        <span><strong>Geography:</strong> {perplexityData.inputValues.geography}</span>
+                        <span><strong>Development Phase:</strong> {perplexityData.inputValues.developmentPhase}</span>
                       </div>
                     </div>
                   )}
