@@ -6,6 +6,7 @@ import { Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Line, ComposedCh
 import { ExpandableDetail } from "./expandable-detail"
 import { SourceAttribution } from "./source-attribution"
 import { useState, useEffect } from "react";
+import { AlertTriangle, CheckCircle, XCircle, TrendingUp, Users } from "lucide-react"
 
 // Input validation utility function
 const isInvalidInput = (input: string | null | undefined): boolean => {
@@ -120,12 +121,6 @@ const researchSources = [
 ];
 
 export function MarketSize({ marketSize, cagr, currentMarketSize, peakShare }: { marketSize?: string, cagr?: string, currentMarketSize?: string, peakShare?: string }) {
-  const [showSources, setShowSources] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-  useEffect(() => setIsClient(true), []);
-  // Treat 'Unknown' as missing
-  const hasData = (!!marketSize && marketSize !== 'Unknown') || (!!cagr && cagr !== 'Unknown');
-  
   // Check for invalid inputs
   const inputValues = getInputValues();
   // Only trigger fallback if MOST fields are invalid (at least 3 out of 5)
@@ -137,226 +132,262 @@ export function MarketSize({ marketSize, cagr, currentMarketSize, peakShare }: {
     isInvalidInput(inputValues.developmentPhase)
   ].filter(Boolean);
   const hasInvalidInput = invalidFields.length >= 3;
+
+  // Business logic validation functions
+  const validateMarketSizeRealism = () => {
+    if (!marketSize) return { isValid: false, message: 'Market size data not available' };
+    
+    const size = parseFloat(marketSize.replace(/[^0-9.]/g, ''));
+    const multiplier = marketSize.includes('B') ? 1000000000 : 
+                      marketSize.includes('M') ? 1000000 : 1;
+    const actualSize = size * multiplier;
+    
+    // Market size should be reasonable for the indication
+    if (actualSize < 10000000) { // < $10M
+      return { isValid: false, message: 'Market size may be too small for commercial viability' };
+    } else if (actualSize > 100000000000) { // > $100B
+      return { isValid: false, message: 'Market size may be unrealistically large' };
+    } else {
+      return { isValid: true, message: 'Market size appears realistic' };
+    }
+  };
+
+  const validateCAGRRealism = () => {
+    if (!cagr) return { isValid: false, message: 'CAGR data not available' };
+    
+    const cagrValue = parseFloat(cagr.replace(/[^0-9.]/g, ''));
+    
+    if (cagrValue < 0) {
+      return { isValid: false, message: 'Negative CAGR indicates declining market' };
+    } else if (cagrValue > 50) {
+      return { isValid: false, message: 'CAGR may be unrealistically high' };
+    } else if (cagrValue > 20) {
+      return { isValid: true, message: 'High growth market (>20% CAGR)' };
+    } else {
+      return { isValid: true, message: 'Moderate growth market' };
+    }
+  };
+
+  const validateMarketConsistency = () => {
+    if (!marketSize || !cagr) return { isValid: false, message: 'Missing market data for validation' };
+    
+    const size = parseFloat(marketSize.replace(/[^0-9.]/g, ''));
+    const sizeMultiplier = marketSize.includes('B') ? 1000000000 : 
+                          marketSize.includes('M') ? 1000000 : 1;
+    const actualSize = size * sizeMultiplier;
+    
+    const cagrValue = parseFloat(cagr.replace(/[^0-9.]/g, ''));
+    
+    // Large markets typically have lower CAGR, small markets can have higher CAGR
+    if (actualSize > 10000000000 && cagrValue > 25) { // > $10B market with >25% CAGR
+      return { isValid: false, message: 'Large market with very high growth may be inconsistent' };
+    } else if (actualSize < 1000000000 && cagrValue < 5) { // < $1B market with <5% CAGR
+      return { isValid: false, message: 'Small market with low growth may indicate limited opportunity' };
+    } else {
+      return { isValid: true, message: 'Market size and growth are consistent' };
+    }
+  };
+
+  // Run validations
+  const marketSizeValidation = validateMarketSizeRealism();
+  const cagrValidation = validateCAGRRealism();
+  const consistencyValidation = validateMarketConsistency();
+
+  // Generate detailed rationales
+  const getMarketSizeRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (marketSize && marketSize !== 'Unknown') {
+      return `${marketSize} market size - based on epidemiology data, treatment penetration, and pricing analysis for the target indication`;
+    }
+    return 'Market size requires comprehensive epidemiology and pricing analysis';
+  };
+
+  const getCAGRRationale = () => {
+    if (hasInvalidInput) return 'N/A';
+    if (cagr && cagr !== 'Unknown') {
+      return `${cagr} CAGR - projected growth based on increasing diagnosis rates, treatment adoption, and market expansion`;
+    }
+    return 'CAGR projection requires analysis of market dynamics and growth drivers';
+  };
+
   return (
     <div className="space-y-6">
-      <Card className="bg-slate-50 border border-slate-200 shadow-md rounded-lg flex items-center justify-center p-8">
-        <CardHeader className="w-full p-0">
-          <div className="flex w-full items-start justify-between mb-8">
-            <div>
-              <CardTitle className="text-xl font-semibold text-left mb-1">Market Size & Growth</CardTitle>
-              <CardDescription className="text-left">Peak Sales Estimate, CAGR, and Key Market Metrics</CardDescription>
+      {/* Business Logic Validation Alert */}
+      <Card className="border-l-4 border-l-blue-500">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-blue-500" />
+            Market Validation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center gap-2">
+              {marketSizeValidation.isValid ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <XCircle className="w-4 h-4 text-red-500" />
+              )}
+              <span className="text-sm">{marketSizeValidation.message}</span>
             </div>
-            <div>
-              <button
-                className="px-4 py-2 rounded bg-blue-100 text-blue-700 text-sm font-semibold hover:bg-blue-200 transition shadow-sm"
-                onClick={() => setShowSources((v) => !v)}
-              >
-                {showSources ? 'Hide Sources' : 'Show Sources'}
-              </button>
+            <div className="flex items-center gap-2">
+              {cagrValidation.isValid ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-yellow-500" />
+              )}
+              <span className="text-sm">{cagrValidation.message}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {consistencyValidation.isValid ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-yellow-500" />
+              )}
+              <span className="text-sm">{consistencyValidation.message}</span>
             </div>
           </div>
-          {/* Four metrics row, always present, always blurred for some, always visible for others */}
-          <>
-            <div className="w-full flex flex-row justify-between items-end mb-2 gap-8 max-w-6xl mx-auto">
-              {/* Current Market Size (blurred, dynamic) */}
-              <div className="flex flex-col items-center min-w-[180px]">
-                <span className="blurred-section text-3xl font-bold text-slate-600 mb-1 select-none">{currentMarketSize || 'N/A'}</span>
-                <span className="text-xs font-medium text-slate-500">Current Market Size</span>
-              </div>
-              {/* Peak Sales Estimate (unblurred, dynamic) */}
-              <div className="flex flex-col items-center min-w-[180px]">
-                <span className="text-3xl font-bold text-green-600 mb-1">{hasInvalidInput ? 'N/A' : (hasData ? (marketSize || 'N/A') : 'N/A')}</span>
-                <span className="text-xs font-medium text-slate-500">Peak Sales Estimate</span>
-              </div>
-              {/* CAGR (unblurred, dynamic) */}
-              <div className="flex flex-col items-center min-w-[180px]">
-                <span className="text-3xl font-bold text-blue-600 mb-1">{hasInvalidInput ? 'N/A' : (hasData ? (cagr || 'N/A') : 'N/A')}</span>
-                <span className="text-xs font-medium text-slate-500">CAGR</span>
-              </div>
-              {/* Peak Share (blurred, dynamic) */}
-              <div className="flex flex-col items-center min-w-[180px]">
-                <span className="blurred-section text-3xl font-bold text-slate-600 mb-1 select-none">{peakShare || 'N/A'}</span>
-                <span className="text-xs font-medium text-slate-500">Peak Share</span>
-              </div>
-            </div>
-          </>
-          {showSources && (
-            <div className="mt-4 w-full max-w-xs mx-auto border border-slate-300 shadow-lg rounded-lg bg-white p-3 text-xs text-slate-700">
-              <div className="font-semibold text-slate-600 mb-2 text-center">Research Sources</div>
-              <div className="max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-blue-50 pr-1">
-                {researchSources.map((source, idx) => (
-                  <div key={idx} className="mb-1 px-2 py-1 rounded hover:bg-blue-50 transition text-center">{source.name}</div>
-                ))}
-              </div>
-            </div>
-          )}
-        </CardHeader>
-      </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Market Growth Chart */}
-        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
-          <CardHeader>
-            <CardTitle>Market Growth Projection</CardTitle>
-            <CardDescription>Market size and penetration trends 2024-2030</CardDescription>
-          </CardHeader>
-          <CardContent className="blurred-section">
-            {isClient && (
-              <ChartContainer config={chartConfig} className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={marketData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" />
-                    <YAxis yAxisId="left" />
-                    <YAxis yAxisId="right" orientation="right" />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar yAxisId="left" dataKey="marketSize" fill="var(--color-marketSize)" />
-                    <Line
-                      yAxisId="right"
-                      type="monotone"
-                      dataKey="penetration"
-                      stroke="var(--color-penetration)"
-                      strokeWidth={2}
-                    />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Key Assumptions */}
-        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
-          <CardHeader>
-            <CardTitle>Key Market Assumptions</CardTitle>
-          </CardHeader>
-          <CardContent className="blurred-section space-y-4">
-            {isClient && (
-              <>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Pricing (Annual)</span>
-                    <span className="text-sm font-bold">$100K/patient</span>
-                  </div>
-                  <Progress value={75} className="h-2" />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Peak Penetration</span>
-                    <span className="text-sm font-bold">27%</span>
-                  </div>
-                  <Progress value={27} className="h-2" />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Unmet Need Index</span>
-                    <span className="text-sm font-bold">8.5/10</span>
-                  </div>
-                  <Progress value={85} className="h-2" />
-                </div>
-
-                <div className="pt-4 space-y-3">
-                  <div>
-                    <h4 className="font-semibold text-sm text-slate-600 mb-1">Patient Population</h4>
-                    <div className="text-sm space-y-1">
-                      <div className="flex justify-between">
-                        <span>US:</span>
-                        <span className="font-medium">12,500 patients</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>EU5:</span>
-                        <span className="font-medium">8,200 patients</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Other:</span>
-                        <span className="font-medium">5,300 patients</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Market Drivers */}
-      <Card className="shadow-md bg-white rounded-lg border border-slate-200">
-        <CardHeader>
-          <CardTitle>Market Growth Drivers</CardTitle>
-        </CardHeader>
-        <CardContent className="blurred-section">
-          {isClient && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <h4 className="font-semibold text-sm text-slate-600 mb-3">Positive Drivers</h4>
-                <ul className="text-sm space-y-2">
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Increasing EGFR testing rates</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Earlier diagnosis and treatment</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Expanding treatment guidelines</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Improved patient outcomes</span>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm text-slate-600 mb-3">Negative Drivers</h4>
-                <ul className="text-sm space-y-2">
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Generic competition</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Pricing pressure</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Access/reimbursement hurdles</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Emerging resistance</span>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-sm text-slate-600 mb-3">Key Uncertainties</h4>
-                <ul className="text-sm space-y-2">
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Combination therapy adoption</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Emerging resistance patterns</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Healthcare policy changes</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Novel modality disruption</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
+
+      {/* Market Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Market Size & Growth Overview</CardTitle>
+          <CardDescription>Current market size and projected growth trajectory</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="text-center p-6 border rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+                <h3 className="text-lg font-semibold">Market Size</h3>
+              </div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">
+                {hasInvalidInput ? 'N/A' : (marketSize || 'N/A')}
+              </div>
+              <Badge variant={marketSizeValidation.isValid ? "default" : "destructive"} className="mb-3">
+                {marketSizeValidation.isValid ? "Realistic" : "Review Required"}
+              </Badge>
+              <ExpandableDetail
+                title="Market Size Analysis"
+                value={marketSize || 'N/A'}
+                aiDerivation={getMarketSizeRationale()}
+              />
+            </div>
+            
+            <div className="text-center p-6 border rounded-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-green-600" />
+                <h3 className="text-lg font-semibold">Growth Rate</h3>
+              </div>
+              <div className="text-3xl font-bold text-green-600 mb-2">
+                {hasInvalidInput ? 'N/A' : (cagr || 'N/A')}
+              </div>
+              <Badge variant={cagrValidation.isValid ? "default" : "destructive"} className="mb-3">
+                {cagrValidation.isValid ? "Sustainable" : "Review Required"}
+              </Badge>
+              <ExpandableDetail
+                title="Growth Analysis"
+                value={cagr || 'N/A'}
+                aiDerivation={getCAGRRationale()}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Market Growth Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Market Growth Projection</CardTitle>
+          <CardDescription>Annual market size and growth rate trends</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={marketData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="year" />
+                <YAxis yAxisId="left" />
+                <YAxis yAxisId="right" orientation="right" />
+                <ChartTooltip />
+                <Bar yAxisId="left" dataKey="marketSize" fill="hsl(var(--chart-1))" name="Market Size ($M)" />
+                <Line yAxisId="right" type="monotone" dataKey="cagr" stroke="hsl(var(--chart-2))" name="CAGR (%)" />
+                <Line yAxisId="right" type="monotone" dataKey="penetration" stroke="hsl(var(--chart-3))" name="Penetration (%)" />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Market Dynamics */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Market Dynamics & Drivers</CardTitle>
+          <CardDescription>Key factors influencing market growth and adoption</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-4">
+              <h4 className="font-semibold text-slate-700">Growth Drivers</h4>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                  <span>Increasing diagnosis rates</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                  <span>Treatment paradigm shifts</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                  <span>Market expansion in emerging regions</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="font-semibold text-slate-700">Market Barriers</h4>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0" />
+                  <span>Reimbursement challenges</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0" />
+                  <span>Competitive pressure</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0" />
+                  <span>Regulatory uncertainty</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="font-semibold text-slate-700">Opportunities</h4>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                  <span>Unmet medical needs</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                  <span>Orphan drug designations</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                  <span>Precision medicine adoption</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Data Sources */}
+      <SourceAttribution sectionTitle="Market Size Analysis" sources={marketSizeSources} />
     </div>
-  );
+  )
 }

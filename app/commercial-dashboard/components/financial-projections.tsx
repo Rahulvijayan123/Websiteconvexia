@@ -3,6 +3,8 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Line, ComposedChart, Area, AreaChart } from "recharts"
 import { ExpandableDetail } from "./expandable-detail"
 import { SourceAttribution } from "./source-attribution"
+import { AlertTriangle, CheckCircle, XCircle } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 const revenueData = [
   { year: "2024", usRevenue: 0, exUsRevenue: 0, marketShare: 0, grossToNet: 0 },
@@ -117,6 +119,74 @@ export function FinancialProjections({
     return invalidPatterns.some(pattern => trimmed.includes(pattern)) || trimmed.length < 1;
   };
 
+  // Business logic validation functions
+  const validateRareDiseaseEligibility = () => {
+    if (!peakPatients2030) return { isValid: false, message: 'Patient count not available' };
+    
+    const patientCount = parseFloat(peakPatients2030.replace(/[^0-9.]/g, ''));
+    const multiplier = peakPatients2030.includes('M') ? 1000000 : 
+                      peakPatients2030.includes('K') ? 1000 : 1;
+    const actualPatients = patientCount * multiplier;
+    
+    if (actualPatients <= 200000) {
+      return { isValid: true, message: 'Eligible for rare disease designation (<200k patients)' };
+    } else {
+      return { isValid: false, message: 'Not eligible for rare disease designation (>200k patients)' };
+    }
+  };
+
+  const validateMathematicalConsistency = () => {
+    if (!peakRevenue2030 || !peakPatients2030 || !avgSellingPrice) {
+      return { isValid: false, message: 'Missing data for validation' };
+    }
+
+    const revenue = parseFloat(peakRevenue2030.replace(/[^0-9.]/g, ''));
+    const revenueMultiplier = peakRevenue2030.includes('B') ? 1000000000 : 
+                             peakRevenue2030.includes('M') ? 1000000 : 1;
+    const actualRevenue = revenue * revenueMultiplier;
+
+    const patients = parseFloat(peakPatients2030.replace(/[^0-9.]/g, ''));
+    const patientMultiplier = peakPatients2030.includes('M') ? 1000000 : 
+                             peakPatients2030.includes('K') ? 1000 : 1;
+    const actualPatients = patients * patientMultiplier;
+
+    const price = parseFloat(avgSellingPrice.replace(/[^0-9.]/g, ''));
+    const priceMultiplier = avgSellingPrice.includes('K') ? 1000 : 1;
+    const actualPrice = price * priceMultiplier;
+
+    const calculatedRevenue = actualPatients * actualPrice;
+    const revenueRatio = Math.abs(calculatedRevenue - actualRevenue) / actualRevenue;
+
+    if (revenueRatio < 0.2) { // Within 20% tolerance
+      return { isValid: true, message: 'Revenue calculation is mathematically consistent' };
+    } else {
+      return { isValid: false, message: 'Revenue calculation may be inconsistent with patient count and pricing' };
+    }
+  };
+
+  const validateMarketShareConsistency = () => {
+    if (!peakMarketShare2030 || !peakPatients2030) {
+      return { isValid: false, message: 'Missing market share or patient data' };
+    }
+
+    const marketShare = parseFloat(peakMarketShare2030.replace(/[^0-9.]/g, ''));
+    const patients = parseFloat(peakPatients2030.replace(/[^0-9.]/g, ''));
+    const patientMultiplier = peakPatients2030.includes('M') ? 1000000 : 
+                             peakPatients2030.includes('K') ? 1000 : 1;
+    const actualPatients = patients * patientMultiplier;
+
+    // Estimate total market size based on patient count and market share
+    const estimatedTotalPatients = actualPatients / (marketShare / 100);
+    
+    if (estimatedTotalPatients <= 200000 && marketShare > 50) {
+      return { isValid: true, message: 'High market share consistent with rare disease' };
+    } else if (estimatedTotalPatients > 200000 && marketShare <= 20) {
+      return { isValid: true, message: 'Market share appropriate for larger patient population' };
+    } else {
+      return { isValid: false, message: 'Market share may not align with patient population size' };
+    }
+  };
+
   // Get input values from localStorage to validate
   const getInputValues = () => {
     try {
@@ -147,6 +217,11 @@ export function FinancialProjections({
     isInvalidInput(inputValues.developmentPhase)
   ].filter(Boolean);
   const hasInvalidInput = invalidFields.length >= 3;
+
+  // Run validations
+  const rareDiseaseValidation = validateRareDiseaseEligibility();
+  const mathValidation = validateMathematicalConsistency();
+  const marketShareValidation = validateMarketShareConsistency();
 
   // Calculate Total 10-Year Revenue if not provided
   const calculateTotal10YearRevenue = () => {
@@ -199,29 +274,30 @@ export function FinancialProjections({
     if (peakMarketShare2030 && peakMarketShare2030 !== 'Unknown') {
       return `${peakMarketShare2030} market share - projected based on competitive landscape analysis and product differentiation`;
     }
-    return 'Peak market share requires competitive analysis and product positioning assessment';
+    return 'Market share projection requires competitive landscape analysis and product positioning assessment';
   };
 
   const getPeakPatientsRationale = () => {
     if (hasInvalidInput) return 'N/A';
     if (peakPatients2030 && peakPatients2030 !== 'Unknown') {
-      return `${peakPatients2030} patients - estimated treated population based on epidemiology, market penetration, and treatment adoption`;
+      const rareDiseaseStatus = rareDiseaseValidation.isValid ? ' (Rare Disease Eligible)' : ' (Not Rare Disease)';
+      return `${peakPatients2030} peak patients${rareDiseaseStatus} - based on epidemiology data, treatment penetration, and market access assumptions`;
     }
-    return 'Peak patients requires epidemiology data and market penetration analysis';
+    return 'Patient population projection requires epidemiology analysis and treatment penetration modeling';
   };
 
   const getAvgSellingPriceRationale = () => {
     if (hasInvalidInput) return 'N/A';
     if (avgSellingPrice && avgSellingPrice !== 'Unknown') {
-      return `${avgSellingPrice} average selling price - blended global pricing based on regional price variations and payer negotiations`;
+      return `${avgSellingPrice} average selling price - based on competitive pricing analysis, value proposition, and reimbursement assumptions`;
     }
-    return 'Average selling price requires regional pricing analysis and payer strategy assessment';
+    return 'Average selling price requires competitive pricing analysis and value-based pricing assessment';
   };
 
   const getPersistenceRateRationale = () => {
     if (hasInvalidInput) return 'N/A';
     if (persistenceRate && persistenceRate !== 'Unknown') {
-      return `${persistenceRate} persistence rate - 12-month treatment continuation based on clinical trial data and real-world evidence`;
+      return `${persistenceRate} persistence rate - based on clinical trial data, real-world evidence, and patient adherence patterns`;
     }
     return 'Persistence rate requires clinical trial data and real-world evidence analysis';
   };
@@ -229,307 +305,222 @@ export function FinancialProjections({
   const getTreatmentDurationRationale = () => {
     if (hasInvalidInput) return 'N/A';
     if (treatmentDuration && treatmentDuration !== 'Unknown') {
-      return `${treatmentDuration} treatment duration - median treatment length based on clinical protocols and patient outcomes`;
+      return `${treatmentDuration} treatment duration - based on clinical trial protocols, disease progression, and treatment guidelines`;
     }
-    return 'Treatment duration requires clinical protocol analysis and patient outcome data';
+    return 'Treatment duration requires clinical trial data and disease progression analysis';
   };
 
   const getGeographicSplitRationale = () => {
     if (hasInvalidInput) return 'N/A';
     if (geographicSplit && geographicSplit !== 'Unknown') {
-      return `${geographicSplit} geographic split - revenue distribution based on market access, pricing, and regulatory approval timelines`;
+      return `${geographicSplit} geographic split - based on market access analysis, pricing differences, and regional adoption patterns`;
     }
-    return 'Geographic split requires market access analysis and regulatory approval assessment';
+    return 'Geographic split requires market access analysis and regional adoption modeling';
   };
-
-  const keyMetrics = [
-    { 
-      metric: "Peak Revenue", 
-      value: hasInvalidInput ? "N/A" : (peakRevenue2030 || 'N/A'), 
-      year: "2030",
-      rationale: getPeakRevenueRationale()
-    },
-    { 
-      metric: "Total 10-Year Revenue", 
-      value: hasInvalidInput ? "N/A" : calculateTotal10YearRevenue(), 
-      period: "2024-2033",
-      rationale: getTotal10YearRevenueRationale()
-    },
-    { 
-      metric: "Peak Market Share", 
-      value: hasInvalidInput ? "N/A" : (peakMarketShare2030 || 'N/A'), 
-      year: "2030",
-      rationale: getPeakMarketShareRationale()
-    },
-    { 
-      metric: "Peak Patients", 
-      value: hasInvalidInput ? "N/A" : (peakPatients2030 || 'N/A'), 
-      year: "2030",
-      rationale: getPeakPatientsRationale()
-    },
-    { 
-      metric: "Avg Selling Price", 
-      value: hasInvalidInput ? "N/A" : (avgSellingPrice || 'N/A'), 
-      note: "Blended global",
-      rationale: getAvgSellingPriceRationale()
-    },
-    { 
-      metric: "Persistence Rate", 
-      value: hasInvalidInput ? "N/A" : (persistenceRate || 'N/A'), 
-      note: "12-month",
-      rationale: getPersistenceRateRationale()
-    },
-    { 
-      metric: "Treatment Duration", 
-      value: hasInvalidInput ? "N/A" : (treatmentDuration || 'N/A'), 
-      note: "Median",
-      rationale: getTreatmentDurationRationale()
-    },
-    { 
-      metric: "Geographic Split", 
-      value: hasInvalidInput ? "N/A" : (geographicSplit || 'N/A'), 
-      note: "Peak year",
-      rationale: getGeographicSplitRationale()
-    },
-  ];
 
   return (
     <div className="space-y-6">
-      {/* Key Metrics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {keyMetrics.map((metric, index) => (
-          <Card key={index} className="shadow-md bg-white rounded-lg border border-slate-200">
-            <CardContent className="p-4 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <p className="text-lg font-bold text-blue-600">{metric.value}</p>
-              </div>
-              <p className="text-sm text-slate-600 font-medium">{metric.metric}</p>
-              {metric.year && <p className="text-xs text-slate-500">{metric.year}</p>}
-              {metric.period && <p className="text-xs text-slate-500">{metric.period}</p>}
-              {metric.note && <p className="text-xs text-slate-500">{metric.note}</p>}
-              <p className="text-xs text-slate-700 mt-2 leading-relaxed">{metric.rationale}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Revenue Forecasting Chart */}
-      <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+      {/* Business Logic Validation Alert */}
+      <Card className="border-l-4 border-l-blue-500">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Revenue Forecasting (2024-2033)</CardTitle>
-              <CardDescription>US vs Ex-US revenue with market share overlay</CardDescription>
-            </div>
-            {/* Remove the SourceAttribution (sources button) here */}
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-blue-500" />
+            Business Logic Validation
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="blurred-section">
-            <ChartContainer config={chartConfig} className="h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis yAxisId="left" />
-                  <YAxis yAxisId="right" orientation="right" />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar yAxisId="left" dataKey="usRevenue" stackId="revenue" fill="var(--color-usRevenue)" />
-                  <Bar yAxisId="left" dataKey="exUsRevenue" stackId="revenue" fill="var(--color-exUsRevenue)" />
-                  <Line
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey="marketShare"
-                    stroke="var(--color-marketShare)"
-                    strokeWidth={2}
-                  />
-                  <Line
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey="grossToNet"
-                    stroke="var(--color-grossToNet)"
-                    strokeWidth={2}
-                    strokeDasharray="5 5"
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-            {/* 3. Add 30 scrollable sources to the bottom of the Revenue Forecasting card */}
-            <div className="mt-6 max-h-40 overflow-y-auto bg-slate-100 rounded p-2">
-              <h4 className="text-xs font-semibold mb-2">Sources</h4>
-              <ul className="text-xs space-y-1">
-                {Array.from({ length: 25 }).map((_, i) => (
-                  <li key={i}>Source {i + 1}: Example source for revenue forecasting</li>
-                ))}
-              </ul>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center gap-2">
+              {rareDiseaseValidation.isValid ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <XCircle className="w-4 h-4 text-red-500" />
+              )}
+              <span className="text-sm">{rareDiseaseValidation.message}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {mathValidation.isValid ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-yellow-500" />
+              )}
+              <span className="text-sm">{mathValidation.message}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {marketShareValidation.isValid ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-yellow-500" />
+              )}
+              <span className="text-sm">{marketShareValidation.message}</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* LOE Impact Analysis */}
-        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Loss of Exclusivity Impact</CardTitle>
-                <CardDescription>Revenue erosion from generic competition</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="blurred-section">
-              <ChartContainer config={chartConfig} className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={loeImpact}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="year" />
-                    <YAxis />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Area
-                      type="monotone"
-                      dataKey="revenue"
-                      stackId="1"
-                      stroke="var(--color-revenue)"
-                      fill="var(--color-revenue)"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="loeImpact"
-                      stackId="1"
-                      stroke="var(--color-loeImpact)"
-                      fill="var(--color-loeImpact)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Financial Outcome Metrics */}
-        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
-          <CardHeader>
-            <CardTitle>Financial Outcome Metrics</CardTitle>
-            <CardDescription>Key valuation and return metrics</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="blurred-section">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 border rounded-lg">
-                  <p className="text-xl font-bold text-green-600">$8.2B</p>
-                  <p className="text-sm text-slate-600">ANPV (8% discount)</p>
-                </div>
-                <div className="text-center p-3 border rounded-lg">
-                  <p className="text-xl font-bold text-blue-600">3.2x</p>
-                  <p className="text-sm text-slate-600">Peak Sales Multiple</p>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium">IRR</span>
-                    <span className="text-sm font-bold text-green-600">24.5%</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium">Payback Period</span>
-                    <span className="text-sm font-bold">4.2 years</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium">Risk-Adjusted NPV</span>
-                    <span className="text-sm font-bold text-blue-600">$4.8B</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Licensing Power Index */}
-      <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+      {/* Key Metrics */}
+      <Card>
         <CardHeader>
-          <CardTitle>Licensing Power Index</CardTitle>
-          <CardDescription>Factors influencing licensing attractiveness and valuation</CardDescription>
+          <CardTitle>Key Financial Metrics</CardTitle>
+          <CardDescription>Projected financial performance and market dynamics</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="blurred-section">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <h4 className="font-semibold text-sm text-slate-600 mb-3">Pricing Leverage (85/100)</h4>
-                <ul className="text-sm space-y-2">
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Premium pricing supported by efficacy</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Limited direct competition</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Strong payer acceptance</span>
-                  </li>
-                </ul>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {hasInvalidInput ? 'N/A' : (peakRevenue2030 || 'N/A')}
               </div>
-
-              <div>
-                <h4 className="font-semibold text-sm text-slate-600 mb-3">Exclusivity Window (72/100)</h4>
-                <ul className="text-sm space-y-2">
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>6-year core exclusivity period</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Moderate generic entry risk</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Regulatory exclusivity overlap</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-sm text-slate-600 mb-3">Payer Alignment (78/100)</h4>
-                <ul className="text-sm space-y-2">
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Strong health economic profile</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Clear unmet medical need</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                    <span>Moderate access barriers</span>
-                  </li>
-                </ul>
-              </div>
+              <div className="text-sm text-slate-600">Peak Revenue (2030)</div>
+                             <ExpandableDetail
+                 title="Peak Revenue Rationale"
+                 value={peakRevenue2030 || 'N/A'}
+                 aiDerivation={getPeakRevenueRationale()}
+               />
             </div>
-
-            <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold">Overall Licensing Power Index</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold text-blue-600">78/100</span>
-                </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {hasInvalidInput ? 'N/A' : calculateTotal10YearRevenue()}
               </div>
-              <p className="text-sm text-slate-700">
-                Strong licensing position driven by differentiated efficacy profile, reasonable exclusivity window, and
-                favorable market dynamics. Premium valuation expected in competitive process.
-              </p>
+              <div className="text-sm text-slate-600">Total 10-Year Revenue</div>
+                             <ExpandableDetail
+                 title="Total Revenue Rationale"
+                 value={calculateTotal10YearRevenue()}
+                 aiDerivation={getTotal10YearRevenueRationale()}
+               />
             </div>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">
+                {hasInvalidInput ? 'N/A' : (peakMarketShare2030 || 'N/A')}
+              </div>
+              <div className="text-sm text-slate-600">Peak Market Share (2030)</div>
+                             <ExpandableDetail
+                 title="Market Share Rationale"
+                 value={peakMarketShare2030 || 'N/A'}
+                 aiDerivation={getPeakMarketShareRationale()}
+               />
+             </div>
+             <div className="text-center">
+               <div className="text-2xl font-bold text-orange-600">
+                 {hasInvalidInput ? 'N/A' : (peakPatients2030 || 'N/A')}
+               </div>
+               <div className="text-sm text-slate-600">Peak Patients (2030)</div>
+               <Badge variant={rareDiseaseValidation.isValid ? "default" : "destructive"} className="mt-1">
+                 {rareDiseaseValidation.isValid ? "Rare Disease" : "Not Rare Disease"}
+               </Badge>
+               <ExpandableDetail
+                 title="Patient Count Rationale"
+                 value={peakPatients2030 || 'N/A'}
+                 aiDerivation={getPeakPatientsRationale()}
+               />
+             </div>
+           </div>
+         </CardContent>
+       </Card>
+
+       {/* Additional Metrics */}
+       <Card>
+         <CardHeader>
+           <CardTitle>Market Dynamics</CardTitle>
+           <CardDescription>Treatment patterns and pricing assumptions</CardDescription>
+         </CardHeader>
+         <CardContent>
+           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+             <div className="text-center">
+               <div className="text-xl font-bold text-indigo-600">
+                 {hasInvalidInput ? 'N/A' : (avgSellingPrice || 'N/A')}
+               </div>
+               <div className="text-sm text-slate-600">Avg Selling Price</div>
+               <ExpandableDetail
+                 title="Pricing Rationale"
+                 value={avgSellingPrice || 'N/A'}
+                 aiDerivation={getAvgSellingPriceRationale()}
+               />
+             </div>
+             <div className="text-center">
+               <div className="text-xl font-bold text-teal-600">
+                 {hasInvalidInput ? 'N/A' : (persistenceRate || 'N/A')}
+               </div>
+               <div className="text-sm text-slate-600">Persistence Rate</div>
+               <ExpandableDetail
+                 title="Persistence Rationale"
+                 value={persistenceRate || 'N/A'}
+                 aiDerivation={getPersistenceRateRationale()}
+               />
+             </div>
+             <div className="text-center">
+               <div className="text-xl font-bold text-cyan-600">
+                 {hasInvalidInput ? 'N/A' : (treatmentDuration || 'N/A')}
+               </div>
+               <div className="text-sm text-slate-600">Treatment Duration</div>
+               <ExpandableDetail
+                 title="Duration Rationale"
+                 value={treatmentDuration || 'N/A'}
+                 aiDerivation={getTreatmentDurationRationale()}
+               />
+             </div>
+             <div className="text-center">
+               <div className="text-xl font-bold text-pink-600">
+                 {hasInvalidInput ? 'N/A' : (geographicSplit || 'N/A')}
+               </div>
+               <div className="text-sm text-slate-600">Geographic Split</div>
+               <ExpandableDetail
+                 title="Geographic Rationale"
+                 value={geographicSplit || 'N/A'}
+                 aiDerivation={getGeographicSplitRationale()}
+               />
+             </div>
+           </div>
+         </CardContent>
+       </Card>
+
+       {/* Revenue Projection Chart */}
+       <Card>
+         <CardHeader>
+           <CardTitle>Revenue Projection (2024-2033)</CardTitle>
+           <CardDescription>Annual revenue forecast with geographic breakdown</CardDescription>
+         </CardHeader>
+         <CardContent>
+           <div className="h-[400px]">
+             <ResponsiveContainer width="100%" height="100%">
+               <ComposedChart data={revenueData}>
+                 <CartesianGrid strokeDasharray="3 3" />
+                 <XAxis dataKey="year" />
+                 <YAxis yAxisId="left" />
+                 <YAxis yAxisId="right" orientation="right" />
+                 <ChartTooltip />
+                 <Bar yAxisId="left" dataKey="usRevenue" fill="hsl(var(--chart-1))" name="US Revenue ($M)" />
+                 <Bar yAxisId="left" dataKey="exUsRevenue" fill="hsl(var(--chart-2))" name="Ex-US Revenue ($M)" />
+                 <Line yAxisId="right" type="monotone" dataKey="marketShare" stroke="hsl(var(--chart-3))" name="Market Share (%)" />
+               </ComposedChart>
+             </ResponsiveContainer>
+           </div>
+         </CardContent>
+       </Card>
+
+       {/* Loss of Exclusivity Impact */}
+       <Card>
+         <CardHeader>
+           <CardTitle>Loss of Exclusivity Impact</CardTitle>
+           <CardDescription>Revenue erosion following patent expiration</CardDescription>
+         </CardHeader>
+         <CardContent>
+           <div className="h-[300px]">
+             <ResponsiveContainer width="100%" height="100%">
+               <AreaChart data={loeImpact}>
+                 <CartesianGrid strokeDasharray="3 3" />
+                 <XAxis dataKey="year" />
+                 <YAxis />
+                 <ChartTooltip />
+                 <Area type="monotone" dataKey="revenue" stackId="1" stroke="hsl(var(--chart-1))" fill="hsl(var(--chart-1))" name="Revenue ($M)" />
+                 <Area type="monotone" dataKey="loeImpact" stackId="2" stroke="hsl(var(--chart-5))" fill="hsl(var(--chart-5))" name="LOE Impact ($M)" />
+               </AreaChart>
+             </ResponsiveContainer>
+           </div>
+         </CardContent>
+       </Card>
+
+             {/* Data Sources */}
+       <SourceAttribution sectionTitle="Financial Projections" sources={financialSources} />
     </div>
   )
 }

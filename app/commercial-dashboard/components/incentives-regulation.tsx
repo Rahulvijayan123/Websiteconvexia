@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { ExpandableDetail } from "./expandable-detail"
+import { AlertTriangle, CheckCircle, XCircle, Info } from "lucide-react"
 
 // Input validation utility function
 const isInvalidInput = (input: string | null | undefined): boolean => {
@@ -126,6 +127,48 @@ export function IncentivesRegulation({
   ].filter(Boolean);
   const hasInvalidInput = invalidFields.length >= 3;
 
+  // Business logic validation functions
+  const validatePRVEligibility = () => {
+    if (hasInvalidInput) return { isValid: false, message: 'Input validation failed' };
+    
+    if (prvEligibility === 'Yes' || prvEligibility === 'yes' || prvEligibility === 1) {
+      return { isValid: true, message: 'Eligible for Priority Review Voucher' };
+    } else if (prvEligibility === 'No' || prvEligibility === 'no' || prvEligibility === 0) {
+      return { isValid: false, message: 'Not eligible for Priority Review Voucher' };
+    } else if (typeof prvEligibility === 'number' && prvEligibility > 50) {
+      return { isValid: true, message: `High probability (${prvEligibility}%) for PRV eligibility` };
+    } else if (typeof prvEligibility === 'number' && prvEligibility <= 50) {
+      return { isValid: false, message: `Low probability (${prvEligibility}%) for PRV eligibility` };
+    }
+    return { isValid: false, message: 'PRV eligibility unclear' };
+  };
+
+  const validateRareDiseaseEligibility = () => {
+    // This would need patient count data from other components
+    // For now, we'll show a placeholder
+    return { isValid: true, message: 'Rare disease eligibility depends on patient population (<200k)' };
+  };
+
+  const validateReviewTimeline = () => {
+    if (hasInvalidInput) return { isValid: false, message: 'Input validation failed' };
+    
+    if (typeof reviewTimelineMonths === 'number') {
+      if (reviewTimelineMonths <= 6) {
+        return { isValid: true, message: 'Priority review timeline (≤6 months)' };
+      } else if (reviewTimelineMonths <= 12) {
+        return { isValid: true, message: 'Standard review timeline (≤12 months)' };
+      } else {
+        return { isValid: false, message: 'Extended review timeline (>12 months)' };
+      }
+    }
+    return { isValid: false, message: 'Review timeline unclear' };
+  };
+
+  // Run validations
+  const prvValidation = validatePRVEligibility();
+  const rareDiseaseValidation = validateRareDiseaseEligibility();
+  const timelineValidation = validateReviewTimeline();
+
   // Generate detailed, specific information for each field
   const getDetailedPRVEligibility = () => {
     if (hasInvalidInput) return 'N/A';
@@ -182,6 +225,44 @@ export function IncentivesRegulation({
 
   return (
     <div className="space-y-6">
+      {/* Business Logic Validation Alert */}
+      <Card className="border-l-4 border-l-blue-500">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="w-5 h-5 text-blue-500" />
+            Regulatory Validation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center gap-2">
+              {prvValidation.isValid ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <XCircle className="w-4 h-4 text-red-500" />
+              )}
+              <span className="text-sm">{prvValidation.message}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {rareDiseaseValidation.isValid ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-yellow-500" />
+              )}
+              <span className="text-sm">{rareDiseaseValidation.message}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {timelineValidation.isValid ? (
+                <CheckCircle className="w-4 h-4 text-green-500" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-yellow-500" />
+              )}
+              <span className="text-sm">{timelineValidation.message}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Header Score */}
       <Card>
         <CardHeader>
@@ -194,214 +275,122 @@ export function IncentivesRegulation({
               <div className="text-3xl font-bold text-blue-600">
                 {hasInvalidInput ? 'N/A' : (typeof prvEligibility === 'number' ? `${prvEligibility}%` : prvEligibility || 'N/A')}
               </div>
-              <Badge variant="secondary">Moderate Potential</Badge>
+              <Badge variant={prvValidation.isValid ? "default" : "destructive"}>
+                {prvValidation.isValid ? "Eligible" : "Not Eligible"}
+              </Badge>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-semibold text-slate-600 mb-1">Rare Disease Eligibility</p>
-                <p className="text-sm text-slate-800 leading-relaxed">{getDetailedRareDiseaseEligibility()}</p>
+          <div className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">PRV Eligibility</span>
+                <span className="text-sm text-slate-600">
+                  {hasInvalidInput ? 'N/A' : (typeof prvEligibility === 'number' ? `${prvEligibility}%` : prvEligibility || 'N/A')}
+                </span>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-600 mb-1">PRV Eligibility</p>
-                <p className="text-sm text-slate-800 leading-relaxed">{getDetailedPRVEligibility()}</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-semibold text-slate-600 mb-1">National Priority</p>
-                <p className="text-sm text-slate-800 leading-relaxed">{getDetailedNationalPriority()}</p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-600 mb-1">Review Timeline</p>
-                <p className="text-sm text-slate-800 leading-relaxed">{getDetailedReviewTimeline()}</p>
-              </div>
+              <Progress value={typeof prvEligibility === 'number' ? prvEligibility : 0} className="h-2" />
+              <ExpandableDetail
+                title="PRV Eligibility Details"
+                value={typeof prvEligibility === 'number' ? `${prvEligibility}%` : prvEligibility || 'N/A'}
+                aiDerivation={getDetailedPRVEligibility()}
+              />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Regulatory Incentives */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Regulatory Incentives</CardTitle>
-            <CardDescription>Available designations and their impact</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="blurred-section">
-              {incentives.map((incentive, index) => (
-                <div key={index} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-sm">{incentive.name}</h4>
-                    <Badge
-                      variant={
-                        incentive.status === "Eligible"
-                          ? "default"
-                          : incentive.status === "Likely"
-                            ? "secondary"
-                            : "outline"
-                      }
-                    >
+      {/* Regulatory Designations */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Regulatory Designations & Incentives</CardTitle>
+          <CardDescription>FDA designations and regulatory pathway opportunities</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {incentives.map((incentive, index) => (
+              <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold">{incentive.name}</h4>
+                    <Badge variant={incentive.status === 'Eligible' ? 'default' : incentive.status === 'Likely' ? 'secondary' : 'outline'}>
                       {incentive.status}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-slate-600">Value:</span>
-                      <p className="font-medium">{incentive.value}</p>
-                    </div>
-                    <div>
-                      <span className="text-slate-600">Exclusivity:</span>
-                      <p className="font-medium">{incentive.exclusivity}</p>
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-slate-600">Probability</span>
-                      <span className="text-xs font-semibold">{incentive.probability}%</span>
-                    </div>
-                    <Progress value={incentive.probability} className="h-2" />
-                  </div>
-                  <div className="mt-3 pt-3 border-t">
-                    <ExpandableDetail
-                      title={incentive.name}
-                      value={incentive.probability.toString()}
-                      unit="% Probability"
-                      assumptions={[
-                        incentive.name === "Orphan Drug Designation"
-                          ? "Patient population <200K globally qualifies for ODD"
-                          : incentive.name === "Breakthrough Designation"
-                            ? "Substantial improvement over existing therapy required"
-                            : incentive.name === "Fast Track Designation"
-                              ? "Addresses unmet medical need in serious condition"
-                              : "Priority Review Voucher requires tropical disease or rare pediatric indication",
-                      ]}
-                      sources={[
-                        {
-                          name: "FDA Orange Book",
-                          type: "regulatory",
-                          url: "https://www.fda.gov/drugs/drug-approvals-and-databases/orange-book-data-files",
-                        },
-                        { name: "FDA CDER Guidance", type: "regulatory" },
-                        { name: "BIO Policy Database", type: "database" },
-                      ]}
-                      aiDerivation={`Probability calculated using logistic regression on 150+ oncology approvals 2018-2024, factoring indication, MoA, and sponsor characteristics`}
-                    />
+                  <p className="text-sm text-slate-600">{incentive.value}</p>
+                  {incentive.exclusivity !== 'N/A' && (
+                    <p className="text-xs text-slate-500">Exclusivity: {incentive.exclusivity}</p>
+                  )}
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-blue-600">{incentive.probability}%</div>
+                  <Progress value={incentive.probability} className="w-20 h-2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Regulatory Timeline */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Regulatory Timeline</CardTitle>
+          <CardDescription>Expected FDA review and approval milestones</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {regulatoryTimeline.map((milestone, index) => (
+              <div key={index} className="flex items-center gap-4">
+                <div className={`w-3 h-3 rounded-full ${
+                  milestone.status === 'done' ? 'bg-green-500' : 
+                  milestone.status === 'current' ? 'bg-blue-500' : 'bg-slate-300'
+                }`} />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{milestone.milestone}</span>
+                    <span className="text-sm text-slate-600">{milestone.timeline}</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Regulatory Timeline */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Regulatory Timeline</CardTitle>
-            <CardDescription>Key milestones and approval pathway</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="blurred-section">
-              <div className="space-y-4">
-                {regulatoryTimeline.map((milestone, index) => (
-                  <div key={index} className="flex items-center gap-4">
-                    <div
-                      className={`w-3 h-3 rounded-full flex-shrink-0 ${
-                        milestone.status === "done"
-                          ? "bg-green-500"
-                          : milestone.status === "current"
-                            ? "bg-blue-500"
-                            : "bg-slate-300"
-                      }`}
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm">{milestone.milestone}</span>
-                        <span className="text-sm text-slate-600">{milestone.timeline}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
               </div>
-              <div className="mt-4 pt-4 border-t">
-                <ExpandableDetail
-                  title="Regulatory Timeline Analysis"
-                  value="42"
-                  unit="months to approval"
-                  assumptions={[
-                    "Phase III duration: 24 months based on EGFR TKI benchmarks",
-                    "NDA preparation and submission: 6 months",
-                    "FDA review timeline: 10-12 months (standard or priority)",
-                    "Potential delays: 6 months buffer for CRL or manufacturing issues",
-                  ]}
-                  formula="Timeline = Phase III Duration + NDA Prep + FDA Review + Risk Buffer"
-                  sources={[
-                    { name: "FDA Performance Reports", type: "regulatory" },
-                    { name: "BioPharma Dive Approval Database", type: "database" },
-                    { name: "Regulatory Intelligence", type: "database" },
-                  ]}
-                />
+            ))}
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Info className="w-4 h-4 text-blue-600" />
+                <span className="font-medium text-blue-900">Review Timeline</span>
               </div>
+              <ExpandableDetail
+                title="Timeline Details"
+                value={typeof reviewTimelineMonths === 'number' ? `${reviewTimelineMonths} months` : reviewTimelineMonths || 'N/A'}
+                aiDerivation={getDetailedReviewTimeline()}
+              />
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Policy Incentives */}
       <Card>
         <CardHeader>
-          <CardTitle>Policy & Legislative Incentives</CardTitle>
-          <CardDescription>Recent policy changes and their impact on development</CardDescription>
+          <CardTitle>Policy Incentives & Regulatory Tailwinds</CardTitle>
+          <CardDescription>Current regulatory environment and policy support</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="blurred-section">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {policyIncentives.map((category, index) => (
-                <div key={index}>
-                  <h4 className="font-semibold text-sm text-slate-600 mb-3">{category.category}</h4>
-                  <ul className="text-sm space-y-2">
-                    {category.items.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Financial Impact */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Financial Levers & Impact</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="blurred-section">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4 border rounded-lg">
-                <p className="text-2xl font-bold text-green-600">$100-350M</p>
-                <p className="text-sm text-slate-600 mt-1">PRV Sale Value</p>
-                <p className="text-xs text-slate-500 mt-2">Based on recent market transactions</p>
+          <div className="space-y-6">
+            {policyIncentives.map((category, index) => (
+              <div key={index}>
+                <h4 className="font-semibold text-slate-700 mb-3">{category.category}</h4>
+                <ul className="space-y-2">
+                  {category.items.map((item, itemIndex) => (
+                    <li key={itemIndex} className="text-sm text-slate-600 flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="text-center p-4 border rounded-lg">
-                <p className="text-2xl font-bold text-blue-600">~30%</p>
-                <p className="text-sm text-slate-600 mt-1">Licensing Premium</p>
-                <p className="text-xs text-slate-500 mt-2">Revenue uplift from regulatory advantages</p>
-              </div>
-              <div className="text-center p-4 border rounded-lg">
-                <p className="text-2xl font-bold text-purple-600">7 years</p>
-                <p className="text-sm text-slate-600 mt-1">Market Exclusivity</p>
-                <p className="text-xs text-slate-500 mt-2">Extended protection period</p>
-              </div>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>
