@@ -151,40 +151,68 @@ export class EnhancedPharmaOrchestrator {
       console.log('🔍 Performing comprehensive validation of Perplexity output...');
       const comprehensiveValidation = await this.performComprehensiveValidation(inputs, currentOutput);
       
-      // LOGIC SCORING LAYER VALIDATION
-      console.log('🧠 Executing Logic Scoring Layer Validation...');
+            // AIRTIGHT LOGIC SCORING LAYER VALIDATION
+      console.log('🧠 Executing Airtight Logic Scoring Layer Validation...');
       const logicValidation = await this.logicScoringLayer.validateLogic(currentOutput, inputs);
-      
-      // If logic validation reveals critical failures, attempt regeneration
-      if (logicValidation.requiresRegeneration) {
-        console.log(`🚨 Logic scoring layer detected critical failures. Regeneration required.`);
-        console.log(`📋 Regeneration fields: ${logicValidation.regenerationFields.join(', ')}`);
-        console.log(`📝 Instructions: ${logicValidation.regenerationInstructions}`);
-        
-        // Attempt logic fix first
-        const logicFixedOutput = await this.logicScoringLayer.attemptLogicFix(currentOutput, logicValidation.logicIssues);
-        
-        // If logic fix was insufficient, regenerate with Perplexity
-        if (logicFixedOutput === currentOutput || logicValidation.criticalFailures.length > 0) {
-          console.log('🔄 Logic fix insufficient, routing back to Perplexity for regeneration...');
+
+      // Enhanced validation with multiple cycles
+      let logicValidationCycles = 0;
+      const maxLogicValidationCycles = 3;
+      let currentLogicValidation = logicValidation;
+
+      while (currentLogicValidation.requiresRegeneration && logicValidationCycles < maxLogicValidationCycles) {
+        logicValidationCycles++;
+        console.log(`🔄 Logic Validation Cycle ${logicValidationCycles}/${maxLogicValidationCycles}`);
+        console.log(`🚨 Critical Failures: ${currentLogicValidation.criticalFailures.length}`);
+        console.log(`⚠️  Logic Issues: ${currentLogicValidation.logicIssues.length}`);
+        console.log(`📊 Overall Score: ${currentLogicValidation.overallLogicScore.toFixed(3)}`);
+
+        // Attempt logic fix first with enhanced correction
+        console.log('🔧 Attempting enhanced logic fix...');
+        const logicFixedOutput = await this.logicScoringLayer.attemptLogicFix(currentOutput, currentLogicValidation.logicIssues);
+
+        // Validate the fixed output
+        const fixedValidation = await this.logicScoringLayer.validateLogic(logicFixedOutput, inputs);
+
+        // If logic fix improved the score significantly, use it
+        if (fixedValidation.overallLogicScore > currentLogicValidation.overallLogicScore + 0.2) {
+          console.log(`✅ Logic fix successful - Score improved from ${currentLogicValidation.overallLogicScore.toFixed(3)} to ${fixedValidation.overallLogicScore.toFixed(3)}`);
+          currentOutput = logicFixedOutput;
+          currentLogicValidation = fixedValidation;
           
-          // Regenerate the entire output with logic validation feedback
-          const regenerationPrompt = this.generateLogicRegenerationPrompt(inputs, currentOutput, logicValidation);
-          const regeneratedOutput = await this.executeRegenerationWithValidation(regenerationPrompt);
-          
-          // Re-validate the regenerated output
-          const revalidation = await this.logicScoringLayer.validateLogic(regeneratedOutput, inputs);
-          
-          if (!revalidation.requiresRegeneration || revalidation.overallLogicScore > logicValidation.overallLogicScore) {
-            console.log('✅ Regeneration improved logic score');
-            currentOutput = regeneratedOutput;
-          } else {
-            console.log('⚠️  Regeneration did not resolve logic issues, proceeding with original');
+          // If we've reached acceptable quality, break
+          if (fixedValidation.overallLogicScore > 0.8 && fixedValidation.criticalFailures.length === 0) {
+            console.log('🎯 Acceptable quality achieved, stopping validation cycles');
+            break;
           }
         } else {
-          console.log('✅ Logic fix successful');
-          currentOutput = logicFixedOutput;
+          console.log('🔄 Logic fix insufficient, routing back to Perplexity for regeneration...');
+
+          // Generate comprehensive regeneration prompt with all issues
+          const regenerationPrompt = this.generateLogicRegenerationPrompt(inputs, currentOutput, currentLogicValidation);
+          const regeneratedOutput = await this.executeRegenerationWithValidation(regenerationPrompt);
+
+          // Re-validate the regenerated output
+          const revalidation = await this.logicScoringLayer.validateLogic(regeneratedOutput, inputs);
+
+          if (revalidation.overallLogicScore > currentLogicValidation.overallLogicScore) {
+            console.log(`✅ Regeneration improved logic score from ${currentLogicValidation.overallLogicScore.toFixed(3)} to ${revalidation.overallLogicScore.toFixed(3)}`);
+            currentOutput = regeneratedOutput;
+            currentLogicValidation = revalidation;
+          } else {
+            console.log(`⚠️  Regeneration did not improve score (${revalidation.overallLogicScore.toFixed(3)} vs ${currentLogicValidation.overallLogicScore.toFixed(3)})`);
+            // Continue with current output but mark as needing attention
+            break;
+          }
         }
+      }
+
+      // Final validation check
+      if (currentLogicValidation.overallLogicScore < 0.7) {
+        console.log(`🚨 WARNING: Final logic score ${currentLogicValidation.overallLogicScore.toFixed(3)} is below acceptable threshold`);
+        console.log(`📋 Remaining issues: ${currentLogicValidation.logicIssues.join(', ')}`);
+      } else {
+        console.log(`✅ Final logic validation passed with score ${currentLogicValidation.overallLogicScore.toFixed(3)}`);
       }
       
       // If validation reveals critical issues, attempt regeneration

@@ -24,6 +24,29 @@ export class LogicScoringLayer {
   private readonly criticalThreshold = 0.7;
   private readonly regenerationThreshold = 0.5;
 
+  // Helper methods for extracting numeric values
+  private extractNumericValue(value: any): number | null {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      // Remove currency symbols, commas, and extract number
+      const cleaned = value.replace(/[$,B]/g, '').trim();
+      const match = cleaned.match(/(\d+(?:\.\d+)?)/);
+      return match ? parseFloat(match[1]) : null;
+    }
+    return null;
+  }
+
+  private extractPercentageValue(value: any): number | null {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      // Remove % symbol and extract number
+      const cleaned = value.replace(/%/g, '').trim();
+      const match = cleaned.match(/(\d+(?:\.\d+)?)/);
+      return match ? parseFloat(match[1]) : null;
+    }
+    return null;
+  }
+
   async validateLogic(data: any, inputs: any): Promise<LogicValidationResult> {
     console.log('🧠 Starting Logic Scoring Layer Validation');
     
@@ -58,117 +81,272 @@ export class LogicScoringLayer {
   }
 
   private async validateMathematicalConsistency(data: any): Promise<MathConsistencyCheck> {
-    const prompt = `Validate mathematical consistency in this pharmaceutical data:
-
-DATA: ${JSON.stringify(data, null, 2)}
-
-CRITICAL MATH CHECKS:
-
-1. **Peak Revenue Calculation**:
-   - Peak Revenue = (peakPatients2030 × avgSellingPrice × peakMarketShare2030) / 1,000,000,000
-   - Verify this calculation is mathematically correct
-
-2. **CAGR Calculation**:
-   - CAGR = ((Peak Revenue / Current Market Size)^(1/6) - 1) × 100
-   - Verify this calculation is mathematically correct
-
-3. **Total Revenue Logic**:
-   - Total 10-Year Revenue should be 5-8× Peak Revenue
-   - Verify this relationship holds
-
-4. **Geographic Split**:
-   - US + ex-US percentages must equal 100%
-   - Verify no mathematical errors
-
-5. **Patient Count Logic**:
-   - Peak Patients must align with revenue and pricing
-   - Verify: Peak Patients = (Peak Revenue × 1,000,000,000) / (avgSellingPrice × peakMarketShare2030)
-
-Return JSON with:
-- isValid: boolean
-- score: number (0-1)
-- issues: array of specific math problems found
-- corrections: array of specific corrections needed
-- formulas: array of formulas used in validation`;
+    const issues: string[] = [];
+    const corrections: string[] = [];
+    const formulas: string[] = [];
+    let score = 1.0;
 
     try {
-      const response = await fetchGPT4o({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a mathematical validation expert. Be extremely thorough and precise.' },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 2000,
-        temperature: 0.1
-      });
+      // Extract numeric values with enhanced parsing
+      const marketSize = this.extractNumericValue(data.marketSize);
+      const cagr = this.extractPercentageValue(data.cagr);
+      const peakRevenue = this.extractNumericValue(data.peakRevenue2030);
+      const peakMarketShare = this.extractPercentageValue(data.peakMarketShare2030);
+      const totalRevenue = this.extractNumericValue(data.total10YearRevenue);
+      const avgSellingPrice = this.extractNumericValue(data.avgSellingPrice);
+      const peakPatients = this.extractNumericValue(data.peakPatients2030);
 
-      return JSON.parse(response.choices[0].message.content);
+      // AIRTIGHT VALIDATION 1: CAGR Calculation with Multiple Cross-Checks
+      if (marketSize && cagr && peakRevenue) {
+        const yearsToPeak = 6; // 2024 to 2030
+        const expectedPeakRevenue = marketSize * Math.pow(1 + cagr / 100, yearsToPeak);
+        const tolerance = 0.05; // 5% tolerance (tighter)
+
+        if (Math.abs(peakRevenue - expectedPeakRevenue) > expectedPeakRevenue * tolerance) {
+          issues.push(`CRITICAL: CAGR calculation error. With ${cagr}% CAGR from $${marketSize}B, expected peak revenue ~$${expectedPeakRevenue.toFixed(1)}B, but got $${peakRevenue}B`);
+          corrections.push(`Peak revenue should be ~$${expectedPeakRevenue.toFixed(1)}B based on CAGR calculation`);
+          score -= 0.4; // Higher penalty
+        }
+
+        // Additional CAGR validation: Check if CAGR is reasonable for the industry
+        if (cagr < 5 || cagr > 25) {
+          issues.push(`CRITICAL: Unrealistic CAGR of ${cagr}%. Typical oncology CAGR range: 5-25%`);
+          corrections.push(`CAGR should be between 5-25% for oncology markets`);
+          score -= 0.3;
+        }
+      }
+
+      // AIRTIGHT VALIDATION 2: Market Share Consistency with Revenue Cross-Validation
+      if (marketSize && peakRevenue && peakMarketShare) {
+        const expectedPeakRevenue = marketSize * (peakMarketShare / 100);
+        const tolerance = 0.03; // 3% tolerance (very tight)
+
+        if (Math.abs(peakRevenue - expectedPeakRevenue) > expectedPeakRevenue * tolerance) {
+          issues.push(`CRITICAL: Market share inconsistency. With ${peakMarketShare}% market share of $${marketSize}B market, expected peak revenue ~$${expectedPeakRevenue.toFixed(1)}B, but got $${peakRevenue}B`);
+          corrections.push(`Peak revenue should be ~$${expectedPeakRevenue.toFixed(1)}B based on market share`);
+          score -= 0.4;
+        }
+
+        // Additional market share validation: Check if market share is realistic
+        if (peakMarketShare > 50) {
+          issues.push(`CRITICAL: Unrealistic market share of ${peakMarketShare}%. Maximum realistic share: 50%`);
+          corrections.push(`Market share should be ≤50% for competitive markets`);
+          score -= 0.3;
+        }
+      }
+
+      // AIRTIGHT VALIDATION 3: Total Revenue vs Peak Revenue with Industry Standards
+      if (totalRevenue && peakRevenue) {
+        const ratio = totalRevenue / peakRevenue;
+        if (ratio < 5 || ratio > 8) {
+          issues.push(`CRITICAL: Total revenue should be 5-8x peak revenue. Current ratio: ${ratio.toFixed(1)}x`);
+          corrections.push(`Total revenue should be ~$${(peakRevenue * 6.5).toFixed(1)}B (6.5x peak revenue)`);
+          score -= 0.3;
+        }
+
+        // Additional validation: Check if total revenue makes sense relative to market size
+        if (marketSize && totalRevenue > marketSize * 10) {
+          issues.push(`CRITICAL: Total revenue $${totalRevenue}B exceeds market size $${marketSize}B by >10x`);
+          corrections.push(`Total revenue should be reasonable relative to market size`);
+          score -= 0.3;
+        }
+      }
+
+      // AIRTIGHT VALIDATION 4: Patient Calculations with Multiple Validation Layers
+      if (peakRevenue && avgSellingPrice && peakPatients) {
+        const expectedPatients = (peakRevenue * 1000000000) / avgSellingPrice;
+        const tolerance = 0.05; // 5% tolerance (tighter)
+
+        if (Math.abs(peakPatients - expectedPatients) > expectedPatients * tolerance) {
+          issues.push(`CRITICAL: Patient calculation error. With $${peakRevenue}B revenue and $${avgSellingPrice} ASP, expected ~${expectedPatients.toLocaleString()} patients, but got ${peakPatients.toLocaleString()}`);
+          corrections.push(`Peak patients should be ~${expectedPatients.toLocaleString()} based on revenue and ASP`);
+          score -= 0.3;
+        }
+
+        // Additional patient validation: Check if ASP is realistic
+        if (avgSellingPrice < 10000 || avgSellingPrice > 500000) {
+          issues.push(`CRITICAL: Unrealistic ASP of $${avgSellingPrice.toLocaleString()}. Typical oncology ASP range: $10K-$500K`);
+          corrections.push(`ASP should be between $10K-$500K for oncology drugs`);
+          score -= 0.2;
+        }
+      }
+
+      // AIRTIGHT VALIDATION 5: Cross-Field Mathematical Consistency
+      if (marketSize && peakRevenue && totalRevenue && peakPatients && avgSellingPrice) {
+        // Validate that all calculations are internally consistent
+        const revenueFromPatients = (peakPatients * avgSellingPrice) / 1000000000;
+        const tolerance = 0.1; // 10% tolerance for cross-field validation
+
+        if (Math.abs(peakRevenue - revenueFromPatients) > peakRevenue * tolerance) {
+          issues.push(`CRITICAL: Cross-field inconsistency. Revenue from patients (${revenueFromPatients.toFixed(1)}B) doesn't match peak revenue (${peakRevenue}B)`);
+          corrections.push(`All calculations must be internally consistent`);
+          score -= 0.4;
+        }
+      }
+
+      // AIRTIGHT VALIDATION 6: Geographic Split Validation
+      if (data.geographicSplit) {
+        const usSplit = data.geographicSplit.US || 0;
+        const exUsSplit = data.geographicSplit.exUS || 0;
+        const total = usSplit + exUsSplit;
+
+        if (Math.abs(total - 100) > 1) {
+          issues.push(`CRITICAL: Geographic split doesn't equal 100%. US: ${usSplit}%, exUS: ${exUsSplit}%, Total: ${total}%`);
+          corrections.push(`Geographic split must equal 100%`);
+          score -= 0.2;
+        }
+      }
+
     } catch (error) {
-      console.error('Math validation failed:', error);
-      return {
-        isValid: false,
-        score: 0,
-        issues: ['Math validation failed'],
-        corrections: [],
-        formulas: []
-      };
+      issues.push(`Error in mathematical validation: ${error}`);
+      score = 0;
     }
+
+    return {
+      isValid: score > 0.8, // Higher threshold
+      score: Math.max(0, score),
+      issues,
+      corrections,
+      formulas: [
+        'Peak Revenue = Market Size × (1 + CAGR)^years',
+        'Peak Revenue = Market Size × Market Share %',
+        'Total Revenue = 5-8 × Peak Revenue',
+        'Peak Patients = Peak Revenue / Average Selling Price',
+        'Revenue from Patients = Peak Patients × ASP / 1B',
+        'Geographic Split = US% + exUS% = 100%'
+      ]
+    };
   }
 
   private async validateBusinessLogic(data: any, inputs: any): Promise<MathConsistencyCheck> {
-    const prompt = `Validate business logic consistency in this pharmaceutical data:
-
-INPUTS: ${JSON.stringify(inputs, null, 2)}
-DATA: ${JSON.stringify(data, null, 2)}
-
-BUSINESS LOGIC CHECKS:
-
-1. **Rare Disease Eligibility**:
-   - If peakPatients2030 > 200,000: PRV must be "Not eligible" AND rareDiseaseEligibility must be false
-   - If peakPatients2030 < 200,000: PRV must be "Eligible" AND rareDiseaseEligibility must be true
-   - This is a binary FDA regulation
-
-2. **Pricing Logic**:
-   - Oncology: $50,000 - $500,000 per year
-   - Rare diseases: $100,000 - $2,000,000 per year
-   - Common diseases: $1,000 - $50,000 per year
-   - Pricing must align with patient population size
-
-3. **Market Share Logic**:
-   - peakMarketShare2030 must be realistic (typically 5-30% for new drugs)
-   - Higher market share = lower patient population (inverse relationship)
-   - Market share + competitor market shares should not exceed 100%
-
-4. **Patient Count Logic**:
-   - Patient count must align with disease epidemiology
-   - For common diseases: typically 10,000 - 500,000 patients
-   - For rare diseases: typically 1,000 - 200,000 patients
-   - For ultra-rare diseases: typically < 1,000 patients
-
-Return JSON with validation results.`;
+    const issues: string[] = [];
+    const corrections: string[] = [];
+    const formulas: string[] = [];
+    let score = 1.0;
 
     try {
-      const response = await fetchGPT4o({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a pharmaceutical business logic expert. Validate all business rules.' },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 2000,
-        temperature: 0.1
-      });
+      // Extract values for business logic validation
+      const peakPatients = this.extractNumericValue(data.peakPatients2030);
+      const prvEligibility = data.prvEligibility || '';
+      const rareDiseaseEligibility = data.rareDiseaseEligibility;
+      const avgSellingPrice = this.extractNumericValue(data.avgSellingPrice);
+      const peakMarketShare = this.extractPercentageValue(data.peakMarketShare2030);
+      const indication = inputs.indication || '';
 
-      return JSON.parse(response.choices[0].message.content);
+      // AIRTIGHT BUSINESS LOGIC 1: PRV Eligibility Validation
+      if (peakPatients !== null) {
+        const isRareDisease = peakPatients < 200000;
+        const shouldBeEligible = isRareDisease;
+        const isCurrentlyEligible = prvEligibility.toLowerCase().includes('eligible') && !prvEligibility.toLowerCase().includes('not eligible');
+
+        if (shouldBeEligible !== isCurrentlyEligible) {
+          issues.push(`CRITICAL: PRV eligibility mismatch. With ${peakPatients.toLocaleString()} patients, PRV should be ${shouldBeEligible ? 'eligible' : 'not eligible'}, but got: ${prvEligibility}`);
+          corrections.push(`PRV eligibility should be ${shouldBeEligible ? 'eligible' : 'not eligible'} for ${peakPatients.toLocaleString()} patients`);
+          score -= 0.4;
+        }
+
+        // Validate rareDiseaseEligibility boolean
+        if (typeof rareDiseaseEligibility === 'boolean' && rareDiseaseEligibility !== shouldBeEligible) {
+          issues.push(`CRITICAL: Rare disease eligibility boolean mismatch. Should be ${shouldBeEligible} for ${peakPatients.toLocaleString()} patients`);
+          corrections.push(`rareDiseaseEligibility should be ${shouldBeEligible}`);
+          score -= 0.3;
+        }
+      }
+
+      // AIRTIGHT BUSINESS LOGIC 2: Pricing Validation by Indication Type
+      if (avgSellingPrice !== null) {
+        const isOncology = indication.toLowerCase().includes('cancer') || indication.toLowerCase().includes('oncology') || indication.toLowerCase().includes('tumor');
+        const isRareDisease = peakPatients !== null && peakPatients < 200000;
+
+        if (isOncology && (avgSellingPrice < 50000 || avgSellingPrice > 500000)) {
+          issues.push(`CRITICAL: Oncology pricing outside range. ASP $${avgSellingPrice.toLocaleString()} should be $50K-$500K for oncology`);
+          corrections.push(`ASP should be between $50K-$500K for oncology indications`);
+          score -= 0.3;
+        }
+
+        if (isRareDisease && (avgSellingPrice < 100000 || avgSellingPrice > 2000000)) {
+          issues.push(`CRITICAL: Rare disease pricing outside range. ASP $${avgSellingPrice.toLocaleString()} should be $100K-$2M for rare diseases`);
+          corrections.push(`ASP should be between $100K-$2M for rare diseases`);
+          score -= 0.3;
+        }
+
+        if (!isOncology && !isRareDisease && (avgSellingPrice < 1000 || avgSellingPrice > 50000)) {
+          issues.push(`CRITICAL: Common disease pricing outside range. ASP $${avgSellingPrice.toLocaleString()} should be $1K-$50K for common diseases`);
+          corrections.push(`ASP should be between $1K-$50K for common diseases`);
+          score -= 0.3;
+        }
+      }
+
+      // AIRTIGHT BUSINESS LOGIC 3: Market Share Realism
+      if (peakMarketShare !== null) {
+        if (peakMarketShare < 5 || peakMarketShare > 30) {
+          issues.push(`CRITICAL: Unrealistic market share ${peakMarketShare}%. Should be 5-30% for new drugs`);
+          corrections.push(`Market share should be between 5-30% for new drugs`);
+          score -= 0.3;
+        }
+
+        if (peakMarketShare > 50) {
+          issues.push(`CRITICAL: Excessive market share ${peakMarketShare}%. Maximum realistic: 50%`);
+          corrections.push(`Market share should not exceed 50%`);
+          score -= 0.4;
+        }
+      }
+
+      // AIRTIGHT BUSINESS LOGIC 4: Patient Count Validation by Disease Type
+      if (peakPatients !== null) {
+        const isOncology = indication.toLowerCase().includes('cancer') || indication.toLowerCase().includes('oncology');
+        const isRareDisease = peakPatients < 200000;
+
+        if (isOncology && (peakPatients < 10000 || peakPatients > 500000)) {
+          issues.push(`CRITICAL: Oncology patient count outside range. ${peakPatients.toLocaleString()} patients should be 10K-500K for oncology`);
+          corrections.push(`Patient count should be 10K-500K for oncology indications`);
+          score -= 0.3;
+        }
+
+        if (isRareDisease && (peakPatients < 1000 || peakPatients > 200000)) {
+          issues.push(`CRITICAL: Rare disease patient count outside range. ${peakPatients.toLocaleString()} patients should be 1K-200K for rare diseases`);
+          corrections.push(`Patient count should be 1K-200K for rare diseases`);
+          score -= 0.3;
+        }
+
+        if (!isOncology && !isRareDisease && peakPatients > 500000) {
+          issues.push(`CRITICAL: Common disease patient count too high. ${peakPatients.toLocaleString()} patients exceeds 500K limit for common diseases`);
+          corrections.push(`Patient count should not exceed 500K for common diseases`);
+          score -= 0.3;
+        }
+      }
+
+      // AIRTIGHT BUSINESS LOGIC 5: Cross-Validation of Patient Count vs Market Share
+      if (peakPatients !== null && peakMarketShare !== null) {
+        // Higher market share should generally correlate with lower patient population (inverse relationship)
+        const expectedMarketShare = Math.max(5, Math.min(30, 1000000 / peakPatients * 10)); // Rough inverse relationship
+        const tolerance = 15; // 15% tolerance
+
+        if (Math.abs(peakMarketShare - expectedMarketShare) > tolerance) {
+          issues.push(`CRITICAL: Market share ${peakMarketShare}% doesn't align with patient count ${peakPatients.toLocaleString()}. Expected ~${expectedMarketShare.toFixed(1)}%`);
+          corrections.push(`Market share should be ~${expectedMarketShare.toFixed(1)}% for ${peakPatients.toLocaleString()} patients`);
+          score -= 0.2;
+        }
+      }
+
     } catch (error) {
-      console.error('Business logic validation failed:', error);
-      return {
-        isValid: false,
-        score: 0,
-        issues: ['Business logic validation failed'],
-        corrections: [],
-        formulas: []
-      };
+      issues.push(`Error in business logic validation: ${error}`);
+      score = 0;
     }
+
+    return {
+      isValid: score > 0.8, // Higher threshold
+      score: Math.max(0, score),
+      issues,
+      corrections,
+      formulas: [
+        'PRV Eligibility: <200K patients = eligible, ≥200K patients = not eligible',
+        'Oncology Pricing: $50K-$500K per year',
+        'Rare Disease Pricing: $100K-$2M per year',
+        'Market Share: 5-30% for new drugs',
+        'Patient Count vs Market Share: Inverse relationship'
+      ]
+    };
   }
 
   private async validateCrossFieldConsistency(data: any): Promise<MathConsistencyCheck> {

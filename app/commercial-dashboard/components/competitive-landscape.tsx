@@ -381,15 +381,15 @@ export function CompetitiveLandscape({
               {dealActivity!.map((deal, index) => {
                 // Map the exact schema fields to display fields
                 const normalizedDeal = {
-                  acquirer: deal.buyer || deal.acquirer || 'N/A',
-                  asset: deal.assetName || deal.asset || deal.molecule || deal.drug || deal.product || 'N/A',
-                  stage: deal.developmentStage || deal.stage || deal.phase || 'N/A',
-                  rationale: deal.rationale || deal.reason || deal.strategy || 'N/A',
-                  value: deal.dealPrice || deal.value || deal.price || deal.dealValue || deal.amount || 'N/A',
-                  date: deal.dealDate || deal.date || deal.date_or_status || deal.status || 'N/A',
+                  acquirer: deal.buyer || deal.acquirer || '',
+                  asset: deal.assetName || deal.asset || deal.molecule || deal.drug || deal.product || '',
+                  stage: deal.developmentStage || deal.stage || deal.phase || '',
+                  rationale: deal.rationale || deal.reason || deal.strategy || '',
+                  value: deal.dealPrice || deal.value || deal.price || deal.dealValue || deal.amount || '',
+                  date: deal.dealDate || deal.date || deal.date_or_status || deal.status || '',
                   indication: deal.indication || deal.target || deal.disease || '',
-                  region: deal.region || deal.geography || deal.market || 'N/A',
-                  dealType: deal.dealType || deal.type || deal.structure || 'N/A',
+                  region: deal.region || deal.geography || deal.market || '',
+                  dealType: deal.dealType || deal.type || deal.structure || '',
                   publicCommentary: deal.publicCommentary || deal.commentary || deal.notes || ''
                 };
 
@@ -437,8 +437,8 @@ export function CompetitiveLandscape({
             <div className="text-center text-slate-500">{hasInvalidInput ? 'No deal activity found' : 'No deal activity data available.'}</div>
           )}
           
-          {/* Additional Blurred Deals for Depth - Enhanced with varied structures */}
-          <Card className="relative opacity-60">
+          {/* Additional Blurred Deals for Depth - Consistent blur level */}
+          <Card className="relative opacity-40">
             <CardHeader>
               <CardTitle className="text-lg flex items-center justify-between">
                 <span className="blur-sm">AstraZeneca</span>
@@ -466,7 +466,7 @@ export function CompetitiveLandscape({
             </CardContent>
           </Card>
           
-          <Card className="relative opacity-50">
+          <Card className="relative opacity-40">
             <CardHeader>
               <CardTitle className="text-lg flex items-center justify-between">
                 <span className="blur-sm">Bristol-Myers Squibb</span>
@@ -522,7 +522,7 @@ export function CompetitiveLandscape({
             </CardContent>
           </Card>
           
-          <Card className="relative opacity-35">
+          <Card className="relative opacity-40">
             <CardHeader>
               <CardTitle className="text-lg flex items-center justify-between">
                 <span className="blur-sm">Pfizer</span>
@@ -550,7 +550,7 @@ export function CompetitiveLandscape({
             </CardContent>
           </Card>
 
-          <Card className="relative opacity-30">
+          <Card className="relative opacity-40">
             <CardHeader>
               <CardTitle className="text-lg flex items-center justify-between">
                 <span className="blur-sm">Novartis</span>
@@ -578,7 +578,7 @@ export function CompetitiveLandscape({
             </CardContent>
           </Card>
 
-          <Card className="relative opacity-25">
+          <Card className="relative opacity-40">
             <CardHeader>
               <CardTitle className="text-lg flex items-center justify-between">
                 <span className="blur-sm">Johnson & Johnson</span>
@@ -606,7 +606,7 @@ export function CompetitiveLandscape({
             </CardContent>
           </Card>
 
-          <Card className="relative opacity-20">
+          <Card className="relative opacity-40">
             <CardHeader>
               <CardTitle className="text-lg flex items-center justify-between">
                 <span className="blur-sm">Roche</span>
@@ -746,7 +746,7 @@ export function CompetitiveLandscape({
 
                 {/* Additional Blurred Pipeline Cards */}
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card className="relative opacity-60">
+                  <Card className="relative opacity-40">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm blur-sm">Emerging Modalities</CardTitle>
                     </CardHeader>
@@ -759,7 +759,7 @@ export function CompetitiveLandscape({
                     </CardContent>
                   </Card>
 
-                  <Card className="relative opacity-50">
+                  <Card className="relative opacity-40">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm blur-sm">Regulatory Pathways</CardTitle>
                     </CardHeader>
@@ -785,7 +785,7 @@ export function CompetitiveLandscape({
                     </CardContent>
                   </Card>
 
-                  <Card className="relative opacity-35">
+                  <Card className="relative opacity-40">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm blur-sm">Manufacturing</CardTitle>
                     </CardHeader>
@@ -798,7 +798,7 @@ export function CompetitiveLandscape({
                     </CardContent>
                   </Card>
 
-                  <Card className="relative opacity-30">
+                  <Card className="relative opacity-40">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm blur-sm">Clinical Strategy</CardTitle>
                     </CardHeader>
@@ -811,7 +811,7 @@ export function CompetitiveLandscape({
                     </CardContent>
                   </Card>
 
-                  <Card className="relative opacity-25">
+                  <Card className="relative opacity-40">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm blur-sm">Commercial Planning</CardTitle>
                     </CardHeader>
