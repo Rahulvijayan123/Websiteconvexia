@@ -246,29 +246,117 @@ export function FinancialProjections({
     <div className="space-y-6">
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {keyMetrics.map((metric, index) => (
-          <Card key={index} className="shadow-md bg-white rounded-lg border border-slate-200">
-            <CardContent className="p-4 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <p className="text-lg font-bold text-blue-600">{metric.value}</p>
-              </div>
-              <p className="text-sm text-slate-600 font-medium">{metric.metric}</p>
-              {metric.year && <p className="text-xs text-slate-500">{metric.year}</p>}
-              {metric.period && <p className="text-xs text-slate-500">{metric.period}</p>}
-              {metric.note && <p className="text-xs text-slate-500">{metric.note}</p>}
-              <p className="text-xs text-slate-700 mt-2 leading-relaxed">
-                {index === 0 && getPeakRevenueRationale()}
-                {index === 1 && getTotal10YearRevenueRationale()}
-                {index === 2 && getPeakMarketShareRationale()}
-                {index === 3 && getPeakPatientsRationale()}
-                {index === 4 && getAvgSellingPriceRationale()}
-                {index === 5 && getPersistenceRateRationale()}
-                {index === 6 && getTreatmentDurationRationale()}
-                {index === 7 && getGeographicSplitRationale()}
+        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+          <CardContent className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-lg font-bold text-blue-600">
+                {hasInvalidInput ? 'N/A' : (peakRevenue2030 || 'N/A')}
               </p>
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+            <p className="text-sm text-slate-600 font-medium">Peak Revenue (2030)</p>
+            <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+              {getPeakRevenueRationale()}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+          <CardContent className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-lg font-bold text-green-600">
+                {hasInvalidInput ? 'N/A' : calculateTotal10YearRevenue()}
+              </p>
+            </div>
+            <p className="text-sm text-slate-600 font-medium">Total 10-Year Revenue</p>
+            <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+              {getTotal10YearRevenueRationale()}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+          <CardContent className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-lg font-bold text-purple-600">
+                {hasInvalidInput ? 'N/A' : (peakMarketShare2030 || 'N/A')}
+              </p>
+            </div>
+            <p className="text-sm text-slate-600 font-medium">Peak Market Share (2030)</p>
+            <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+              {getPeakMarketShareRationale()}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+          <CardContent className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-lg font-bold text-orange-600">
+                {hasInvalidInput ? 'N/A' : (peakPatients2030 || 'N/A')}
+              </p>
+            </div>
+            <p className="text-sm text-slate-600 font-medium">Peak Patients (2030)</p>
+            <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+              {getPeakPatientsRationale()}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+          <CardContent className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-lg font-bold text-indigo-600">
+                {hasInvalidInput ? 'N/A' : (avgSellingPrice || 'N/A')}
+              </p>
+            </div>
+            <p className="text-sm text-slate-600 font-medium">Avg Selling Price</p>
+            <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+              {getAvgSellingPriceRationale()}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+          <CardContent className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-lg font-bold text-teal-600">
+                {hasInvalidInput ? 'N/A' : (persistenceRate || 'N/A')}
+              </p>
+            </div>
+            <p className="text-sm text-slate-600 font-medium">Persistence Rate</p>
+            <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+              {getPersistenceRateRationale()}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+          <CardContent className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-lg font-bold text-cyan-600">
+                {hasInvalidInput ? 'N/A' : (treatmentDuration || 'N/A')}
+              </p>
+            </div>
+            <p className="text-sm text-slate-600 font-medium">Treatment Duration</p>
+            <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+              {getTreatmentDurationRationale()}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-md bg-white rounded-lg border border-slate-200">
+          <CardContent className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-lg font-bold text-pink-600">
+                {hasInvalidInput ? 'N/A' : (geographicSplit || 'N/A')}
+              </p>
+            </div>
+            <p className="text-sm text-slate-600 font-medium">Geographic Split</p>
+            <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+              {getGeographicSplitRationale()}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Revenue Forecasting Chart */}

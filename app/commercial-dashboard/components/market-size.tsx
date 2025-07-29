@@ -204,36 +204,42 @@ export function MarketSize({
           <CardDescription>Market size, growth, and key dynamics</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="blurred-section">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="text-center p-4 border rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">$19.2B</div>
-                <div className="text-sm text-slate-600">2024 Market Size</div>
-                <p className="text-xs text-slate-700 mt-2 leading-relaxed">
-                  {getMarketSizeRationale()}
-                </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">
+                {hasInvalidInput ? 'N/A' : (marketSize2024 || 'N/A')}
               </div>
-              <div className="text-center p-4 border rounded-lg">
-                <div className="text-2xl font-bold text-green-600">$29.8B</div>
-                <div className="text-sm text-slate-600">2030 Market Size</div>
-                <p className="text-xs text-slate-700 mt-2 leading-relaxed">
-                  {getMarketSizeRationale()}
-                </p>
+              <div className="text-sm text-slate-600">2024 Market Size</div>
+              <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+                {getMarketSizeRationale()}
+              </p>
+            </div>
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-green-600">
+                {hasInvalidInput ? 'N/A' : (marketSize2030 || 'N/A')}
               </div>
-              <div className="text-center p-4 border rounded-lg">
-                <div className="text-2xl font-bold text-purple-600">7.5%</div>
-                <div className="text-sm text-slate-600">CAGR (2024-2030)</div>
-                <p className="text-xs text-slate-700 mt-2 leading-relaxed">
-                  {getCAGRRationale()}
-                </p>
+              <div className="text-sm text-slate-600">2030 Market Size</div>
+              <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+                {getMarketSizeRationale()}
+              </p>
+            </div>
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-purple-600">
+                {hasInvalidInput ? 'N/A' : (cagr || 'N/A')}
               </div>
-              <div className="text-center p-4 border rounded-lg">
-                <div className="text-2xl font-bold text-orange-600">$45.2B</div>
-                <div className="text-sm text-slate-600">Total Addressable Market</div>
-                <p className="text-xs text-slate-700 mt-2 leading-relaxed">
-                  {getTAMRationale()}
-                </p>
+              <div className="text-sm text-slate-600">CAGR (2024-2030)</div>
+              <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+                {getCAGRRationale()}
+              </p>
+            </div>
+            <div className="text-center p-4 border rounded-lg">
+              <div className="text-2xl font-bold text-orange-600">
+                {hasInvalidInput ? 'N/A' : (totalAddressableMarket || 'N/A')}
               </div>
+              <div className="text-sm text-slate-600">Total Addressable Market</div>
+              <p className="text-xs text-slate-700 mt-2 leading-relaxed">
+                {getTAMRationale()}
+              </p>
             </div>
           </div>
         </CardContent>
