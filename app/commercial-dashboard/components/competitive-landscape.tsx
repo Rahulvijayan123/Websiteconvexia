@@ -375,7 +375,7 @@ export function CompetitiveLandscape({
             </CardContent>
           </Card>
         )}
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {hasDeals ? (
             <>
               {dealActivity!.map((deal, index) => {
@@ -436,6 +436,203 @@ export function CompetitiveLandscape({
           ) : (
             <div className="text-center text-slate-500">{hasInvalidInput ? 'No deal activity found' : 'No deal activity data available.'}</div>
           )}
+          
+          {/* Additional Blurred Deals for Depth - Enhanced with varied structures */}
+          <Card className="relative opacity-60">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center justify-between">
+                <span className="blur-sm">AstraZeneca</span>
+                <Badge variant="outline" className="text-xs blur-sm">
+                  Partnership
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Deal Value</span>
+                <span className="text-lg font-bold text-green-600 blur-sm">
+                  $1.2B
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Date</span>
+                <span className="text-sm text-slate-600 blur-sm">
+                  Q3 2024
+                </span>
+              </div>
+              <div className="text-sm text-slate-600">
+                <span className="font-semibold">Asset:</span> <span className="blur-sm">EGFR-TKI Platform</span>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="relative opacity-50">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center justify-between">
+                <span className="blur-sm">Bristol-Myers Squibb</span>
+                <Badge variant="outline" className="text-xs blur-sm">
+                  Licensing
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Deal Value</span>
+                <span className="text-lg font-bold text-green-600 blur-sm">
+                  $750M
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Date</span>
+                <span className="text-sm text-slate-600 blur-sm">
+                  Q2 2024
+                </span>
+              </div>
+              <div className="text-sm text-slate-600">
+                <span className="font-semibold">Indication:</span> <span className="blur-sm">NSCLC + SCLC</span>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="relative opacity-40">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center justify-between">
+                <span className="blur-sm">Merck & Co.</span>
+                <Badge variant="outline" className="text-xs blur-sm">
+                  Acquisition
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Deal Value</span>
+                <span className="text-lg font-bold text-green-600 blur-sm">
+                  $2.1B
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Date</span>
+                <span className="text-sm text-slate-600 blur-sm">
+                  Q1 2024
+                </span>
+              </div>
+              <div className="text-sm text-slate-600">
+                <span className="font-semibold">Stage:</span> <span className="blur-sm">Phase II</span>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="relative opacity-35">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center justify-between">
+                <span className="blur-sm">Pfizer</span>
+                <Badge variant="outline" className="text-xs blur-sm">
+                  Collaboration
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Deal Value</span>
+                <span className="text-lg font-bold text-green-600 blur-sm">
+                  $950M
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Date</span>
+                <span className="text-sm text-slate-600 blur-sm">
+                  Q4 2023
+                </span>
+              </div>
+              <div className="text-sm text-slate-600">
+                <span className="font-semibold">Target:</span> <span className="blur-sm">EGFR Mutations</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="relative opacity-30">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center justify-between">
+                <span className="blur-sm">Novartis</span>
+                <Badge variant="outline" className="text-xs blur-sm">
+                  Joint Venture
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Deal Value</span>
+                <span className="text-lg font-bold text-green-600 blur-sm">
+                  $1.8B
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Date</span>
+                <span className="text-sm text-slate-600 blur-sm">
+                  Q3 2023
+                </span>
+              </div>
+              <div className="text-sm text-slate-600">
+                <span className="font-semibold">Platform:</span> <span className="blur-sm">TKI Optimization</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="relative opacity-25">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center justify-between">
+                <span className="blur-sm">Johnson & Johnson</span>
+                <Badge variant="outline" className="text-xs blur-sm">
+                  Strategic Alliance
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Deal Value</span>
+                <span className="text-lg font-bold text-green-600 blur-sm">
+                  $1.5B
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Date</span>
+                <span className="text-sm text-slate-600 blur-sm">
+                  Q2 2023
+                </span>
+              </div>
+              <div className="text-sm text-slate-600">
+                <span className="font-semibold">Focus:</span> <span className="blur-sm">Resistance Mechanisms</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="relative opacity-20">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center justify-between">
+                <span className="blur-sm">Roche</span>
+                <Badge variant="outline" className="text-xs blur-sm">
+                  Research Partnership
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Deal Value</span>
+                <span className="text-lg font-bold text-green-600 blur-sm">
+                  $650M
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Date</span>
+                <span className="text-sm text-slate-600 blur-sm">
+                  Q1 2023
+                </span>
+              </div>
+              <div className="text-sm text-slate-600">
+                <span className="font-semibold">Area:</span> <span className="blur-sm">Biomarker Development</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </TabsContent>
 
@@ -485,25 +682,172 @@ export function CompetitiveLandscape({
                 </div>
               </CardContent>
             </Card>
-            {/* Add a blurred section to make it look longer and more detailed */}
-            <div className="md:col-span-2">
-              <div className="text-base font-bold text-blue-700 mb-2">Extended Pipeline Details</div>
-              <div className="blurred-section-heavy rounded p-4 space-y-3">
-                <div className="h-4 w-1/2 bg-slate-200 rounded" />
-                <div className="h-4 w-1/3 bg-slate-200 rounded" />
-                <div className="h-4 w-2/3 bg-slate-200 rounded" />
-                <div className="h-4 w-1/4 bg-slate-200 rounded" />
-                <div className="h-32 w-full bg-slate-100 rounded" />
-                <div className="h-4 w-1/2 bg-slate-200 rounded" />
-                <div className="h-4 w-1/3 bg-slate-200 rounded" />
-                <div className="h-4 w-1/4 bg-slate-200 rounded" />
-                <div className="h-4 w-2/3 bg-slate-200 rounded" />
-                <div className="h-4 w-1/2 bg-slate-200 rounded" />
-                <div className="h-4 w-1/3 bg-slate-200 rounded" />
-                <div className="h-4 w-1/4 bg-slate-200 rounded" />
-                <div className="h-40 w-full bg-slate-100 rounded" />
-              </div>
-            </div>
+            {/* Extended Pipeline Details - Enhanced with varied structures */}
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-lg">Extended Pipeline Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Preclinical Candidates */}
+                  <div>
+                    <h4 className="text-sm font-semibold uppercase text-muted-foreground mb-3">Preclinical Candidates</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Lead optimization</span>
+                        <span className="text-xs text-muted-foreground blur-sm">EGFR-TKI-001</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">IND-enabling</span>
+                        <span className="text-xs text-muted-foreground blur-sm">EGFR-Degrader-002</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Target validation</span>
+                        <span className="text-xs text-muted-foreground blur-sm">EGFR-ProTAC-003</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Conjugate optimization</span>
+                        <span className="text-xs text-muted-foreground blur-sm">EGFR-ADC-004</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Safety assessment</span>
+                        <span className="text-xs text-muted-foreground blur-sm">EGFR-BiTE-005</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Clinical Candidates */}
+                  <div>
+                    <h4 className="text-sm font-semibold uppercase text-muted-foreground mb-3">Clinical Candidates</h4>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Phase I</span>
+                        <span className="text-xs text-muted-foreground blur-sm">EGFR-TKI-101</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Phase I/II</span>
+                        <span className="text-xs text-muted-foreground blur-sm">EGFR-Dual-102</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Phase II</span>
+                        <span className="text-xs text-muted-foreground blur-sm">EGFR-Resistant-103</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Phase II/III</span>
+                        <span className="text-xs text-muted-foreground blur-sm">EGFR-Combination-104</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Phase III</span>
+                        <span className="text-xs text-muted-foreground blur-sm">EGFR-FirstLine-105</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Blurred Pipeline Cards */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="relative opacity-60">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm blur-sm">Emerging Modalities</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-1">
+                        <div className="text-xs text-muted-foreground blur-sm">ADC Platform</div>
+                        <div className="text-xs text-muted-foreground blur-sm">BiTE Technology</div>
+                        <div className="text-xs text-muted-foreground blur-sm">ProTAC Degraders</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="relative opacity-50">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm blur-sm">Regulatory Pathways</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-1">
+                        <div className="text-xs text-muted-foreground blur-sm">Breakthrough Designation</div>
+                        <div className="text-xs text-muted-foreground blur-sm">Fast Track Status</div>
+                        <div className="text-xs text-muted-foreground blur-sm">Priority Review</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="relative opacity-40">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm blur-sm">Market Access</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-1">
+                        <div className="text-xs text-muted-foreground blur-sm">Pricing Strategy</div>
+                        <div className="text-xs text-muted-foreground blur-sm">Reimbursement Plans</div>
+                        <div className="text-xs text-muted-foreground blur-sm">Patient Access</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="relative opacity-35">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm blur-sm">Manufacturing</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-1">
+                        <div className="text-xs text-muted-foreground blur-sm">Scale-up Plans</div>
+                        <div className="text-xs text-muted-foreground blur-sm">CMC Strategy</div>
+                        <div className="text-xs text-muted-foreground blur-sm">Supply Chain</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="relative opacity-30">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm blur-sm">Clinical Strategy</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-1">
+                        <div className="text-xs text-muted-foreground blur-sm">Trial Design</div>
+                        <div className="text-xs text-muted-foreground blur-sm">Patient Recruitment</div>
+                        <div className="text-xs text-muted-foreground blur-sm">Endpoints</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="relative opacity-25">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm blur-sm">Commercial Planning</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="space-y-1">
+                        <div className="text-xs text-muted-foreground blur-sm">Launch Strategy</div>
+                        <div className="text-xs text-muted-foreground blur-sm">Sales Force</div>
+                        <div className="text-xs text-muted-foreground blur-sm">Marketing</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-slate-200">
+                  <h4 className="text-sm font-semibold uppercase text-muted-foreground mb-3">Pipeline Metrics</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-blue-600 blur-sm">47</div>
+                      <div className="text-xs text-muted-foreground">Total Programs</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-green-600 blur-sm">12</div>
+                      <div className="text-xs text-muted-foreground">Phase III</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-orange-600 blur-sm">18</div>
+                      <div className="text-xs text-muted-foreground">Phase II</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-purple-600 blur-sm">17</div>
+                      <div className="text-xs text-muted-foreground">Phase I</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         ) : (
           <div className="text-center text-slate-500">No pipeline analysis data available.</div>
