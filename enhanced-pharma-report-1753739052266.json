@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-07-28T21:44:12.265Z",
+  "totalAssets": 2,
+  "successfulRuns": 0,
+  "failedRuns": 2,
+  "averageScore": null,
+  "totalCriticalIssues": 0,
+  "recommendations": [],
+  "assetDetails": [
+    {
+      "asset": {
+        "id": 1,
+        "target": "GLP-1 Receptor",
+        "indication": "Type 2 Diabetes",
+        "therapeuticArea": "Endocrinology",
+        "geography": "US",
+        "developmentPhase": "Phase 3",
+        "description": "High-value diabetes market with established GLP-1 class"
+      },
+      "score": 0,
+      "criticalIssues": [],
+      "recommendation": "N/A",
+      "responseTime": 0,
+      "cost": 0,
+      "finalQualityScore": 0
+    },
+    {
+      "asset": {
+        "id": 2,
+        "target": "TGF-β",
+        "indication": "Idiopathic Pulmonary Fibrosis",
+        "therapeuticArea": "Respiratory",
+        "geography": "EU",
+        "developmentPhase": "Phase 2",
+        "description": "Orphan disease with high unmet need and premium pricing"
+      },
+      "score": 0,
+      "criticalIssues": [],
+      "recommendation": "N/A",
+      "responseTime": 0,
+      "cost": 0,
+      "finalQualityScore": 0
+    }
+  ],
+  "systemPerformance": {
+    "averageResponseTime": 0,
+    "totalCost": 0,
+    "averageValidationCycles": 0,
+    "averageQualityScore": 0
+  }
+}

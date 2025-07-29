@@ -645,35 +645,73 @@ Development Phase: ${inputs.developmentPhase}
 
 EXECUTIVE-LEVEL REQUIREMENTS - PRE-IC INVESTMENT MEMO STANDARDS:
 
+CRITICAL BUSINESS LOGIC RULES - MUST BE FOLLOWED:
+
+1. RARE DISEASE ELIGIBILITY LOGIC:
+   - PRV (Priority Review Voucher) eligibility: ONLY for rare pediatric diseases (<200,000 patients in US) OR neglected tropical diseases
+   - If patient population > 200,000: PRV = "Not eligible" (NOT "Valid. Not eligible")
+   - If patient population < 200,000: PRV = "Eligible for rare disease PRV"
+   - rareDiseaseEligibility: true ONLY if patient population < 200,000
+   - This is a binary FDA regulation - no ambiguity allowed
+
+2. PATIENT POPULATION LOGIC:
+   - peakPatients2030 must be a realistic number based on disease prevalence
+   - For common diseases (cancer, diabetes, etc.): typically 10,000 - 500,000 patients
+   - For rare diseases: typically 1,000 - 200,000 patients
+   - For ultra-rare diseases: typically < 1,000 patients
+   - Patient count must align with disease epidemiology
+
+3. MATHEMATICAL CONSISTENCY REQUIREMENTS:
+   - Peak Revenue = (peakPatients2030 × avgSellingPrice × marketShare) / 1,000,000,000 (in billions)
+   - Total 10-Year Revenue = Peak Revenue × 5-8 (industry standard)
+   - CAGR must be calculated: CAGR = ((Peak Revenue / Current Market Size)^(1/6) - 1) × 100
+   - Geographic split must sum to 100% (US + ex-US = 100%)
+   - All percentages must be between 0-100%
+   - All monetary values must be positive numbers
+
+4. PRICING LOGIC:
+   - avgSellingPrice must be realistic for the disease area
+   - Oncology: $50,000 - $500,000 per year
+   - Rare diseases: $100,000 - $2,000,000 per year
+   - Common diseases: $1,000 - $50,000 per year
+   - Pricing must align with patient population size
+
+5. MARKET SHARE LOGIC:
+   - peakMarketShare2030 must be realistic (typically 5-30% for new drugs)
+   - Higher market share = lower patient population (inverse relationship)
+   - Market share + competitor market shares should not exceed 100%
+
 CRITICAL FIELDS THAT MUST BE INCLUDED:
 1. dealActivity - Recent M&A/licensing deals with real data
 2. directCompetitors - Names of actual competitors
 3. indirectCompetitors - Alternative treatment approaches
 4. pipelineAnalysis - Pipeline crowding analysis
-5. peakRevenue2030 - Numeric value in billions
-6. cagr - Numeric percentage value
-7. marketSize - Current and projected market size
-8. avgSellingPrice - Numeric value in dollars
+5. peakRevenue2030 - Numeric value in billions (calculated from patients × price × market share)
+6. cagr - Numeric percentage value (calculated mathematically)
+7. marketSize - Current and projected market size in billions
+8. avgSellingPrice - Numeric value in dollars (realistic for disease area)
 9. pricingScenarios - Real pricing strategy scenarios
-10. prvEligibility - Boolean or string indicating eligibility
-11. rareDiseaseEligibility - Boolean for rare disease status
+10. prvEligibility - "Eligible" or "Not eligible" (based on patient count < 200,000)
+11. rareDiseaseEligibility - true/false (patient count < 200,000)
 12. reviewTimelineMonths - Numeric value in months
 13. patentStatus - Current patent status
 14. exclusivityPeriod - Years of exclusivity
 15. ipPositioning - IP positioning analysis
-16. total10YearRevenue - Numeric value in billions
-17. geographicSplit - Object with US/ex-US percentages
-18. persistenceRate - Numeric percentage value
+16. total10YearRevenue - Numeric value in billions (5-8× peak revenue)
+17. geographicSplit - Object with US/ex-US percentages (must sum to 100%)
+18. persistenceRate - Numeric percentage value (0-100%)
 19. strategicTailwindData - Comprehensive strategic analysis
 20. competitorPricing - Real competitor pricing data
+21. peakPatients2030 - Numeric patient count (realistic for disease)
+22. peakMarketShare2030 - Numeric percentage (realistic market share)
 
-MATHEMATICAL CONSISTENCY REQUIREMENTS:
-- Peak Revenue = Market Size × Peak Market Share
-- Total Revenue should be 5-8× Peak Revenue
-- CAGR must be mathematically correct
-- Patient count must align with revenue and pricing
+VALIDATION CHECKS - ENSURE THESE ARE CORRECT:
+- If peakPatients2030 > 200,000: prvEligibility = "Not eligible", rareDiseaseEligibility = false
+- If peakPatients2030 < 200,000: prvEligibility = "Eligible", rareDiseaseEligibility = true
+- Peak Revenue calculation must be mathematically correct
+- All percentages must be between 0-100
 - Geographic split must sum to 100%
-- All percentages must be mathematically valid
+- Patient count must be realistic for the disease
 
 RESEARCH REQUIREMENTS:
 - Use real market data from IQVIA, EvaluatePharma, etc.
@@ -684,7 +722,7 @@ RESEARCH REQUIREMENTS:
 
 Return only valid JSON matching the enhanced commercial schema with mathematically consistent, research-backed values.
 
-IMPORTANT: Every field must be populated with real, validated data. No placeholder values allowed.`;
+IMPORTANT: Every field must be populated with real, validated data. No placeholder values allowed. All business logic rules must be followed exactly.`;
   }
 
   private generateExecutiveValidationPrompt(inputs: any, currentOutput: any, fieldNames: string[]): string {
@@ -693,14 +731,37 @@ Fields: ${fieldNames.join(', ')}
 Current Output: ${JSON.stringify(currentOutput)}
 Inputs: ${JSON.stringify(inputs)}
 
-EXECUTIVE VALIDATION CRITERIA:
-1. Data completeness - All required fields must be present
-2. Mathematical consistency - Cross-field calculations must be valid
-3. Real-world accuracy - Values must align with market reality
-4. Source credibility - Data must be from reputable sources
-5. Logical coherence - No conflicting information
+EXECUTIVE VALIDATION CRITERIA - CRITICAL BUSINESS LOGIC CHECKS:
 
-Return validation results for each field.`;
+1. RARE DISEASE ELIGIBILITY LOGIC:
+   - If peakPatients2030 > 200,000: prvEligibility must be "Not eligible" AND rareDiseaseEligibility must be false
+   - If peakPatients2030 < 200,000: prvEligibility must be "Eligible" AND rareDiseaseEligibility must be true
+   - This is a binary FDA regulation - no exceptions
+
+2. MATHEMATICAL CONSISTENCY:
+   - Peak Revenue = (peakPatients2030 × avgSellingPrice × peakMarketShare2030) / 1,000,000,000
+   - Total 10-Year Revenue should be 5-8× Peak Revenue
+   - CAGR calculation must be mathematically correct
+   - Geographic split (US + ex-US) must equal 100%
+   - All percentages must be between 0-100%
+
+3. REALISTIC VALUES:
+   - Patient count must be realistic for the disease type
+   - Pricing must align with disease area and patient population
+   - Market share must be realistic (typically 5-30% for new drugs)
+   - Revenue projections must be mathematically sound
+
+4. DATA COMPLETENESS:
+   - All required fields must be present
+   - No placeholder or generic values
+   - All numeric fields must be actual numbers
+
+5. LOGICAL COHERENCE:
+   - No conflicting information between fields
+   - Patient count must align with disease epidemiology
+   - Pricing must align with patient population size
+
+Return validation results for each field with specific issues identified.`;
   }
 
   private generateEnhancedRegenerationPrompt(inputs: any, currentOutput: any, failedFields: string[]): string {
@@ -716,14 +777,34 @@ FAILED FIELDS TO REGENERATE: ${failedFields.join(', ')}
 CURRENT OUTPUT:
 ${JSON.stringify(currentOutput, null, 2)}
 
+CRITICAL BUSINESS LOGIC RULES - MUST BE FOLLOWED:
+
+1. RARE DISEASE ELIGIBILITY LOGIC:
+   - If peakPatients2030 > 200,000: prvEligibility = "Not eligible", rareDiseaseEligibility = false
+   - If peakPatients2030 < 200,000: prvEligibility = "Eligible", rareDiseaseEligibility = true
+   - This is a binary FDA regulation - no exceptions
+
+2. MATHEMATICAL CONSISTENCY:
+   - Peak Revenue = (peakPatients2030 × avgSellingPrice × peakMarketShare2030) / 1,000,000,000
+   - Total 10-Year Revenue = Peak Revenue × 5-8
+   - CAGR = ((Peak Revenue / Current Market Size)^(1/6) - 1) × 100
+   - Geographic split must sum to 100%
+   - All percentages must be between 0-100%
+
+3. REALISTIC VALUES:
+   - Patient count must be realistic for disease type
+   - Pricing must align with disease area
+   - Market share must be realistic (5-30% for new drugs)
+
 EXECUTIVE-LEVEL REQUIREMENTS:
 1. All fields must contain real, validated data
 2. Mathematical consistency across all fields
 3. Real-world market alignment
 4. Proper data types (numbers for numeric fields)
 5. Complete information (no missing required fields)
+6. Business logic compliance (especially rare disease rules)
 
-Return only valid JSON with the regenerated fields.`;
+Return only valid JSON with the regenerated fields following all business logic rules exactly.`;
   }
 
   private generateEnhancedGPT4oPrompt(inputs: any, currentOutput: any): string {
@@ -736,10 +817,25 @@ ENHANCEMENT REQUIREMENTS:
 1. Ensure all required fields are present and properly formatted
 2. Validate mathematical consistency across all fields
 3. Add missing rationales and explanations
-4. Improve data quality and accuracy
-5. Ensure proper data types (numbers vs strings)
+4. Ensure business logic compliance
 
-Return the enhanced JSON output.`;
+CRITICAL BUSINESS LOGIC CHECKS:
+1. RARE DISEASE ELIGIBILITY:
+   - If peakPatients2030 > 200,000: prvEligibility must be "Not eligible", rareDiseaseEligibility must be false
+   - If peakPatients2030 < 200,000: prvEligibility must be "Eligible", rareDiseaseEligibility must be true
+
+2. MATHEMATICAL CONSISTENCY:
+   - Peak Revenue = (peakPatients2030 × avgSellingPrice × peakMarketShare2030) / 1,000,000,000
+   - Total 10-Year Revenue = Peak Revenue × 5-8
+   - CAGR calculation must be mathematically correct
+   - Geographic split must sum to 100%
+
+3. REALISTIC VALUES:
+   - Patient count must be realistic for disease type
+   - Pricing must align with disease area
+   - Market share must be realistic (5-30% for new drugs)
+
+Return enhanced JSON with all business logic rules followed exactly.`;
   }
 
   private getEnhancedCommercialSchema(): any {

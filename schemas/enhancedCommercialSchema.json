@@ -43,11 +43,11 @@
     },
     "peakRevenue2030": {
       "type": "number",
-      "description": "Forecasted peak revenue by 2030 in billions (numeric value)"
+      "description": "Forecasted peak revenue by 2030 in billions (calculated from patients × price × market share)"
     },
     "cagr": {
       "type": "number",
-      "description": "Compound Annual Growth Rate as percentage (numeric value)"
+      "description": "Compound Annual Growth Rate as percentage (calculated mathematically)"
     },
     "marketSize": {
       "type": "string",
@@ -55,7 +55,7 @@
     },
     "avgSellingPrice": {
       "type": "number",
-      "description": "Average selling price per patient in dollars (numeric value)"
+      "description": "Average selling price per patient in dollars (realistic for disease area)"
     },
     "pricingScenarios": {
       "type": "array",
@@ -77,12 +77,21 @@
       "description": "Real pricing strategy scenarios"
     },
     "prvEligibility": {
-      "type": "boolean",
-      "description": "Priority Review Voucher eligibility (boolean)"
+      "type": "string",
+      "enum": ["Eligible", "Not eligible"],
+      "description": "Priority Review Voucher eligibility (based on patient count < 200,000)"
     },
     "rareDiseaseEligibility": {
       "type": "boolean",
-      "description": "Rare disease designation eligibility (boolean)"
+      "description": "Rare disease designation eligibility (patient count < 200,000)"
+    },
+    "peakPatients2030": {
+      "type": "number",
+      "description": "Estimated treated patient population by 2030 (realistic for disease)"
+    },
+    "peakMarketShare2030": {
+      "type": "number",
+      "description": "Projected market share by 2030 as percentage (realistic for new drugs)"
     },
     "reviewTimelineMonths": {
       "type": "number",
@@ -98,11 +107,11 @@
     },
     "ipPositioning": {
       "type": "string",
-      "description": "IP positioning and strategy analysis"
+      "description": "IP positioning analysis and competitive landscape"
     },
     "total10YearRevenue": {
       "type": "number",
-      "description": "Estimated total revenue over 10 years in billions (numeric value)"
+      "description": "Estimated total revenue over 10 years in billions (5-8× peak revenue)"
     },
     "geographicSplit": {
       "type": "object",
@@ -111,107 +120,46 @@
         "exUs": { "type": "number" }
       },
       "required": ["us", "exUs"],
-      "description": "Revenue split between US and ex-US markets (percentages must sum to 100)"
+      "description": "Revenue split between US and ex-US markets at peak (must sum to 100%)"
     },
     "persistenceRate": {
       "type": "number",
-      "description": "12-month treatment persistence rate as percentage (numeric value)"
+      "description": "12-month treatment persistence rate as percentage (0-100%)"
     },
-    "strategicTailwindData": {
-      "type": "object",
-      "properties": {
-        "fdaDesignations": {
-          "type": "object",
-          "properties": {
-            "breakthroughTherapy": { "type": "string" },
-            "fastTrack": { "type": "string" },
-            "orphanDrug": { "type": "string" },
-            "priorityReview": { "type": "string" },
-            "rationale": { "type": "string" }
-          },
-          "required": ["breakthroughTherapy", "fastTrack", "orphanDrug", "priorityReview", "rationale"]
-        },
-        "guidanceDocuments": {
-          "type": "object",
-          "properties": {
-            "oncologyEndpoints": { "type": "string" },
-            "biomarkerStrategy": { "type": "string" },
-            "realWorldEvidence": { "type": "string" },
-            "patientReportedOutcomes": { "type": "string" },
-            "rationale": { "type": "string" }
-          },
-          "required": ["oncologyEndpoints", "biomarkerStrategy", "realWorldEvidence", "patientReportedOutcomes", "rationale"]
-        },
-        "policyIncentives": {
-          "type": "object",
-          "properties": {
-            "arpaHFunding": { "type": "string" },
-            "medicareInnovation": { "type": "string" },
-            "iraExclusions": { "type": "string" },
-            "taxCredits": { "type": "string" },
-            "rationale": { "type": "string" }
-          },
-          "required": ["arpaHFunding", "medicareInnovation", "iraExclusions", "taxCredits", "rationale"]
-        },
-        "advocacyActivity": {
-          "type": "object",
-          "properties": {
-            "patientOrganizations": { "type": "string" },
-            "kolSupport": { "type": "string" },
-            "medicalSocieties": { "type": "string" },
-            "congressionalInterest": { "type": "string" },
-            "rationale": { "type": "string" }
-          },
-          "required": ["patientOrganizations", "kolSupport", "medicalSocieties", "congressionalInterest", "rationale"]
-        },
-        "marketPrecedent": {
-          "type": "object",
-          "properties": {
-            "similarApprovals": { "type": "string" },
-            "pricingPrecedent": { "type": "string" },
-            "accessPatterns": { "type": "string" },
-            "competitiveResponse": { "type": "string" },
-            "rationale": { "type": "string" }
-          },
-          "required": ["similarApprovals", "pricingPrecedent", "accessPatterns", "competitiveResponse", "rationale"]
-        }
-      },
-      "required": ["fdaDesignations", "guidanceDocuments", "policyIncentives", "advocacyActivity", "marketPrecedent"],
-      "description": "Comprehensive strategic tailwind analysis"
+    "treatmentDuration": {
+      "type": "string",
+      "description": "Median treatment duration in months"
     },
     "competitorPricing": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "drugName": { "type": "string" },
-          "annualPrice": { "type": "string" },
-          "indication": { "type": "string" },
-          "accessLevel": { "type": "string" },
-          "rationale": { "type": "string" }
+          "drugName": {"type": "string"},
+          "annualPrice": {"type": "string"},
+          "indication": {"type": "string"},
+          "accessLevel": {"type": "string"},
+          "rationale": {"type": "string"}
         },
         "required": ["drugName", "annualPrice", "indication", "accessLevel", "rationale"]
       },
-      "description": "Real competitor pricing data"
+      "description": "Pricing and access data for direct competitors"
     },
-    "payerSentiment": {
-      "type": "string",
-      "description": "Payer sentiment and reimbursement outlook"
-    },
-    "marketDrivers": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Key market drivers and growth catalysts"
-    },
-    "regulatoryCatalysts": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Regulatory catalysts and approval drivers"
+    "strategicTailwindData": {
+      "type": "object",
+      "properties": {
+        "marketTrends": { "type": "string" },
+        "regulatoryEnvironment": { "type": "string" },
+        "competitiveLandscape": { "type": "string" },
+        "strategicRecommendations": { "type": "string" }
+      },
+      "required": ["marketTrends", "regulatoryEnvironment", "competitiveLandscape", "strategicRecommendations"],
+      "description": "Comprehensive strategic analysis"
     }
   },
   "required": [
     "dealActivity",
-    "directCompetitors", 
+    "directCompetitors",
     "indirectCompetitors",
     "pipelineAnalysis",
     "peakRevenue2030",
@@ -221,6 +169,8 @@
     "pricingScenarios",
     "prvEligibility",
     "rareDiseaseEligibility",
+    "peakPatients2030",
+    "peakMarketShare2030",
     "reviewTimelineMonths",
     "patentStatus",
     "exclusivityPeriod",
@@ -228,11 +178,8 @@
     "total10YearRevenue",
     "geographicSplit",
     "persistenceRate",
-    "strategicTailwindData",
+    "treatmentDuration",
     "competitorPricing",
-    "payerSentiment",
-    "marketDrivers",
-    "regulatoryCatalysts"
-  ],
-  "additionalProperties": false
+    "strategicTailwindData"
+  ]
 } 

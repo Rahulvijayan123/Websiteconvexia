@@ -1,0 +1,102 @@
+{
+  "timestamp": "2025-07-28T21:34:13.199Z",
+  "totalAssets": 5,
+  "successfulRuns": 0,
+  "failedRuns": 5,
+  "averageScore": null,
+  "averageDataQuality": null,
+  "totalCriticalIssues": 0,
+  "recommendations": [],
+  "assetDetails": [
+    {
+      "asset": {
+        "id": 6,
+        "target": "GLP-1 Receptor",
+        "indication": "Type 2 Diabetes",
+        "therapeuticArea": "Endocrinology",
+        "geography": "US",
+        "developmentPhase": "Phase 3",
+        "description": "High-value diabetes market with established GLP-1 class"
+      },
+      "score": 0,
+      "dataQuality": 0,
+      "criticalIssues": [],
+      "recommendation": "N/A",
+      "responseTime": 0,
+      "cost": 0
+    },
+    {
+      "asset": {
+        "id": 7,
+        "target": "TGF-β",
+        "indication": "Idiopathic Pulmonary Fibrosis",
+        "therapeuticArea": "Respiratory",
+        "geography": "EU",
+        "developmentPhase": "Phase 2",
+        "description": "Orphan disease with high unmet need and premium pricing"
+      },
+      "score": 0,
+      "dataQuality": 0,
+      "criticalIssues": [],
+      "recommendation": "N/A",
+      "responseTime": 0,
+      "cost": 0
+    },
+    {
+      "asset": {
+        "id": 8,
+        "target": "BCL11A",
+        "indication": "Sickle Cell Disease",
+        "therapeuticArea": "Hematology",
+        "geography": "Africa",
+        "developmentPhase": "Phase 1",
+        "description": "Gene therapy in emerging market with complex access dynamics"
+      },
+      "score": 0,
+      "dataQuality": 0,
+      "criticalIssues": [],
+      "recommendation": "N/A",
+      "responseTime": 0,
+      "cost": 0
+    },
+    {
+      "asset": {
+        "id": 9,
+        "target": "IL-23",
+        "indication": "Psoriasis",
+        "therapeuticArea": "Autoimmune",
+        "geography": "Canada",
+        "developmentPhase": "Approved",
+        "description": "Established market with multiple approved competitors"
+      },
+      "score": 0,
+      "dataQuality": 0,
+      "criticalIssues": [],
+      "recommendation": "N/A",
+      "responseTime": 0,
+      "cost": 0
+    },
+    {
+      "asset": {
+        "id": 10,
+        "target": "Integrin α4β7",
+        "indication": "Crohn's Disease",
+        "therapeuticArea": "Gastroenterology",
+        "geography": "Australia",
+        "developmentPhase": "Phase 2",
+        "description": "Specialty GI market with complex reimbursement landscape"
+      },
+      "score": 0,
+      "dataQuality": 0,
+      "criticalIssues": [],
+      "recommendation": "N/A",
+      "responseTime": 0,
+      "cost": 0
+    }
+  ],
+  "systemPerformance": {
+    "averageResponseTime": 0,
+    "totalCost": 0,
+    "averageValidationCycles": 0
+  }
+}

@@ -1,0 +1,203 @@
+{
+  "timestamp": "2025-07-28T21:25:37.139Z",
+  "totalAssets": 5,
+  "successfulRuns": 5,
+  "failedRuns": 0,
+  "averageScore": 0.22833333333333333,
+  "averageDataQuality": 0.20416666666666666,
+  "totalCriticalIssues": 90,
+  "recommendations": [
+    "PASS - Low confidence, too many critical issues",
+    "PASS - Low confidence, too many critical issues",
+    "PASS - Low confidence, too many critical issues",
+    "PASS - Low confidence, too many critical issues",
+    "PASS - Low confidence, too many critical issues"
+  ],
+  "assetDetails": [
+    {
+      "asset": {
+        "id": 6,
+        "target": "GLP-1 Receptor",
+        "indication": "Type 2 Diabetes",
+        "therapeuticArea": "Endocrinology",
+        "geography": "US",
+        "developmentPhase": "Phase 3",
+        "description": "High-value diabetes market with established GLP-1 class"
+      },
+      "score": 0.2283333333333333,
+      "dataQuality": 0.20416666666666666,
+      "criticalIssues": [
+        "Deal Activity: Missing comparableDeals data",
+        "Deal Activity: Missing dealPricing data",
+        "Deal Activity: Missing buyerProfile data",
+        "Competitive Threats & Pipeline Crowding: Missing indirectCompetitors data",
+        "Competitive Threats & Pipeline Crowding: Missing pipelineCrowding data",
+        "Peak Sales Estimates & CAGR: Invalid peak revenue value",
+        "Peak Sales Estimates & CAGR: Invalid CAGR value",
+        "Payer Sentiment & Pricing Scenarios: Invalid pricing data",
+        "Payer Sentiment & Pricing Scenarios: Missing payerSentiment data",
+        "Rare Disease Eligibility & Regulatory: Missing rareDiseaseEligibility data",
+        "Rare Disease Eligibility & Regulatory: Missing regulatoryTimeline data",
+        "Patent & Exclusivity: Missing patentStatus data",
+        "Patent & Exclusivity: Missing exclusivityPeriod data",
+        "Patent & Exclusivity: Missing ipPositioning data",
+        "Financial Projections: Missing tenYearRevenue data",
+        "Strategic Tailwind Score: Missing strategicTailwindScore data",
+        "Strategic Tailwind Score: Missing marketDrivers data",
+        "Strategic Tailwind Score: Missing regulatoryCatalysts data"
+      ],
+      "recommendation": "PASS - Low confidence, too many critical issues",
+      "responseTime": 206304,
+      "cost": 2.42133
+    },
+    {
+      "asset": {
+        "id": 7,
+        "target": "TGF-β",
+        "indication": "Idiopathic Pulmonary Fibrosis",
+        "therapeuticArea": "Respiratory",
+        "geography": "EU",
+        "developmentPhase": "Phase 2",
+        "description": "Orphan disease with high unmet need and premium pricing"
+      },
+      "score": 0.2283333333333333,
+      "dataQuality": 0.20416666666666666,
+      "criticalIssues": [
+        "Deal Activity: Missing comparableDeals data",
+        "Deal Activity: Missing dealPricing data",
+        "Deal Activity: Missing buyerProfile data",
+        "Competitive Threats & Pipeline Crowding: Missing indirectCompetitors data",
+        "Competitive Threats & Pipeline Crowding: Missing pipelineCrowding data",
+        "Peak Sales Estimates & CAGR: Invalid peak revenue value",
+        "Peak Sales Estimates & CAGR: Invalid CAGR value",
+        "Payer Sentiment & Pricing Scenarios: Invalid pricing data",
+        "Payer Sentiment & Pricing Scenarios: Missing payerSentiment data",
+        "Rare Disease Eligibility & Regulatory: Missing rareDiseaseEligibility data",
+        "Rare Disease Eligibility & Regulatory: Missing regulatoryTimeline data",
+        "Patent & Exclusivity: Missing patentStatus data",
+        "Patent & Exclusivity: Missing exclusivityPeriod data",
+        "Patent & Exclusivity: Missing ipPositioning data",
+        "Financial Projections: Missing tenYearRevenue data",
+        "Strategic Tailwind Score: Missing strategicTailwindScore data",
+        "Strategic Tailwind Score: Missing marketDrivers data",
+        "Strategic Tailwind Score: Missing regulatoryCatalysts data"
+      ],
+      "recommendation": "PASS - Low confidence, too many critical issues",
+      "responseTime": 202350,
+      "cost": 2.45781
+    },
+    {
+      "asset": {
+        "id": 8,
+        "target": "BCL11A",
+        "indication": "Sickle Cell Disease",
+        "therapeuticArea": "Hematology",
+        "geography": "Africa",
+        "developmentPhase": "Phase 1",
+        "description": "Gene therapy in emerging market with complex access dynamics"
+      },
+      "score": 0.2283333333333333,
+      "dataQuality": 0.20416666666666666,
+      "criticalIssues": [
+        "Deal Activity: Missing comparableDeals data",
+        "Deal Activity: Missing dealPricing data",
+        "Deal Activity: Missing buyerProfile data",
+        "Competitive Threats & Pipeline Crowding: Missing indirectCompetitors data",
+        "Competitive Threats & Pipeline Crowding: Missing pipelineCrowding data",
+        "Peak Sales Estimates & CAGR: Invalid peak revenue value",
+        "Peak Sales Estimates & CAGR: Invalid CAGR value",
+        "Payer Sentiment & Pricing Scenarios: Invalid pricing data",
+        "Payer Sentiment & Pricing Scenarios: Missing payerSentiment data",
+        "Rare Disease Eligibility & Regulatory: Missing rareDiseaseEligibility data",
+        "Rare Disease Eligibility & Regulatory: Missing regulatoryTimeline data",
+        "Patent & Exclusivity: Missing patentStatus data",
+        "Patent & Exclusivity: Missing exclusivityPeriod data",
+        "Patent & Exclusivity: Missing ipPositioning data",
+        "Financial Projections: Missing tenYearRevenue data",
+        "Strategic Tailwind Score: Missing strategicTailwindScore data",
+        "Strategic Tailwind Score: Missing marketDrivers data",
+        "Strategic Tailwind Score: Missing regulatoryCatalysts data"
+      ],
+      "recommendation": "PASS - Low confidence, too many critical issues",
+      "responseTime": 187123,
+      "cost": 2.37744
+    },
+    {
+      "asset": {
+        "id": 9,
+        "target": "IL-23",
+        "indication": "Psoriasis",
+        "therapeuticArea": "Autoimmune",
+        "geography": "Canada",
+        "developmentPhase": "Approved",
+        "description": "Established market with multiple approved competitors"
+      },
+      "score": 0.2283333333333333,
+      "dataQuality": 0.20416666666666666,
+      "criticalIssues": [
+        "Deal Activity: Missing comparableDeals data",
+        "Deal Activity: Missing dealPricing data",
+        "Deal Activity: Missing buyerProfile data",
+        "Competitive Threats & Pipeline Crowding: Missing indirectCompetitors data",
+        "Competitive Threats & Pipeline Crowding: Missing pipelineCrowding data",
+        "Peak Sales Estimates & CAGR: Invalid peak revenue value",
+        "Peak Sales Estimates & CAGR: Invalid CAGR value",
+        "Payer Sentiment & Pricing Scenarios: Invalid pricing data",
+        "Payer Sentiment & Pricing Scenarios: Missing payerSentiment data",
+        "Rare Disease Eligibility & Regulatory: Missing rareDiseaseEligibility data",
+        "Rare Disease Eligibility & Regulatory: Missing regulatoryTimeline data",
+        "Patent & Exclusivity: Missing patentStatus data",
+        "Patent & Exclusivity: Missing exclusivityPeriod data",
+        "Patent & Exclusivity: Missing ipPositioning data",
+        "Financial Projections: Missing tenYearRevenue data",
+        "Strategic Tailwind Score: Missing strategicTailwindScore data",
+        "Strategic Tailwind Score: Missing marketDrivers data",
+        "Strategic Tailwind Score: Missing regulatoryCatalysts data"
+      ],
+      "recommendation": "PASS - Low confidence, too many critical issues",
+      "responseTime": 190637,
+      "cost": 2.5141299999999998
+    },
+    {
+      "asset": {
+        "id": 10,
+        "target": "Integrin α4β7",
+        "indication": "Crohn's Disease",
+        "therapeuticArea": "Gastroenterology",
+        "geography": "Australia",
+        "developmentPhase": "Phase 2",
+        "description": "Specialty GI market with complex reimbursement landscape"
+      },
+      "score": 0.2283333333333333,
+      "dataQuality": 0.20416666666666666,
+      "criticalIssues": [
+        "Deal Activity: Missing comparableDeals data",
+        "Deal Activity: Missing dealPricing data",
+        "Deal Activity: Missing buyerProfile data",
+        "Competitive Threats & Pipeline Crowding: Missing indirectCompetitors data",
+        "Competitive Threats & Pipeline Crowding: Missing pipelineCrowding data",
+        "Peak Sales Estimates & CAGR: Invalid peak revenue value",
+        "Peak Sales Estimates & CAGR: Invalid CAGR value",
+        "Payer Sentiment & Pricing Scenarios: Invalid pricing data",
+        "Payer Sentiment & Pricing Scenarios: Missing payerSentiment data",
+        "Rare Disease Eligibility & Regulatory: Missing rareDiseaseEligibility data",
+        "Rare Disease Eligibility & Regulatory: Missing regulatoryTimeline data",
+        "Patent & Exclusivity: Missing patentStatus data",
+        "Patent & Exclusivity: Missing exclusivityPeriod data",
+        "Patent & Exclusivity: Missing ipPositioning data",
+        "Financial Projections: Missing tenYearRevenue data",
+        "Strategic Tailwind Score: Missing strategicTailwindScore data",
+        "Strategic Tailwind Score: Missing marketDrivers data",
+        "Strategic Tailwind Score: Missing regulatoryCatalysts data"
+      ],
+      "recommendation": "PASS - Low confidence, too many critical issues",
+      "responseTime": 215370,
+      "cost": 2.518835
+    }
+  ],
+  "systemPerformance": {
+    "averageResponseTime": 200356.8,
+    "totalCost": 12.289545,
+    "averageValidationCycles": 2.4
+  }
+}
